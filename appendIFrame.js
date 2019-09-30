@@ -1,8 +1,6 @@
 console.log("insert javascript executed");
 var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [post.length];
-
-controlFrame.style.display = "none";
 for (var i = 0; i <= post.length - 1; i++) {
 	btn[i] = document.createElement("BUTTON")
     btn[i].innerHTML = "CLICK ME";                   // Insert text
@@ -28,10 +26,10 @@ function autoappend(){
 }
 
 function toggleOnOff() {
-    var controlFrame = ifrm[num];
-    if (controlFrame.style.display === "block") {
-      controlFrame.style.display = "none";
+    ifrm.style.display = "none";
+    if (ifrm.style.display === "block") {
+        ifrm.style.display = "none";
     } else {
-      controlFrame.style.display = "block";
+        ifrm.style.display = "block";
     }
   }
