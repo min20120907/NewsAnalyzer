@@ -6,13 +6,15 @@ for (var i = 0; i <= post.length - 1; i++) {
 	btn[i] = document.createElement("BUTTON")
     btn[i].innerHTML = "CLICK ME";                   // Insert text
     ifrm[i] = document.createElement("iframe");
-    ifrm[i] = setAttribute("src", "http://google.com/");
+    ifrm[i] = ifrm.setAttribute("src", "http://google.com/");
     btn[i].onclick = toggleOnOff(); 
 }
 
 for (var i = 0; i <= post.length - 1; i++){
 	post[i].append(btn[i]);     // Append button to div
     console.log("button"+i+"created");
+    post[i].append(ifrm[i]);     // Append button to div
+    console.log("iFrame"+i+"created");
 }
 var num = post.length - 1;
 
