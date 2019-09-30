@@ -1,12 +1,14 @@
 console.log("insert javascript executed");
 var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [post.length];
-var controlFrame = document.getElementById("googleFrame");
+
 controlFrame.style.display = "none";
 for (var i = 0; i <= post.length - 1; i++) {
 	btn[i] = document.createElement("BUTTON")
     btn[i].innerHTML = "CLICK ME";                   // Insert text
-    btn[i].onclick = x(); 
+    ifrm[i] = document.createElement("iframe");
+    ifrm[i] = setAttribute("src", "http://google.com/");
+    btn[i].onclick = toggleOnOff(); 
 }
 
 for (var i = 0; i <= post.length - 1; i++){
@@ -18,21 +20,15 @@ var num = post.length - 1;
 post.length.addEventListener("change", autoappend);
 
 function autoappend(){
-	for (var j = 0; j <= post.length - 1; j++){
-		post[i].append(btn[j]);     // Append button to div
-		console.log("button"+j+"created");
+	for (; num <= post.length - 1; i++){
+		post[i].append(btn[num]);     // Append button to div
+		console.log("button"+num+"created");
 	}
-	j = post.length - 1;
-}
-
-function x(){
-    for (var i = 0; i <= post.length - 1; i++) {
-    var ifrm = document.createElement("iframe");
-    ifrm.setAttribute("src", "http://google.com/");
-    }
+	num = post.length - 1;
 }
 
 function toggleOnOff() {
+    var controlFrame = ifrm[num];
     if (controlFrame.style.display === "block") {
       controlFrame.style.display = "none";
     } else {
