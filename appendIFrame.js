@@ -7,13 +7,14 @@ for (var i = 0; i <= post.length - 1; i++) {
     btn[i].innerHTML = "CLICK ME";                   // Insert text
     ifrm[i] = document.createElement("iframe");
     ifrm[i].setAttribute("src", "http://google.com/");
-    btn[i].onclick = toggleOnOff(); 
+    btn[i].onclick = function(){toggleOnOff()}; 
 }
 
 for (var i = 0; i <= post.length - 1; i++){
 	post[i].append(btn[i]);     // Append button to div
     console.log("button"+i+"created");
     post[i].append(ifrm[i]);     // Append button to div
+    ifrm[i].style.display = "none";
     console.log("iFrame"+i+"created");
 }
 var num = post.length - 1;
@@ -29,10 +30,11 @@ function autoappend(){
 }
 
 function toggleOnOff() {
-    ifrm.style.display = "none";
-    if (ifrm.style.display === "block") {
-        ifrm.style.display = "none";
+    for(var j = 0; j<ifrm.length;j++){
+    if (ifrm[j].style.djsplay === "block") {
+        ifrm[j].style.djsplay = "none";
     } else {
-        ifrm.style.display = "block";
+        ifrm[j].style.display = "block";
     }
   }
+}
