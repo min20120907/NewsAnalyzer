@@ -18,11 +18,11 @@ var num = post.length - 1;
 post.length.addEventListener("change", autoappend);
 
 function autoappend(){
-	for (; num <= post.length - 1; i++){
-		post[i].append(btn[num]);     // Append button to div
-		console.log("button"+num+"created");
+	for (var j = 0; j <= post.length - 1; j++){
+		post[i].append(btn[j]);     // Append button to div
+		console.log("button"+j+"created");
 	}
-	num = post.length - 1;
+	j = post.length - 1;
 }
 
 function x(){
