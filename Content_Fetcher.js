@@ -15,6 +15,6 @@ function httpGet(theUrl)
             return xmlhttp.responseText;
         }
     }
-    xmlhttp.open("GET", "http://textance.herokuapp.com/title" + theUrl, false );
+    xmlhttp.open("GET", "http://textance.herokuapp.com/title/" + theUrl, false );
     xmlhttp.send();    
 }
