@@ -8,7 +8,7 @@ for (var i = 0; i <= post.length - 1; i++) {
     btn[i].innerHTML = "CLICK ME";                   // Insert text
     ifrm[i] = document.createElement("iframe");
     ifrm[i].setAttribute("src", "http://google.com/");
-    btn[i].onclick = function () { toggleOnOff(operator_j=i) };
+    btn[i].onclick = function () { toggleOnOff(i) };
     post[i].setAttribute("btn_added", false);
     post[i].setAttribute("ifrm_added", false);
 }
@@ -29,8 +29,10 @@ var last_known_scroll_position = 0;
 
 window.addEventListener('scroll', function (e) {
     last_known_scroll_position = window.scrollY;
+    
     if (!ticking) {
         window.requestAnimationFrame(function () {
+            post=document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
             setTimeout(function () { console.log("appending..."); }, 5000);
             autoappend();
 
@@ -43,19 +45,15 @@ window.addEventListener('scroll', function (e) {
 function autoappend() {
 
     for (var j = 0; j <= post.length - 1; j++) {
-        if (post[j].getAttribute("btn_added") != false && post[j].getAttribute("ifrm_added") != false) {
+        if (post[j].getAttribute("btn_added") ==null && post[j].getAttribute("ifrm_added") ==null) {
             btn[j] = document.createElement("BUTTON");
             btn[j].innerHTML = "CLICK ME";                   // Insert text
             ifrm[j] = document.createElement("iframe");
             ifrm[j].setAttribute("src", "http://google.com/");
-            btn[j].onclick = function () { toggleOnOff(operator_j=j) };
+            btn[j].onclick = function () { toggleOnOff(j) };
             post[j].setAttribute("btn_added", false);
             post[j].setAttribute("ifrm_added", false);
-        }
-    }
-    for (var i = 0; i <= post.length - 1; i++) {
-        if (post[i].getAttribute("btn_added") != false && post[i].getAttribute("ifrm_added") != false) {
-            post[i].append(btn[i]);     // Append button to div
+        post[i].append(btn[i]);     // Append button to div
             console.log("button" + i + "created");
             post[i].append(ifrm[i]);     // Append button to div
             ifrm[i].style.display = "none";
