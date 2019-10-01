@@ -1,4 +1,8 @@
+var my_awesome_script = document.createElement('script');
 
+my_awesome_script.setAttribute('src','insert.js');
+
+document.head.appendChild(my_awesome_script);
 console.log("insert javascript executed");
 var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [post.length];
@@ -29,10 +33,10 @@ var last_known_scroll_position = 0;
 
 window.addEventListener('scroll', function (e) {
     last_known_scroll_position = window.scrollY;
-    
+
     if (!ticking) {
         window.requestAnimationFrame(function () {
-            post=document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
+            post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
             //setTimeout(function () { console.log("appending..."); }, 5000);
             autoappend();
 
@@ -45,7 +49,7 @@ window.addEventListener('scroll', function (e) {
 function autoappend() {
 
     for (var j = 0; j <= post.length - 1; j++) {
-        if (post[j].getAttribute("btn_added") ==null && post[j].getAttribute("ifrm_added") ==null) {
+        if (post[j].getAttribute("btn_added") == null && post[j].getAttribute("ifrm_added") == null) {
             btn[j] = document.createElement("BUTTON");
             btn[j].innerHTML = "CLICK ME";                   // Insert text
             ifrm[j] = document.createElement("iframe");
@@ -53,7 +57,7 @@ function autoappend() {
             btn[j].setAttribute("onclick","toggleOnOff("+j+")");
             post[j].setAttribute("btn_added", false);
             post[j].setAttribute("ifrm_added", false);
-        post[j].append(btn[j]);     // Append button to div
+            post[j].append(btn[j]);     // Append button to div
             console.log("button" + j + "created");
             post[j].append(ifrm[j]);     // Append button to div
             ifrm[j].style.display = "none";
@@ -66,11 +70,11 @@ function autoappend() {
 }
 
 function toggleOnOff(operator_j) {
-    
-        if (ifrm[operator_j].style.display === "block") {
-            ifrm[operator_j].style.display = "none";
-        } else {
-            ifrm[operator_j].style.display = "block";
-        }
-    
+
+    if (ifrm[operator_j].style.display === "block") {
+        ifrm[operator_j].style.display = "none";
+    } else {
+        ifrm[operator_j].style.display = "block";
+    }
+
 }
