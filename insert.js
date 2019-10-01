@@ -44,7 +44,7 @@ function autoappend() {
             btn[j].innerHTML = "CLICK ME";                   // Insert text
             ifrm[j] = document.createElement("iframe");
             ifrm[j].setAttribute("src", "http://google.com/");
-            btn[j].onclick = function () { toggleOnOff() };
+            btn[j].onclick = function () { toggleOnOff(j) };
             post[j].setAttribute("btn_added", true);
             post[j].setAttribute("ifrm_added", true);
         }
@@ -61,12 +61,12 @@ function autoappend() {
 
 }
 
-function toggleOnOff() {
-    for (var j = 0; j < ifrm.length; j++) {
+function toggleOnOff(j) {
+    
         if (ifrm[j].style.djsplay === "block") {
             ifrm[j].style.djsplay = "none";
         } else {
             ifrm[j].style.display = "block";
         }
-    }
+    
 }
