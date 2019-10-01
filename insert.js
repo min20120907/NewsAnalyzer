@@ -33,7 +33,7 @@ window.addEventListener('scroll', function (e) {
     if (!ticking) {
         window.requestAnimationFrame(function () {
             post=document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
-            setTimeout(function () { console.log("appending..."); }, 5000);
+            //setTimeout(function () { console.log("appending..."); }, 5000);
             autoappend();
 
             ticking = false;
