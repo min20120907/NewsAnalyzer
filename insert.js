@@ -7,7 +7,7 @@ for (var i = 0; i <= post.length - 1; i++) {
     btn[i] = document.createElement("BUTTON")
     btn[i].innerHTML = "CLICK ME";                   // Insert text
     ifrm[i] = document.createElement("iframe");
-    ifrm[i].setAttribute("src", "http://google.com/");
+    ifrm[i].setAttribute("src", "https://www.bing.com/");
     btn[i].setAttribute("onclick","toggleOnOff("+i+")");
     post[i].setAttribute("btn_added", false);
     post[i].setAttribute("ifrm_added", false);
@@ -49,7 +49,7 @@ function autoappend() {
             btn[j] = document.createElement("BUTTON");
             btn[j].innerHTML = "CLICK ME";                   // Insert text
             ifrm[j] = document.createElement("iframe");
-            ifrm[j].setAttribute("src", "http://google.com/");
+            ifrm[j].setAttribute("src", "https://www.bing.com/");
             btn[j].setAttribute("onclick","toggleOnOff("+j+")");
             post[j].setAttribute("btn_added", false);
             post[j].setAttribute("ifrm_added", false);
