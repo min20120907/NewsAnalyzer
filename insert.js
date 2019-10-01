@@ -8,7 +8,7 @@ for (var i = 0; i <= post.length - 1; i++) {
     btn[i].innerHTML = "CLICK ME";                   // Insert text
     ifrm[i] = document.createElement("iframe");
     ifrm[i].setAttribute("src", "http://google.com/");
-    btn[i].onclick = function () { toggleOnOff(i) };
+    btn[i].setAttribute("onclick","toggleOnOff("+i+")");
     post[i].setAttribute("btn_added", false);
     post[i].setAttribute("ifrm_added", false);
 }
@@ -50,16 +50,16 @@ function autoappend() {
             btn[j].innerHTML = "CLICK ME";                   // Insert text
             ifrm[j] = document.createElement("iframe");
             ifrm[j].setAttribute("src", "http://google.com/");
-            btn[j].onclick = function () { toggleOnOff(j) };
+            btn[j].setAttribute("onclick","toggleOnOff("+j+")");
             post[j].setAttribute("btn_added", false);
             post[j].setAttribute("ifrm_added", false);
-        post[i].append(btn[i]);     // Append button to div
-            console.log("button" + i + "created");
-            post[i].append(ifrm[i]);     // Append button to div
-            ifrm[i].style.display = "none";
-            console.log("iFrame" + i + "created");
-            post[i].setAttribute("btn_added", false);
-            post[i].setAttribute("ifrm_added", false);
+        post[j].append(btn[j]);     // Append button to div
+            console.log("button" + j + "created");
+            post[j].append(ifrm[j]);     // Append button to div
+            ifrm[j].style.display = "none";
+            console.log("iFrame" + j + "created");
+            post[j].setAttribute("btn_added", false);
+            post[j].setAttribute("ifrm_added", false);
         }
     }
 
