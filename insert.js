@@ -8,7 +8,9 @@ for (var i = 0; i <= post.length - 1; i++) {
     btn[i].innerHTML = "CLICK ME";                   // Insert text
     ifrm[i] = document.createElement("iframe");
     ifrm[i].setAttribute("src", "http://google.com/");
-    btn[i].onclick = function () { toggleOnOff() };
+    btn[i].onclick = function () { toggleOnOff(operator_j=i) };
+    post[i].setAttribute("btn_added", false);
+    post[i].setAttribute("ifrm_added", false);
 }
 
 for (var i = 0; i <= post.length - 1; i++) {
@@ -17,6 +19,8 @@ for (var i = 0; i <= post.length - 1; i++) {
     post[i].append(ifrm[i]);     // Append button to div
     ifrm[i].style.display = "none";
     console.log("iFrame" + i + "created");
+    post[i].setAttribute("btn_added", false);
+    post[i].setAttribute("ifrm_added", false);
     //console.log("iFrame's id: "+ ifrm[i].id);
 }
 var num = post.length - 1;
@@ -39,34 +43,36 @@ window.addEventListener('scroll', function (e) {
 function autoappend() {
 
     for (var j = 0; j <= post.length - 1; j++) {
-        if (post[j].getAttribute("btn_added") !=true && post[j].getAttribute("ifrm_added") != true) {
+        if (post[j].getAttribute("btn_added") != false && post[j].getAttribute("ifrm_added") != false) {
             btn[j] = document.createElement("BUTTON");
             btn[j].innerHTML = "CLICK ME";                   // Insert text
             ifrm[j] = document.createElement("iframe");
             ifrm[j].setAttribute("src", "http://google.com/");
-            btn[j].onclick = function () { toggleOnOff(j) };
-            post[j].setAttribute("btn_added", true);
-            post[j].setAttribute("ifrm_added", true);
+            btn[j].onclick = function () { toggleOnOff(operator_j=j) };
+            post[j].setAttribute("btn_added", false);
+            post[j].setAttribute("ifrm_added", false);
         }
     }
     for (var i = 0; i <= post.length - 1; i++) {
-        if (post[i].getAttribute("btn_added") == false && post[i].getAttribute("ifrm_added") == false) {
+        if (post[i].getAttribute("btn_added") != false && post[i].getAttribute("ifrm_added") != false) {
             post[i].append(btn[i]);     // Append button to div
             console.log("button" + i + "created");
             post[i].append(ifrm[i]);     // Append button to div
             ifrm[i].style.display = "none";
             console.log("iFrame" + i + "created");
+            post[i].setAttribute("btn_added", false);
+            post[i].setAttribute("ifrm_added", false);
         }
     }
 
 }
 
-function toggleOnOff(j) {
+function toggleOnOff(operator_j) {
     
-        if (ifrm[j].style.djsplay === "block") {
-            ifrm[j].style.djsplay = "none";
+        if (ifrm[operator_j].style.display === "block") {
+            ifrm[operator_j].style.display = "none";
         } else {
-            ifrm[j].style.display = "block";
+            ifrm[operator_j].style.display = "block";
         }
     
 }
