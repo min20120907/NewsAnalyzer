@@ -1,8 +1,4 @@
-var my_awesome_script = document.createElement('script');
 
-my_awesome_script.setAttribute('src','insert.js');
-
-document.head.appendChild(my_awesome_script);
 console.log("insert javascript executed");
 var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [post.length];
@@ -15,7 +11,11 @@ for (var i = 0; i <= post.length - 1; i++) {
 	ifrm[i].id = "iframe_" + i;
 	btn[i].id = "btn_" + i;
     btn[i].onclick = function () {
-		toggleOnOff(i);
+			for (var ii = 0; ii <= post.length - 1; ii++) {
+			//document.getElementById("iframe_"+i).setAttribute("style", "display: block;");
+			console.log("button "+ii+" clicked");
+			}
+    
 	};
     post[i].setAttribute("btn_added", false);
     post[i].setAttribute("ifrm_added", false);
@@ -40,6 +40,7 @@ window.addEventListener('scroll', function (e) {
 
     if (!ticking) {
         window.requestAnimationFrame(function () {
+		
             post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
             //setTimeout(function () { console.log("appending..."); }, 5000);
             autoappend();
@@ -57,14 +58,14 @@ function autoappend() {
             btn[j] = document.createElement("BUTTON");
             btn[j].innerHTML = "CLICK ME";                   // Insert text
             ifrm[j] = document.createElement("iframe");
-			ifrm[j].id = "iframe_" + i;
-			btn[j].id = "btn_" + i;
+			ifrm[j].id = "iframe_" + j;
+			btn[j].id = "btn_" + j;
             ifrm[j].setAttribute("src", "https://www.bing.com/");
             btn[j].onclick = function () {
-				toggleOnOff(j);
+			for (var jj = 0; jj <= post.length - 1; jj++) {
+				console.log("button "+jj+" clicked");
+				}
 			};
-            post[j].setAttribute("btn_added", false);
-            post[j].setAttribute("ifrm_added", false);
             post[j].append(btn[j]);     // Append button to div
             console.log("button" + j + "created");
             post[j].append(ifrm[j]);     // Append button to div
@@ -79,10 +80,10 @@ function autoappend() {
 
 function toggleOnOff(operator_j) {
 
-    if (ifrm[operator_j].style.display === "block") {
-        ifrm[operator_j].style.display = "none";
+    if (document.getElementById("iframe_"+operator_j).style.display === "block") {
+        document.getElementById("iframe_"+operator_j).style.display = "none";
     } else {
-        ifrm[operator_j].style.display = "block";
+        document.getElementById("iframe_"+operator_j).style.display = "block";
     }
 
 }
