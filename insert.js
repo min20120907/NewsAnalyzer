@@ -10,13 +10,11 @@ for (var i = 0; i <= post.length - 1; i++) {
     ifrm[i].setAttribute("src", "https://www.bing.com/");
 	ifrm[i].id = "iframe_" + i;
 	btn[i].id = "btn_" + i;
-    btn[i].onclick = function () {
-			for (var ii = 0; ii <= post.length - 1; ii++) {
-			//document.getElementById("iframe_"+i).setAttribute("style", "display: block;");
-			console.log("button "+ii+" clicked");
-			}
-    
-	};
+    (function(i){ 
+        btn[i].onclick = function() {
+        toggleOnOff(i);
+        }
+    })(i);
     post[i].setAttribute("btn_added", false);
     post[i].setAttribute("ifrm_added", false);
 }
@@ -61,11 +59,12 @@ function autoappend() {
 			ifrm[j].id = "iframe_" + j;
 			btn[j].id = "btn_" + j;
             ifrm[j].setAttribute("src", "https://www.bing.com/");
-            btn[j].onclick = function () {
-			for (var jj = 0; jj <= post.length - 1; jj++) {
-				console.log("button "+jj+" clicked");
-				}
-			};
+            
+            (function(j){ 
+                btn[j].onclick = function() {
+                toggleOnOff(j);
+                }
+            })(j);
             post[j].append(btn[j]);     // Append button to div
             console.log("button" + j + "created");
             post[j].append(ifrm[j]);     // Append button to div
