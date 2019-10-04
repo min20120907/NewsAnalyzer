@@ -2,10 +2,12 @@
 console.log("insert javascript executed");
 
 window.addEventListener("load", areYouInFacebook);
-
+var innerPost = document.getElementsByClassName("_1dwg _1w_m _q7o");
+var linkPost = document.getElementsByClassName("_52c6");
 var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [post.length];
 var ifrm = [post.length];
+
 for (var i = 0; i <= post.length - 1; i++) {
     btn[i] = document.createElement("BUTTON")
     btn[i].innerHTML = "CLICK ME";                   // Insert text
