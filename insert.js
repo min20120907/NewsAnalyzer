@@ -48,7 +48,7 @@ window.addEventListener('scroll', function (e) {
         });
     }
     ticking = true;
-});
+    });
 }
 function autoappend() {
 
