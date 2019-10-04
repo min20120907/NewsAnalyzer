@@ -1,5 +1,7 @@
 
 console.log("insert javascript executed");
+
+window.addEventListener("load", areYouInFacebook);
 if(areYouInFacebook===true){
 var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [post.length];
@@ -86,4 +88,11 @@ function toggleOnOff(operator_j) {
         document.getElementById("iframe_"+operator_j).style.display = "block";
     }
 
+}
+function areYouInFacebook() {
+    if (window.location.hostname == "www.facebook.com"){
+        return true;
+    } else {
+        return false;
+    }
 }
