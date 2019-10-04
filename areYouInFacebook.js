@@ -1,8 +1,8 @@
 function areYouInFacebook() {
     if (window.location.hostname == "www.facebook.com"){
-        console.log("yes");
+        return true;
     } else {
-        console.log("no");
+        return false;
     }
 }
 
