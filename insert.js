@@ -2,7 +2,7 @@
 console.log("insert javascript executed");
 
 window.addEventListener("load", areYouInFacebook);
-if(areYouInFacebook===true){
+
 var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [post.length];
 var ifrm = [post.length];
@@ -51,7 +51,7 @@ window.addEventListener('scroll', function (e) {
     }
     ticking = true;
     });
-}
+
 function autoappend() {
 
     for (var j = 0; j <= post.length - 1; j++) {
