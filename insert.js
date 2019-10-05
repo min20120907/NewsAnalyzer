@@ -28,7 +28,7 @@ for (var i = 0; i <= post.length - 1; i++) {
 }
 
 for (var i = 0; i <= post.length - 1; i++) {
-    if(!innerPost[i].innerHTML.includes("class=\"_52c6\"")){
+    if(!post[i].innerHTML.includes("class=\"_52c6\"")){
         btn[i].style.display="none";
     }
     post[i].append(btn[i]);     // Append button to div
