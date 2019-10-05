@@ -125,7 +125,7 @@ function getTitle(inputURL){
         console.log(evt);
     }, false);
     inputURL = inputURL.split("https://l.facebook.com/l.php?u=").pop();
-    request.open('GET',  "https://cors-anywhere.herokuapp.com/"+inputURL, true);
+    request.open('GET',  "https://textance.herokuapp.com/title/"+inputURL, true);
     request.send();
     return document.innerText;
 }
