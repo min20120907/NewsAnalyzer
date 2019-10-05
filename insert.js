@@ -124,6 +124,7 @@ function getTitle(inputURL){
     request.addEventListener("load", function(evt){
         console.log(evt);
     }, false);
+    inputURL = inputURL.split("https://l.facebook.com/l.php?u=").pop();
     request.open('GET',  "https://cors-anywhere.herokuapp.com/"+inputURL, true);
     request.send();
     return document.innerText;
