@@ -124,7 +124,7 @@ function getTitle(inputURL){
     request.addEventListener("load", function(evt){
         console.log(evt);
     }, false);
-    request.open('GET', inputURL, true);
+    request.open('GET',  "https://cors-anywhere.herokuapp.com/"+inputURL, true);
     request.send();
     return document.innerText;
 }
