@@ -119,11 +119,13 @@ function searchBing(bingQuery) {
 }
 
 
-function getTitle(url_var){
-    $.ajax({
-        url: url_var,
-        complete: function(data) {
-          return data.responseText;
-        }
-  });
+function getTitle(inputURL){
+    var request = new XMLHttpRequest();
+    request.addEventListener("load", function(evt){
+        console.log(evt);
+    }, false);
+    request.open('GET', inputURL, true);
+    request.send();
+    var givenTitle = getElementsByTagName("pre")[0];
+    return givenTitle[0].innerHTML;
 }
