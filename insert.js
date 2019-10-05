@@ -10,7 +10,7 @@ var ifrm = [innerPost.length];
 for (var j = 0; j < innerPost.length; j++) {
   for (var i = 0; i < post.length; i++) {
     if (!innerPost[j].contains(post[i])) {
-      post[i] = null;
+        post.splice(i , 1); 
     }
   }
 }
@@ -67,7 +67,7 @@ function autoappend() {
   for (var j = 0; j < innerPost.length; j++) {
     for (var i = 0; i < post.length; i++) {
       if (!innerPost[j].contains(post[i])) {
-        post[i] = null;
+        post.splice(i , 1); 
       }
     }
   }
