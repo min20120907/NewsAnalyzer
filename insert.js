@@ -7,6 +7,7 @@ var linkPost = document.getElementsByClassName("_52c6");
 var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [post.length];
 var ifrm = [post.length];
+
 for(var a = 0; a < innerPost.length; a++){
     for(var b = 0; b< linkPost.length;b++){
         if(innerPost[a].contains(linkPost[b])){
@@ -14,6 +15,7 @@ for(var a = 0; a < innerPost.length; a++){
         }
     }
 }
+
 for (var i = 0; i <= post.length - 1; i++) {
     btn[i] = document.createElement("BUTTON")
     btn[i].innerHTML = "CLICK ME";                   // Insert text
@@ -97,6 +99,7 @@ function toggleOnOff(operator_j) {
     }
 
 }
+
 function areYouInFacebook() {
     if (window.location.hostname == "www.facebook.com"){
         return true;
