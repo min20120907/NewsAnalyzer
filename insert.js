@@ -3,17 +3,10 @@ console.log("insert javascript executed");
 window.addEventListener("load", areYouInFacebook);
 var innerPost = document.getElementsByClassName("_1dwg _1w_m _q7o");
 var linkPost = document.getElementsByClassName("_52c6");
-var post = innerPost.getElementsByClassName("_5pcp _5lel _2jyu _232_");
+var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [innerPost.length];
 var ifrm = [innerPost.length];
 
-for (var j = 0; j < innerPost.length; j++) {
-  for (var i = 0; i < post.length; i++) {
-    if (!innerPost[j].contains(post[i])) {
-        post.splice(i , 1); 
-    }
-  }
-}
 
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
@@ -35,9 +28,9 @@ for (var i = 0; i <= innerPost.length - 1; i++) {
   if (!innerPost[i].innerHTML.includes('class="_52c6"')) {
     btn[i].style.display = "none";
   }
-  post[i].append(btn[i]); // Append button to div
+  innerPost[i].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(btn[i]); // Append button to div
   console.log("button" + i + "created");
-  post[i].append(ifrm[i]); // Append button to div
+  innerPost[i].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(ifrm[i]); // Append button to div
   ifrm[i].style.display = "none";
   console.log("iFrame" + i + "created");
   post[i].setAttribute("btn_added", false);
@@ -64,13 +57,6 @@ window.addEventListener("scroll", function(e) {
 });
 
 function autoappend() {
-  for (var j = 0; j < innerPost.length; j++) {
-    for (var i = 0; i < post.length; i++) {
-      if (!innerPost[j].contains(post[i])) {
-        post.splice(i , 1); 
-      }
-    }
-  }
 
   for (var j = 0; j <= innerPost.length - 1; j++) {
     if (
@@ -97,9 +83,9 @@ function autoappend() {
           toggleOnOff(j);
         };
       })(j);
-      post[j].append(btn[j]); // Append button to div
+      innerPost[j].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(btn[j]); // Append button to div
       console.log("button" + j + "created");
-      post[j].append(ifrm[j]); // Append button to div
+      innerPost[j].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(ifrm[j]); // Append button to div
       ifrm[j].style.display = "none";
       console.log("iFrame" + j + "created");
       post[j].setAttribute("btn_added", false);
