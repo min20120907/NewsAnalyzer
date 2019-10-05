@@ -8,13 +8,8 @@ var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [post.length];
 var ifrm = [post.length];
 
-for(var a = 0; a < innerPost.length; a++){
-    for(var b = 0; b< linkPost.length;b++){
-        if(!innerPost[a].contains(linkPost[b])){
-            btn[a].style.display="none";
-        }
-    }
-}
+
+
 
 for (var i = 0; i <= post.length - 1; i++) {
     btn[i] = document.createElement("BUTTON")
@@ -33,6 +28,9 @@ for (var i = 0; i <= post.length - 1; i++) {
 }
 
 for (var i = 0; i <= post.length - 1; i++) {
+    if(!innerPost[i].innerHTML.includes("class=\"_52c6\"")){
+        btn[i].style.display="none";
+    }
     post[i].append(btn[i]);     // Append button to div
     console.log("button" + i + "created");
     post[i].append(ifrm[i]);     // Append button to div
@@ -66,7 +64,7 @@ function autoappend() {
     
         for(var b = 0; b< linkPost.length;b++){
             for(var a = 0; a < innerPost.length; a++){
-            if(!innerPost[a].contains(linkPost[b])){
+            if(innerPost[a].contains(linkPost[b])){
                 btn[a].style.display="none";
             }
         }
