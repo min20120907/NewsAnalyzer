@@ -136,6 +136,6 @@ function getTitle(theUrl)
             return xmlhttp.responseText;
         }
     }
-    xmlhttp.open("GET", theUrl, false );
+    xmlhttp.open("GET", theUrl, true);
     xmlhttp.send();    
 }
