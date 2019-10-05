@@ -126,6 +126,6 @@ function getTitle(inputURL){
     }, false);
     request.open('GET', inputURL, true);
     request.send();
-    var givenTitle = getElementsByTagName("pre")[0];
+    var givenTitle =  document.getElementsByTagName("pre")[0];
     return givenTitle[0].innerHTML;
 }
