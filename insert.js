@@ -71,6 +71,7 @@ function autoappend() {
       }
     }
   }
+
   for (var j = 0; j <= innerPost.length - 1; j++) {
     if (
       post[j].getAttribute("btn_added") == null &&
@@ -81,7 +82,11 @@ function autoappend() {
       ifrm[j] = document.createElement("iframe");
       ifrm[j].id = "iframe_" + j;
       btn[j].id = "btn_" + j;
-      ifrm[j].setAttribute("src", searchBing(getTitle(linkPost[j].href)));
+      for (var i = 0; i < linkPost.length; i++) {
+        if (innerPost[i].innerHTML.includes('class="_52c6"')) {
+          ifrm[j].setAttribute("src", searchBing(getTitle(linkPost[i].href)));
+        }
+      }
       if (!innerPost[j].innerHTML.includes('class="_52c6"')) {
         btn[j].style.display = "none";
       }
