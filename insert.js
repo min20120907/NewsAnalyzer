@@ -70,6 +70,7 @@ function autoappend() {
       btn[j].id = "btn_" + j;
       for (var i = 0; i < linkPost.length; i++) {
         if (innerPost[j].innerHTML.includes('class="_52c6"')) {
+            
           ifrm[j].setAttribute("src", searchBing(getTitle(linkPost[i].href)));
         }else{
             ifrm[j].setAttribute("src", "https://www.bing.com/");
@@ -117,12 +118,12 @@ function searchBing(bingQuery) {
   return searchUrl;
 }
 
-const getTitle = url => {
-  return fetch(`https://textance.herokuapp.com/${url}`)
-    .then(response => response.text())
-    .then(html => {
-      const doc = new DOMParser().parseFromString(html, "text/html");
-      const title = doc.querySelectorAll("title")[0];
-      return title.innerText;
-    });
-};
+
+function getTitle(url_var){
+    $.ajax({
+        url: url_var,
+        complete: function(data) {
+          return data.responseText;
+        }
+  });
+}
