@@ -127,5 +127,5 @@ function getTitle(inputURL){
     inputURL = inputURL.split("https://l.facebook.com/l.php?u=").pop();
     request.open('GET',  "https://textance.herokuapp.com/title/"+inputURL, true);
     request.send();
-    return request.innerText;
+    return request.responseText;
 }
