@@ -132,7 +132,7 @@ function searchBing(bingQuery) {
 }
 
 const getTitle = url => {
-  return fetch(`http://crossorigin.me/${url}`)
+  return fetch(`https://cors-anywhere.herokuapp.com/${url}`)
     .then(response => response.text())
     .then(html => {
       const doc = new DOMParser().parseFromString(html, "text/html");
