@@ -11,7 +11,7 @@ var ifrm = [post.length];
 for(var a = 0; a < innerPost.length; a++){
     for(var b = 0; b< linkPost.length;b++){
         if(!innerPost[a].contains(linkPost[b])){
-            btn[a].style.display = "none";
+            btn[a].style.display="none";
         }
     }
 }
@@ -63,7 +63,13 @@ window.addEventListener('scroll', function (e) {
     });
 
 function autoappend() {
-
+    for(var a = 0; a < innerPost.length; a++){
+        for(var b = 0; b< linkPost.length;b++){
+            if(!innerPost[a].contains(linkPost[b])){
+                btn[a].style.display="none";
+            }
+        }
+    }
     for (var j = 0; j <= post.length - 1; j++) {
         if (post[j].getAttribute("btn_added") == null && post[j].getAttribute("ifrm_added") == null) {
             btn[j] = document.createElement("BUTTON");
@@ -107,3 +113,19 @@ function areYouInFacebook() {
         return false;
     }
 }
+
+function searchBing(bingQuery){
+    var searchUrl = "https://www.bing.com/search?q="+bingQuery;
+    return searchUrl;
+}
+
+const getTitle = (url) => {  
+    return fetch(`https://crossorigin.me/${url}`)
+      .then((response) => response.text())
+      .then((html) => {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const title = doc.querySelectorAll('title')[0];
+        return title.innerText;
+      });
+  };
+  
