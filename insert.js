@@ -83,7 +83,7 @@ function autoappend() {
       ifrm[j].id = "iframe_" + j;
       btn[j].id = "btn_" + j;
       for (var i = 0; i < linkPost.length; i++) {
-        if (innerPost[i].innerHTML.includes('class="_52c6"')) {
+        if (innerPost[j].innerHTML.includes('class="_52c6"')) {
           ifrm[j].setAttribute("src", searchBing(getTitle(linkPost[i].href)));
         }else{
             ifrm[j].setAttribute("src", "https://www.bing.com/");
