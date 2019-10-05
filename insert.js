@@ -3,7 +3,7 @@ console.log("insert javascript executed");
 window.addEventListener("load", areYouInFacebook);
 var innerPost = document.getElementsByClassName("_1dwg _1w_m _q7o");
 var linkPost = document.getElementsByClassName("_52c6");
-var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
+var post = innerPost.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [innerPost.length];
 var ifrm = [innerPost.length];
 
