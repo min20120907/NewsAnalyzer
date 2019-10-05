@@ -11,7 +11,7 @@ var ifrm = [post.length];
 for(var a = 0; a < innerPost.length; a++){
     for(var b = 0; b< linkPost.length;b++){
         if(!innerPost[a].contains(linkPost[b])){
-            button[a].style.display === "none";
+            btn[a].style.display = "none";
         }
     }
 }
