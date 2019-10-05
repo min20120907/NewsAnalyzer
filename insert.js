@@ -27,8 +27,8 @@ for (var i = 0; i <= post.length - 1; i++) {
     post[i].setAttribute("ifrm_added", false);
 }
 
-for (var i = 0; i <= post.length - 1; i++) {
-    if(!post[i].innerHTML.includes("class=\"_52c6\"")){
+for (var i = 0; i <= innerPost.length - 1; i++) {
+    if(!innerPost[i].innerHTML.includes("class=\"_52c6\"")){
         btn[i].style.display="none";
     }
     post[i].append(btn[i]);     // Append button to div
@@ -62,7 +62,7 @@ window.addEventListener('scroll', function (e) {
 
 function autoappend() {
     
-    for (var j = 0; j <= post.length - 1; j++) {
+    for (var j = 0; j <= innerPost.length - 1; j++) {
         if (post[j].getAttribute("btn_added") == null && post[j].getAttribute("ifrm_added") == null) {
             btn[j] = document.createElement("BUTTON");
             btn[j].innerHTML = "CLICK ME";                   // Insert text
@@ -70,7 +70,7 @@ function autoappend() {
 			ifrm[j].id = "iframe_" + j;
 			btn[j].id = "btn_" + j;
             ifrm[j].setAttribute("src", "https://www.bing.com/");
-            if(!post[j].innerHTML.includes("class=\"_52c6\"")){
+            if(!innerPost[j].innerHTML.includes("class=\"_52c6\"")){
                 btn[j].style.display="none";
             }
             (function(j){ 
