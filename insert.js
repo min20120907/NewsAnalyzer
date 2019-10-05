@@ -124,13 +124,8 @@ function getTitle(inputURL){
     request.addEventListener("load", function(evt){
         console.log(evt);
     }, false);
-    request.onreadystatechange = function () {
-            if (request.readyState == 4 && request.status == 200) {
-                return request.responseText;
-            }
-        }
     inputURL = inputURL.split("https://l.facebook.com/l.php?u=").pop();
-    request.open('GET',  "https://textance.herokuapp.com/title/"+inputURL, true);
+    request.open('GET',  "https://textance.herokuapp.com/title/"+inputURL, false);
     request.send();
-    return request.onreadystatechange();
+    return request.responseText;
 }
