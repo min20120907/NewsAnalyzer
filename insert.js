@@ -85,6 +85,8 @@ function autoappend() {
       for (var i = 0; i < linkPost.length; i++) {
         if (innerPost[i].innerHTML.includes('class="_52c6"')) {
           ifrm[j].setAttribute("src", searchBing(getTitle(linkPost[i].href)));
+        }else{
+            ifrm[j].setAttribute("src", "https://www.bing.com/");
         }
       }
       if (!innerPost[j].innerHTML.includes('class="_52c6"')) {
