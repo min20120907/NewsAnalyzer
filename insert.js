@@ -70,8 +70,8 @@ function autoappend() {
 			ifrm[j].id = "iframe_" + j;
 			btn[j].id = "btn_" + j;
             ifrm[j].setAttribute("src", "https://www.bing.com/");
-            if(!post[i].innerHTML.includes("class=\"_52c6\"")){
-                btn[i].style.display="none";
+            if(!post[j].innerHTML.includes("class=\"_52c6\"")){
+                btn[j].style.display="none";
             }
             (function(j){ 
                 btn[j].onclick = function() {
