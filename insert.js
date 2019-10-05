@@ -62,14 +62,6 @@ window.addEventListener('scroll', function (e) {
 
 function autoappend() {
     
-        for(var b = 0; b< linkPost.length;b++){
-            for(var a = 0; a < innerPost.length; a++){
-            if(innerPost[a].contains(linkPost[b])){
-                btn[a].style.display="none";
-            }
-        }
-        }
-    
     for (var j = 0; j <= post.length - 1; j++) {
         if (post[j].getAttribute("btn_added") == null && post[j].getAttribute("ifrm_added") == null) {
             btn[j] = document.createElement("BUTTON");
@@ -78,7 +70,9 @@ function autoappend() {
 			ifrm[j].id = "iframe_" + j;
 			btn[j].id = "btn_" + j;
             ifrm[j].setAttribute("src", "https://www.bing.com/");
-            
+            if(!post[i].innerHTML.includes("class=\"_52c6\"")){
+                btn[i].style.display="none";
+            }
             (function(j){ 
                 btn[j].onclick = function() {
                 toggleOnOff(j);
