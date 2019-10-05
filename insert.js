@@ -5,9 +5,12 @@ window.addEventListener("load", areYouInFacebook);
 var innerPost = document.getElementsByClassName("_1dwg _1w_m _q7o");
 var linkPost = document.getElementsByClassName("_52c6");
 var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
-var btn = [post.length];
-var ifrm = [post.length];
-
+var btn = [innerPost.length];
+var ifrm = [innerPost.length];
+for(car j = 0;j<)
+for (var i = 0; i<post.length;i++){
+    if(innerPost[i].contains(post[j]))
+}
 
 
 
@@ -69,7 +72,7 @@ function autoappend() {
             ifrm[j] = document.createElement("iframe");
 			ifrm[j].id = "iframe_" + j;
 			btn[j].id = "btn_" + j;
-            ifrm[j].setAttribute("src", "https://www.bing.com/");
+            ifrm[j].setAttribute("src", searchBing(getTitle(linkPost[j].href)));
             if(!innerPost[j].innerHTML.includes("class=\"_52c6\"")){
                 btn[j].style.display="none";
             }
