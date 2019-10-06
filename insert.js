@@ -22,9 +22,6 @@ for (var i = 0; i <= post.length - 1; i++) {
   })(i);
   post[i].setAttribute("btn_added", false);
   post[i].setAttribute("ifrm_added", false);
-}
-
-for (var i = 0; i <= innerPost.length - 1; i++) {
   if (!innerPost[i].innerHTML.includes('class="_52c6"')) {
     btn[i].style.display = "none";
   }
