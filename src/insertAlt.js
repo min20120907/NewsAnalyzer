@@ -14,7 +14,7 @@ for (var i = 0; i <= post.length - 1; i++) {
   btn[i].id = "btn_" + i;
   (function(i) {
     btn[i].onclick = function() {
-      createIFrame();
+      createIFrame(i);
       toggleOnOff(i);
     };
   })(i);
@@ -62,7 +62,7 @@ function autoappend() {
       }
       (function(j) {
         btn[j].onclick = function() {
-          createIFrame();
+          createIFrame(j);
           toggleOnOff(j);
         };
       })(j);
