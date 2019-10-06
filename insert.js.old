@@ -11,23 +11,28 @@ var ifrm = [innerPost.length];
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
   btn[i].innerHTML = "CLICK ME"; // Insert text
+  ifrm[i] = document.createElement("iframe");
+  ifrm[i].setAttribute("src", "https://www.bing.com/");
+  ifrm[i].id = "iframe_" + i;
   btn[i].id = "btn_" + i;
   (function(i) {
     btn[i].onclick = function() {
-      createIFrame(i);
       toggleOnOff(i);
     };
   })(i);
   post[i].setAttribute("btn_added", false);
-}
-
-for (var i = 0; i <= innerPost.length - 1; i++) {
+  post[i].setAttribute("ifrm_added", false);
   if (!innerPost[i].innerHTML.includes('class="_52c6"')) {
     btn[i].style.display = "none";
   }
   innerPost[i].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(btn[i]); // Append button to div
   console.log("button" + i + "created");
+  innerPost[i].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(ifrm[i]); // Append button to div
+  ifrm[i].style.display = "none";
+  console.log("iFrame" + i + "created");
   post[i].setAttribute("btn_added", false);
+  post[i].setAttribute("ifrm_added", false);
+  //console.log("iFrame's id: "+ ifrm[i].id);
 }
 var num = post.length - 1;
 var ticking = false;
@@ -52,23 +57,37 @@ function autoappend() {
 
   for (var j = 0; j <= innerPost.length - 1; j++) {
     if (
-      post[j].getAttribute("btn_added") == null
+      post[j].getAttribute("btn_added") == null &&
+      post[j].getAttribute("ifrm_added") == null
     ) {
       btn[j] = document.createElement("BUTTON");
       btn[j].innerHTML = "CLICK ME"; // Insert text
+      ifrm[j] = document.createElement("iframe");
+      ifrm[j].id = "iframe_" + j;
       btn[j].id = "btn_" + j;
+      for (var i = 0; i < linkPost.length; i++) {
+        if (innerPost[j].innerHTML.includes('class="_52c6"')) {
+            
+          ifrm[j].setAttribute("src", searchBing(getTitle(linkPost[i].href)));
+        }else{
+            ifrm[j].setAttribute("src", "https://www.bing.com/");
+        }
+      }
       if (!innerPost[j].innerHTML.includes('class="_52c6"')) {
         btn[j].style.display = "none";
       }
       (function(j) {
         btn[j].onclick = function() {
-          createIFrame(j);
           toggleOnOff(j);
         };
       })(j);
       innerPost[j].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(btn[j]); // Append button to div
       console.log("button" + j + "created");
+      innerPost[j].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(ifrm[j]); // Append button to div
+      ifrm[j].style.display = "none";
+      console.log("iFrame" + j + "created");
       post[j].setAttribute("btn_added", false);
+      post[j].setAttribute("ifrm_added", false);
     }
   }
 }
@@ -110,22 +129,4 @@ function getTitle(inputURL){
         return request.responseText;
     }
     
-}
-var operator_l = 1;
-function createIFrame(operator_k){
-    var checkTarget = document.getElementById("iframe_" + operator_k);
-    if (checkTarget != 'undefined'){
-        ifrm[operator_k] = document.createElement("iframe");
-        //ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_k].href)));
-        if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
-          ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_l].href)));
-          operator_l++;
-        }
-        ifrm[operator_k].id = "iframe_" + operator_k;
-        innerPost[operator_k].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(ifrm[operator_k]);
-        ifrm[operator_k].style.display = "none";
-        console.log("iFrame" + operator_k + "created");
-    }else{
-        console.log("iFrame" + operator_k + "already exists");
-    }
 }
