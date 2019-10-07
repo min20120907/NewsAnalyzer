@@ -6,7 +6,7 @@ var linkPost = document.getElementsByClassName("_52c6");
 var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [innerPost.length];
 var ifrm = [innerPost.length];
-
+var linkingPost = [innerPost.length];
 
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
@@ -24,6 +24,7 @@ for (var i = 0; i <= post.length - 1; i++) {
 for (var i = 0; i <= innerPost.length - 1; i++) {
   if (!innerPost[i].innerHTML.includes('class="_52c6"')) {
     btn[i].style.display = "none";
+    linkingPost[i] = null;
   }
   innerPost[i].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(btn[i]); // Append button to div
   console.log("button" + i + "created");
@@ -59,6 +60,9 @@ function autoappend() {
       btn[j].id = "btn_" + j;
       if (!innerPost[j].innerHTML.includes('class="_52c6"')) {
         btn[j].style.display = "none";
+        linkingPost[j] = null;
+      }else{
+        linkingPost[j]=innerPost.getElementsByClassName("_52c6")[j];
       }
       (function(j) {
         btn[j].onclick = function() {
@@ -118,8 +122,7 @@ function createIFrame(operator_k){
         ifrm[operator_k] = document.createElement("iframe");
         //ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_k].href)));
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
-          ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_l].href)));
-          operator_l++;
+          ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_k].href)));
         }
         ifrm[operator_k].id = "iframe_" + operator_k;
         innerPost[operator_k].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(ifrm[operator_k]);
