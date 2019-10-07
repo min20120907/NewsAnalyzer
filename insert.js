@@ -25,6 +25,8 @@ for (var i = 0; i <= innerPost.length - 1; i++) {
   if (!innerPost[i].innerHTML.includes('class="_52c6"')) {
     btn[i].style.display = "none";
     linkingPost[i] = null;
+  }      if(innerPost[i].innerHTML.includes('class="_52c6"')){
+    linkingPost[i]=innerPost[i].getElementsByClassName("_52c6")[0];
   }
   innerPost[i].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(btn[i]); // Append button to div
   console.log("button" + i + "created");
@@ -42,7 +44,6 @@ window.addEventListener("scroll", function(e) {
       post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
       //setTimeout(function () { console.log("appending..."); }, 5000);
       autoappend();
-
       ticking = false;
     });
   }
@@ -61,8 +62,9 @@ function autoappend() {
       if (!innerPost[j].innerHTML.includes('class="_52c6"')) {
         btn[j].style.display = "none";
         linkingPost[j] = null;
-      }else{
-        linkingPost[j]=innerPost.getElementsByClassName("_52c6")[j];
+      }
+      if(innerPost[j].innerHTML.includes('class="_52c6"')){
+        linkingPost[j]=innerPost[j].getElementsByClassName("_52c6")[0];
       }
       (function(j) {
         btn[j].onclick = function() {
@@ -122,7 +124,7 @@ function createIFrame(operator_k){
         ifrm[operator_k] = document.createElement("iframe");
         //ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_k].href)));
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
-          ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_k].href)));
+          ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkingPost[operator_k].href)));
         }
         ifrm[operator_k].id = "iframe_" + operator_k;
         innerPost[operator_k].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(ifrm[operator_k]);
