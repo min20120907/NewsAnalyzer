@@ -120,38 +120,24 @@ function getTitle(inputURL){
 
 function loadFileToElement(filename, elementId)
 {
-    var xhr = new XMLHttpRequest();
-    try
-    {
-		console.err(filename);
-        xhr.open("GET", filename, false);
-		console.err(2);
-        /*xhr.onload = function () {
-            var com = document.getElementById(elementId);
-            com.innerHTML = xhr.responseText;
-        }*/
-        xhr.send();
-		if (xhr.readyState==4 && xhr.status==200)
-		{
-			var com = document.getElementById(elementId);
-            com.innerHTML = xhr.responseText;
-		}
-    }
-    catch (e) {
-        window.alert("Unable to load the requested file.");
-    }
+  g = document.createElement('div');
+  g.setAttribute("id", elementId);
+  document.getElementById(elementId).innerHTML =$.ajax({ type: "GET",   
+  url: filename,   
+  async: false
+}).responseText
 } 
 
 var operator_l = 1;
 function createIFrame(operator_k){
     var checkTarget = document.getElementById("iframe_" + operator_k);
-	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href),"webiste_"+operator_k));
-   // var search_result =document.getElementById("website_"+operator_k).getElementsByClassName("b_algo");
+	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),"webiste_"+operator_k);
+    var search_result =document.getElementById("website_"+operator_k).getElementsByClassName("b_algo");
     if (checkTarget != 'undefined'){
         ifrm[operator_k] = document.createElement("div");
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
           for (var operator_m = 0; operator_m<5;operator_m++){
-          //  ifrm[operator_k].appendChild(result[operator_m]);
+           ifrm[operator_k].appendChild(result[operator_m]);
           }
 
         }
