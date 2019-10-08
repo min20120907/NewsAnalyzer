@@ -28,7 +28,7 @@ for (var i = 0; i <= innerPost.length - 1; i++) {
   }      if(innerPost[i].innerHTML.includes('class="_52c6"')){
     linkingPost[i]=innerPost[i].getElementsByClassName("_52c6")[0];
   }
-  innerPost[i].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(btn[i]); // Append button to div
+  innerPost[i].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(btn[i]); // appendChild button to div
   console.log("button" + i + "created");
   post[i].setAttribute("btn_added", false);
 }
@@ -42,15 +42,15 @@ window.addEventListener("scroll", function(e) {
   if (!ticking) {
     window.requestAnimationFrame(function() {
       post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
-      //setTimeout(function () { console.log("appending..."); }, 5000);
-      autoappend();
+      //setTimeout(function () { console.log("appendChilding..."); }, 5000);
+      autoappendChild();
       ticking = false;
     });
   }
   ticking = true;
 });
 
-function autoappend() {
+function autoappendChild() {
 
   for (var j = 0; j <= innerPost.length - 1; j++) {
     if (
@@ -72,7 +72,7 @@ function autoappend() {
           toggleOnOff(j);
         };
       })(j);
-      innerPost[j].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].append(btn[j]); // Append button to div
+      innerPost[j].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(btn[j]); // appendChild button to div
       console.log("button" + j + "created");
       post[j].setAttribute("btn_added", false);
     }
@@ -125,7 +125,9 @@ function createIFrame(operator_k){
         //ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_k].href)));
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
           ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkingPost[operator_k].href)));
+		  //document.getElementById("final_content").appendChild();
         }
+		//var search_result = ifrm[operator_k].getElementsByClassName("b_algo");
         ifrm[operator_k].id = "iframe_" + operator_k;
         innerPost[operator_k].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(ifrm[operator_k]);
         ifrm[operator_k].style.display = "none";
