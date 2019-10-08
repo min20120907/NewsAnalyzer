@@ -138,12 +138,10 @@ function loadFileToElement(filename, elementId)
 var operator_l = 1;
 function createIFrame(operator_k){
     var checkTarget = document.getElementById("iframe_" + operator_k);
-    var search_result =loadFileToElement(getTitle(linkingPost[operator_k].href),"webiste_"+operator_k).getElementsByClassName("b_algo");
+    var search_result =loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href),"webiste_"+operator_k)).getElementsByClassName("b_algo");
     if (checkTarget != 'undefined'){
         ifrm[operator_k] = document.createElement("div");
-        //ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_k].href)));
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
-          ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkingPost[operator_k].href)));
           for (var operator_m = 0; operator_m<5;operator_m++){
             ifrm[operator_k].appendChild(result[operator_m]);
           }
