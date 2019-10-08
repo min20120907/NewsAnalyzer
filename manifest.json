@@ -18,6 +18,6 @@
         "matches":[
             "<all_urls>"
         ],
-        "js":["insert.js"]
+        "js":["insert.js", "src/jquery-3.4.1.min.js"]
     }]
 }
