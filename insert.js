@@ -146,6 +146,7 @@ function createIFrame(operator_k){
         ifrm[operator_k].id = "iframe_" + operator_k;
         innerPost[operator_k].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(ifrm[operator_k]);
         ifrm[operator_k].style.display = "none";
+        ifrm[operator_k].style.height = "auto";
         console.log("iFrame" + operator_k + "created");
     }else{
         console.log("iFrame" + operator_k + "already exists");
