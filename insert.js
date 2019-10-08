@@ -117,11 +117,26 @@ function getTitle(inputURL){
     }
     
 }
+
+function getURLContent(inputURL){
+  var request = new XMLHttpRequest();
+  request.addEventListener("load", function(evt){
+      console.log(evt);
+  }, false);
+  request.open('GET', inputURL, false);
+  request.send();
+  if (request.readyState==4 && request.status==200)
+  {
+      return request.responseText;
+  }
+  
+}
+
 var operator_l = 1;
 function createIFrame(operator_k){
     var checkTarget = document.getElementById("iframe_" + operator_k);
     if (checkTarget != 'undefined'){
-        ifrm[operator_k] = document.createElement("iframe");
+        ifrm[operator_k] = document.createElement("div");
         //ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_k].href)));
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
           ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkingPost[operator_k].href)));
