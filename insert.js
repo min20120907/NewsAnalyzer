@@ -138,15 +138,18 @@ function loadFileToElement(filename, elementId)
 var operator_l = 1;
 function createIFrame(operator_k){
     var checkTarget = document.getElementById("iframe_" + operator_k);
+    var search_result =loadFileToElement(getTitle(linkingPost[operator_k].href),"webiste_"+operator_k).getElementsByClassName("b_algo");
     if (checkTarget != 'undefined'){
         ifrm[operator_k] = document.createElement("div");
         //ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_k].href)));
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
           ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkingPost[operator_k].href)));
-          ifrm[operator_k].appendChild(loadFileToElement(getTitle(linkingPost[operator_k].href)),"webiste_"+operator_k);
-		  //document.getElementById("final_content").appendChild();
+          for (var operator_m = 0; operator_m<5;operator_m++){
+            ifrm[operator_k].appendChild(result[operator_m]);
+          }
+
         }
-		//var search_result = ifrm[operator_k].getElementsByClassName("b_algo");
+	
         ifrm[operator_k].id = "iframe_" + operator_k;
         innerPost[operator_k].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(ifrm[operator_k]);
         //ifrm[operator_k].style.display = "none";
