@@ -98,7 +98,7 @@ function areYouInFacebook() {
 }
 
 function searchBing(bingQuery) {
-  var searchUrl = "https://www.bing.com/news/search?q=" + bingQuery + "FORM=HDRSC4";
+  var searchUrl = "https://www.bing.com/news/search?q=" + bingQuery;
   return searchUrl;
 }
 
