@@ -81,11 +81,11 @@ function autoappendChild() {
 
 function toggleOnOff(operator_j) {
   if (
-    document.getElementById("iframe_" + operator_j).style.display === "block"
+    document.getElementById("iframe_" + operator_j).height == "100%" && document.getElementById("iframe_" + operator_j).width == "100%" 
   ) {
-    document.getElementById("iframe_" + operator_j).style.display = "none";
+    document.getElementById("iframe_" + operator_j).height == 0 && document.getElementById("iframe_" + operator_j).width ==0; 
   } else {
-    document.getElementById("iframe_" + operator_j).style.display = "block";
+    document.getElementById("iframe_" + operator_j).height == "100%" && document.getElementById("iframe_" + operator_j).width =="100%"; 
   }
 }
 
@@ -118,19 +118,22 @@ function getTitle(inputURL){
     
 }
 
-function getURLContent(inputURL){
-  var request = new XMLHttpRequest();
-  request.addEventListener("load", function(evt){
-      console.log(evt);
-  }, false);
-  request.open('GET', inputURL, false);
-  request.send();
-  if (request.readyState==4 && request.status==200)
-  {
-      return request.responseText;
-  }
-  
-}
+function loadFileToElement(filename, elementId)
+{
+    var xhr = new XMLHttpRequest();
+    try
+    {
+        xhr.open("GET", filename, false);
+        xhr.onload = function () {
+            var com = document.getElementById(elementId);
+            com.innerHTML = xhr.responseText;
+        }
+        xhr.send();
+    }
+    catch (e) {
+        window.alert("Unable to load the requested file.");
+    }
+} 
 
 var operator_l = 1;
 function createIFrame(operator_k){
@@ -140,13 +143,14 @@ function createIFrame(operator_k){
         //ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkPost[operator_k].href)));
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
           ifrm[operator_k].setAttribute("src", searchBing(getTitle(linkingPost[operator_k].href)));
+          ifrm[operator_k].appendChild(loadFileToElement(getTitle(linkingPost[operator_k].href)),"webiste_"+operator_k);
 		  //document.getElementById("final_content").appendChild();
         }
 		//var search_result = ifrm[operator_k].getElementsByClassName("b_algo");
         ifrm[operator_k].id = "iframe_" + operator_k;
         innerPost[operator_k].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(ifrm[operator_k]);
-        ifrm[operator_k].style.display = "none";
-        ifrm[operator_k].style.height = "auto";
+        //ifrm[operator_k].style.display = "none";
+        //ifrm[operator_k].style.height = "auto";
         console.log("iFrame" + operator_k + "created");
     }else{
         console.log("iFrame" + operator_k + "already exists");
