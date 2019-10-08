@@ -98,7 +98,7 @@ function areYouInFacebook() {
 }
 
 function searchBing(bingQuery) {
-  var searchUrl = "https://www.bing.com/news/search?q=" + bingQuery;
+  var searchUrl = "https://m.bing.com/news/search?q=" + bingQuery;
   return searchUrl;
 }
 
