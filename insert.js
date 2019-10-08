@@ -98,7 +98,7 @@ function areYouInFacebook() {
 }
 
 function searchBing(bingQuery) {
-  var searchUrl = "https://www.bing.com/news/search?q=" + bingQuery;
+  var searchUrl = "https://www.bing.com/search?q=" + bingQuery;
   return searchUrl;
 }
 
@@ -123,12 +123,19 @@ function loadFileToElement(filename, elementId)
     var xhr = new XMLHttpRequest();
     try
     {
+		console.err(filename);
         xhr.open("GET", filename, false);
-        xhr.onload = function () {
+		console.err(2);
+        /*xhr.onload = function () {
             var com = document.getElementById(elementId);
             com.innerHTML = xhr.responseText;
-        }
+        }*/
         xhr.send();
+		if (xhr.readyState==4 && xhr.status==200)
+		{
+			var com = document.getElementById(elementId);
+            com.innerHTML = xhr.responseText;
+		}
     }
     catch (e) {
         window.alert("Unable to load the requested file.");
@@ -138,12 +145,13 @@ function loadFileToElement(filename, elementId)
 var operator_l = 1;
 function createIFrame(operator_k){
     var checkTarget = document.getElementById("iframe_" + operator_k);
-    var search_result =loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href),"webiste_"+operator_k)).getElementsByClassName("b_algo");
+	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href),"webiste_"+operator_k));
+   // var search_result =document.getElementById("website_"+operator_k).getElementsByClassName("b_algo");
     if (checkTarget != 'undefined'){
         ifrm[operator_k] = document.createElement("div");
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
           for (var operator_m = 0; operator_m<5;operator_m++){
-            ifrm[operator_k].appendChild(result[operator_m]);
+          //  ifrm[operator_k].appendChild(result[operator_m]);
           }
 
         }
