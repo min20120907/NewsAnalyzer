@@ -121,11 +121,11 @@ function getTitle(inputURL){
 function loadFileToElement(filename, elementId)
 {
   g = document.createElement('div');
-  g.setAttribute("id", elementId);
-  document.getElementById(elementId).innerHTML =$.ajax({ type: "GET",   
+  g.id = elementId;
+  g.innerHTML =$.ajax({ type: "GET",   
   url: filename,   
   async: false
-}).responseText
+}).responseText;
 } 
 
 var operator_l = 1;
