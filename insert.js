@@ -122,10 +122,14 @@ function loadFileToElement(filename, operator_n)
 {
   g[operator_n] = document.createElement('div');
   g[operator_n].id = "website_"+operator_n;
-  g[operator_n].innerHTML =$.ajax({ type: "GET",   
+  $.ajax({ type: "GET",   
   url: filename,   
-  async: false
-}).responseText;
+  async: false,
+  success : function(text)
+  {
+    g[operator_n].innerHTML = text;
+  }
+});
 } 
 
 var operator_l = 1;
