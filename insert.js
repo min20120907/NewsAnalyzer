@@ -123,7 +123,7 @@ function loadFileToElement(filename, operator_n)
   g[operator_n] = document.createElement('div');
   g[operator_n].id = "website_"+operator_n;
   $.ajax({ type: "GET",   
-  url: filename,   
+  url: "https://cors-anywhere.herokuapp.com/"+filename,   
   async: false,
   success : function(text)
   {
