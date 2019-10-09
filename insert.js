@@ -127,7 +127,7 @@ function loadFileToElement(filename, operator_n)
   async: false,
   success : function(text)
   {
-    g[operator_n].innerHTML = text;
+    $("#website_"+operator_n).html(text);
   }
 });
 } 
