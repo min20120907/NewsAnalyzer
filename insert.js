@@ -7,7 +7,7 @@ var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
 var btn = [innerPost.length];
 var ifrm = [innerPost.length];
 var linkingPost = [innerPost.length];
-
+var g = [innerPost.length];
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
   btn[i].innerHTML = "CLICK ME"; // Insert text
@@ -118,11 +118,11 @@ function getTitle(inputURL){
     
 }
 
-function loadFileToElement(filename, elementId)
+function loadFileToElement(filename, operator_n)
 {
-  var g = document.createElement('div');
-  g.id = elementId;
-  g.innerHTML =$.ajax({ type: "GET",   
+  g[operator_n] = document.createElement('div');
+  g[operator_n].id = "website_"+operator_n;
+  g[operator_n].innerHTML =$.ajax({ type: "GET",   
   url: filename,   
   async: false
 }).responseText;
@@ -131,13 +131,13 @@ function loadFileToElement(filename, elementId)
 var operator_l = 1;
 function createIFrame(operator_k){
     var checkTarget = document.getElementById("iframe_" + operator_k);
-	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),"website_"+operator_k);
+	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),operator_k);
     var search_result =document.getElementById("website_"+operator_k).getElementsByClassName("b_algo");
     if (checkTarget != 'undefined'){
         ifrm[operator_k] = document.createElement("div");
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
           for (var operator_m = 0; operator_m<5;operator_m++){
-           ifrm[operator_k].appendChild(result[operator_m]);
+           ifrm[operator_k].appendChild(search_result[operator_m]);
           }
 
         }
