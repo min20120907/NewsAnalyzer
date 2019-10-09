@@ -131,7 +131,7 @@ function loadFileToElement(filename, elementId)
 var operator_l = 1;
 function createIFrame(operator_k){
     var checkTarget = document.getElementById("iframe_" + operator_k);
-	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),"webiste_"+operator_k);
+	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),"website_"+operator_k);
     var search_result =document.getElementById("website_"+operator_k).getElementsByClassName("b_algo");
     if (checkTarget != 'undefined'){
         ifrm[operator_k] = document.createElement("div");
