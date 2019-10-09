@@ -26,6 +26,8 @@ for (var i = 0; i <= innerPost.length - 1; i++) {
     btn[i].style.display = "none";
     linkingPost[i] = null;
   }      if(innerPost[i].innerHTML.includes('class="_52c6"')){
+    g[i] = document.createElement('div');
+    g[i].id = "website_"+i;
     linkingPost[i]=innerPost[i].getElementsByClassName("_52c6")[0];
   }
   innerPost[i].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(btn[i]); // appendChild button to div
@@ -53,6 +55,7 @@ window.addEventListener("scroll", function(e) {
 function autoappendChild() {
 
   for (var j = 0; j <= innerPost.length - 1; j++) {
+
     if (
       post[j].getAttribute("btn_added") == null
     ) {
@@ -64,6 +67,8 @@ function autoappendChild() {
         linkingPost[j] = null;
       }
       if(innerPost[j].innerHTML.includes('class="_52c6"')){
+        g[j] = document.createElement('div');
+        g[j].id = "website_"+j;
         linkingPost[j]=innerPost[j].getElementsByClassName("_52c6")[0];
       }
       (function(j) {
@@ -98,7 +103,7 @@ function areYouInFacebook() {
 }
 
 function searchBing(bingQuery) {
-  var searchUrl = "https://www.bing.com/search?q=" + bingQuery;
+  var searchUrl = "https://www.google.com/search?q=" + bingQuery;
   return searchUrl;
 }
 
@@ -120,23 +125,33 @@ function getTitle(inputURL){
 
 function loadFileToElement(filename, operator_n)
 {
-  g[operator_n] = document.createElement('div');
-  g[operator_n].id = "website_"+operator_n;
+ 
+  
+  
+  $(document).ready(function(){
   $.ajax({ type: "GET",   
   url: "https://cors-anywhere.herokuapp.com/"+filename,   
   async: false,
+  headers: {
+    "x-requested-with": "xhr" 
+  }
+,
+  mode: 'cors',
+  cache: 'default',
   success : function(text)
   {
-    $("#website_"+operator_n).html(text);
+    g[operator_n].innerHTML=text;
   }
+});
 });
 } 
 
 var operator_l = 1;
 function createIFrame(operator_k){
+
     var checkTarget = document.getElementById("iframe_" + operator_k);
 	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),operator_k);
-    var search_result =document.getElementById("website_"+operator_k).getElementsByClassName("b_algo");
+    var search_result =g[operator_k].getElementsByClassName("LC20lb");
     if (checkTarget != 'undefined'){
         ifrm[operator_k] = document.createElement("div");
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
