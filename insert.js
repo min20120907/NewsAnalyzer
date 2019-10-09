@@ -120,7 +120,7 @@ function getTitle(inputURL){
 
 function loadFileToElement(filename, elementId)
 {
-  g = document.createElement('div');
+  var g = document.createElement('div');
   g.id = elementId;
   g.innerHTML =$.ajax({ type: "GET",   
   url: filename,   
