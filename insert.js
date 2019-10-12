@@ -10,7 +10,7 @@ var linkingPost = [innerPost.length];
 var g = [innerPost.length];
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
-  btn[i].innerHTML = "CLICK ME"; // Insert text
+  btn[i].innerHTML = "平衡一下"; // Insert text
   btn[i].id = "btn_" + i;
   (function(i) {
     btn[i].onclick = function() {
@@ -148,7 +148,7 @@ function loadFileToElement(filename, operator_n)
 
 var operator_l = 1;
 function createIFrame(operator_k){
-
+    
     var checkTarget = document.getElementById("iframe_" + operator_k);
 	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),operator_k);
     var search_result =g[operator_k].getElementsByClassName("LC20lb");
