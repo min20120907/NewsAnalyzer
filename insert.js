@@ -13,6 +13,7 @@ var g = [innerPost.length];
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
   btn[i].innerHTML = "平衡一下"; // Insert text
+  btn[i].setAttribute("class","btn peach-gradient");
   btn[i].id = "btn_" + i;
   (function(i) {
     btn[i].onclick = function() {
@@ -62,7 +63,8 @@ function autoappendChild() {
       post[j].getAttribute("btn_added") == null
     ) {
       btn[j] = document.createElement("BUTTON");
-      btn[j].innerHTML = "CLICK ME"; // Insert text
+      btn[j].innerHTML = "平衡一下"; // Insert text
+      btn[j].setAttribute("class","btn peach-gradient");
       btn[j].id = "btn_" + j;
       if (!innerPost[j].innerHTML.includes('class="_52c6"')) {
         btn[j].style.display = "none";
