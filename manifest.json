@@ -9,6 +9,7 @@
     "permissions": [
         "activeTab",
         "*://*.google.com/*"
+        
     ],
     "background": {
         "scripts": ["background.js"],
@@ -18,6 +19,10 @@
         "matches":[
             "<all_urls>"
         ],
-        "js":["insert.js", "src/jquery-3.4.1.min.js"]
+        "js":["insert.js", "src/jquery-3.4.1.min.js","js/bootstrap.js"],
+        "css": ["css/bootstrap.css"]
     }]
+    , "web_accessible_resources": [
+        "css/bootstrap.css"
+    ]
 }
