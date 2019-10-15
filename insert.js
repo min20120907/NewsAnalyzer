@@ -163,6 +163,7 @@ function createIFrame(operator_k){
     var checkTarget = document.getElementById("iframe_" + operator_k);
 	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),operator_k);
     var search_result =g[operator_k].getElementsByClassName("LC20lb");
+	search_result.setAttribute("scope","row");
     if (checkTarget != 'undefined'){
         ifrm[operator_k] = document.createElement("div");
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
