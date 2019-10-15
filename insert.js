@@ -1,8 +1,10 @@
 //$('head').append('<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">');
 
 console.log("insert javascript executed");
-
+//Detecting the page if it is facebook.
 window.addEventListener("load", areYouInFacebook);
+
+//Elements proclaiming.
 var innerPost = document.getElementsByClassName("_1dwg _1w_m _q7o");
 var linkPost = document.getElementsByClassName("_52c6");
 var post = document.getElementsByClassName("_5pcp _5lel _2jyu _232_");
@@ -11,13 +13,19 @@ var ifrm = [innerPost.length];
 var linkingPost = [innerPost.length];
 var g = [innerPost.length];
 var span = [innerPost.length];
+var table = [innerPost.length];
+
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
+  
   span[i] = document.createElement("span");
   span[i].setAttribute("class", "glyphicon glyphicon-link");
+  span[i].id = "span_"+i;
+  
+  btn[i].append(span[i]);
   btn[i].innerHTML = "平衡一下"; // Insert text
   btn[i].setAttribute("class","btn btn-primary");
-  btn[i].appendChild(span[i]);
+  
   btn[i].id = "btn_" + i;
   (function(i) {
     btn[i].onclick = function() {
@@ -67,11 +75,14 @@ function autoappendChild() {
       post[j].getAttribute("btn_added") == null
     ) {
       btn[j] = document.createElement("BUTTON");
+	  
       span[j] = document.createElement("span");
       span[j].setAttribute("class", "glyphicon glyphicon-link");
+	  btn[j].appendChild(span[j]);
+	  
       btn[j].innerHTML = "平衡一下"; // Insert text
       btn[j].setAttribute("class","btn btn-primary");
-      btn[j].appendChild(span[j]);
+      
       btn[j].id = "btn_" + j;
       if (!innerPost[j].innerHTML.includes('class="_52c6"')) {
         btn[j].style.display = "none";
@@ -84,6 +95,7 @@ function autoappendChild() {
       }
       (function(j) {
         btn[j].onclick = function() {
+		  createTable(j);
           createIFrame(j);
           toggleOnOff(j);
         };
@@ -156,6 +168,10 @@ function loadFileToElement(filename, operator_n)
 });
 });
 } 
+function createTable(operator_p){
+	table[operator_p] = document.create("table");
+	table[operator_p].id = "table_" + operator_p;
+}
 
 var operator_l = 1;
 function createIFrame(operator_k){
@@ -163,14 +179,17 @@ function createIFrame(operator_k){
     var checkTarget = document.getElementById("iframe_" + operator_k);
 	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),operator_k);
     var search_result =g[operator_k].getElementsByClassName("LC20lb");
-	search_result[operator_k].setAttribute("scope","row");
+	
+	//search_result[operator_k].setAttribute("scope","row");
     if (checkTarget != 'undefined'){
+	    
         ifrm[operator_k] = document.createElement("div");
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
           for (var operator_m = 0; operator_m<5;operator_m++){
            ifrm[operator_k].appendChild(search_result[operator_m]);
+		   
           }
-
+			table[operator_k].appendChild(ifrm[operator_k]);
         }
 	
         ifrm[operator_k].id = "iframe_" + operator_k;
