@@ -10,10 +10,14 @@ var btn = [innerPost.length];
 var ifrm = [innerPost.length];
 var linkingPost = [innerPost.length];
 var g = [innerPost.length];
+var span = [innerPost.length];
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
+  span[i] = document.createElement("span");
+  span[i].setAttribute("class", "glyphicon glyphicon-link");
   btn[i].innerHTML = "平衡一下"; // Insert text
-  btn[i].setAttribute("class","btn peach-gradient");
+  btn[i].setAttribute("class","btn btn-primary");
+  btn[i].appendChild(span);
   btn[i].id = "btn_" + i;
   (function(i) {
     btn[i].onclick = function() {
@@ -62,9 +66,12 @@ function autoappendChild() {
     if (
       post[j].getAttribute("btn_added") == null
     ) {
-      btn[j] = document.createElement("BUTTON");
-      btn[j].innerHTML = "平衡一下"; // Insert text
-      btn[j].setAttribute("class","btn peach-gradient");
+      btn[i] = document.createElement("BUTTON");
+      span[i] = document.createElement("span");
+      span[i].setAttribute("class", "glyphicon glyphicon-link");
+      btn[i].innerHTML = "平衡一下"; // Insert text
+      btn[i].setAttribute("class","btn btn-primary");
+      btn[i].appendChild(span);
       btn[j].id = "btn_" + j;
       if (!innerPost[j].innerHTML.includes('class="_52c6"')) {
         btn[j].style.display = "none";
