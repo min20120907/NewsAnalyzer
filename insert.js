@@ -17,7 +17,7 @@ for (var i = 0; i <= post.length - 1; i++) {
   span[i].setAttribute("class", "glyphicon glyphicon-link");
   btn[i].innerHTML = "平衡一下"; // Insert text
   btn[i].setAttribute("class","btn btn-primary");
-  btn[i].appendChild(span);
+  btn[i].appendChild(span[i]);
   btn[i].id = "btn_" + i;
   (function(i) {
     btn[i].onclick = function() {
@@ -71,7 +71,7 @@ function autoappendChild() {
       span[i].setAttribute("class", "glyphicon glyphicon-link");
       btn[i].innerHTML = "平衡一下"; // Insert text
       btn[i].setAttribute("class","btn btn-primary");
-      btn[i].appendChild(span);
+      btn[i].appendChild(span[i]);
       btn[j].id = "btn_" + j;
       if (!innerPost[j].innerHTML.includes('class="_52c6"')) {
         btn[j].style.display = "none";
