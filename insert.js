@@ -66,12 +66,12 @@ function autoappendChild() {
     if (
       post[j].getAttribute("btn_added") == null
     ) {
-      btn[i] = document.createElement("BUTTON");
-      span[i] = document.createElement("span");
-      span[i].setAttribute("class", "glyphicon glyphicon-link");
-      btn[i].innerHTML = "平衡一下"; // Insert text
-      btn[i].setAttribute("class","btn btn-primary");
-      btn[i].appendChild(span[i]);
+      btn[j] = document.createElement("BUTTON");
+      span[j] = document.createElement("span");
+      span[j].setAttribute("class", "glyphicon glyphicon-link");
+      btn[j].innerHTML = "平衡一下"; // Insert text
+      btn[j].setAttribute("class","btn btn-primary");
+      btn[j].appendChild(span[j]);
       btn[j].id = "btn_" + j;
       if (!innerPost[j].innerHTML.includes('class="_52c6"')) {
         btn[j].style.display = "none";
