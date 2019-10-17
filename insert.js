@@ -111,12 +111,14 @@ function autoappendChild() {
 }
 
 function toggleOnOff(operator_j) {
+  if(document.getElementById("iframe_" + operator_j)!='undefined'&&document.getElementById("iframe_" + operator_j)!=null){
   if (
     document.getElementById("iframe_" + operator_j).height == "100%" && document.getElementById("iframe_" + operator_j).width == "100%" 
   ) {
     document.getElementById("iframe_" + operator_j).height == 0 && document.getElementById("iframe_" + operator_j).width ==0; 
   } else {
     document.getElementById("iframe_" + operator_j).height == "100%" && document.getElementById("iframe_" + operator_j).width =="100%"; 
+  }
   }
 }
 
@@ -187,12 +189,12 @@ function createTable(operator_p){
 var operator_l = 1;
 function createIFrame(operator_k){
     
-    var checkTarget = document.getElementById("iframe_" + operator_k);
+    var checkTarget = document.getElementById("iframe_" + operator_k);//some error 
 	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),operator_k);
     var search_result =g[operator_k].getElementsByClassName("LC20lb");
 	var tr_ele = [5];
 	//search_result[operator_k].setAttribute("scope","row");
-    if (checkTarget != 'undefined'){
+    if (checkTarget == 'undefined'){
 	    
         ifrm[operator_k] = document.createElement("div");
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
