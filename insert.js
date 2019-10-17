@@ -14,6 +14,8 @@ var linkingPost = [innerPost.length];
 var g = [innerPost.length];
 var span = [innerPost.length];
 var table = [innerPost.length];
+var tbody = [innerPost.length];
+//var tr = [innerPost.length];
 
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
@@ -29,6 +31,7 @@ for (var i = 0; i <= post.length - 1; i++) {
   btn[i].id = "btn_" + i;
   (function(i) {
     btn[i].onclick = function() {
+	  createTable(i);
       createIFrame(i);
       toggleOnOff(i);
     };
@@ -169,8 +172,16 @@ function loadFileToElement(filename, operator_n)
 });
 } 
 function createTable(operator_p){
-	table[operator_p] = document.create("table");
+	table[operator_p] = document.createElement("table");
 	table[operator_p].id = "table_" + operator_p;
+	table[operator_p].setAttribute("class", "table table-dark");
+	
+	tbody[operator_p] =  document.createElement("tbody");
+	//tr[operator_p] = document.createElement("tr");
+	
+	//tbody[operator_p].appendChild(tr[operator_p]);
+	table[operator_p].appendChild(tbody[operator_p]);
+	
 }
 
 var operator_l = 1;
@@ -179,17 +190,19 @@ function createIFrame(operator_k){
     var checkTarget = document.getElementById("iframe_" + operator_k);
 	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),operator_k);
     var search_result =g[operator_k].getElementsByClassName("LC20lb");
-	
+	var tr_ele = [5];
 	//search_result[operator_k].setAttribute("scope","row");
     if (checkTarget != 'undefined'){
 	    
         ifrm[operator_k] = document.createElement("div");
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
           for (var operator_m = 0; operator_m<5;operator_m++){
-           ifrm[operator_k].appendChild(search_result[operator_m]);
-		   
+           tr_ele[operator_m] = document.createElement("tr");
+		   tr_ele[operator_m].appendChild(search_result[operator_m]);
+		   table[operator_k].appendChild(tr_ele[operator_m]);
           }
-			table[operator_k].appendChild(ifrm[operator_k]);
+		  
+			
         }
 	
         ifrm[operator_k].id = "iframe_" + operator_k;
