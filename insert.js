@@ -174,7 +174,7 @@ function loadFileToElement(filename, operator_n)
 function createTable(operator_p){
 	table[operator_p] = document.createElement("table");
 	table[operator_p].id = "table_" + operator_p;
-	table[operator_p].setAttribute("class", "table table-dark");
+	table[operator_p].setAttribute("class", "table table-striped");
 	
 	tbody[operator_p] =  document.createElement("tbody");
 	//tr[operator_p] = document.createElement("tr");
@@ -201,7 +201,7 @@ function createIFrame(operator_k){
 		   tr_ele[operator_m].appendChild(search_result[operator_m]);
 		   table[operator_k].appendChild(tr_ele[operator_m]);
           }
-		  
+		  ifrm[operator_k].appendChild(table[operator_k]);
 			
         }
 	
