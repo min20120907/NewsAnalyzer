@@ -199,7 +199,8 @@ function createIFrame(operator_k){
           for (var operator_m = 0; operator_m<5;operator_m++){
            tr_ele[operator_m] = document.createElement("tr");
 		   tr_ele[operator_m].appendChild(search_result[operator_m]);
-		   table[operator_k].appendChild(tr_ele[operator_m]);
+		   tbody[operator_k].appendChild(tr_ele[operator_m]);
+		   table[operator_k].appendChild(tbody[operator_k]);
           }
 		  ifrm[operator_k].appendChild(table[operator_k]);
 			
