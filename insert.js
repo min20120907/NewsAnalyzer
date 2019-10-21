@@ -158,7 +158,7 @@ function loadFileToElement(filename, operator_n)
   
   $(document).ready(function(){
   $.ajax({ type: "GET",   
-  url: "https://cors-anywhere.herokuapp.com/"+filename,   
+  url: filename,   
   async: false,
   headers: {
     "x-requested-with": "xhr" 
