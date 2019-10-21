@@ -192,11 +192,11 @@ function createIFrame(operator_k){
 	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),operator_k);
     var search_result =g[operator_k].getElementsByClassName("LC20lb");
 	var tr_ele = [];
-	tr_ele[0] = document.createElement("tr");
-	tr_ele[1] = document.createElement("tr");
-	tr_ele[2] = document.createElement("tr");
-	tr_ele[3] = document.createElement("tr");
-	tr_ele[4] = document.createElement("tr");
+	for (var operator_m = 0; operator_m<5;operator_m++){
+	tr_ele[operator_m] = document.createElement("tr");
+	}
+	
+
 	//search_result[operator_k].setAttribute("scope","row");
     if (checkTarget ==null){
 	    
