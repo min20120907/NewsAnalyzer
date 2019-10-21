@@ -15,7 +15,7 @@ var g = [innerPost.length];
 var span = [innerPost.length];
 var table = [innerPost.length];
 var tbody = [innerPost.length];
-//var tr = [innerPost.length];
+
 
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
@@ -31,7 +31,7 @@ for (var i = 0; i <= post.length - 1; i++) {
   btn[i].id = "btn_" + i;
   (function(i) {
     btn[i].onclick = function() {
-	  createTable(i);
+	 // createTable(i);
       createIFrame(i);
       toggleOnOff(i);
     };
@@ -98,7 +98,7 @@ function autoappendChild() {
       }
       (function(j) {
         btn[j].onclick = function() {
-		  createTable(j);
+		  //createTable(j);
           createIFrame(j);
           toggleOnOff(j);
         };
@@ -111,7 +111,7 @@ function autoappendChild() {
 }
 
 function toggleOnOff(operator_j) {
-  if(document.getElementById("iframe_" + operator_j)!='undefined'&&document.getElementById("iframe_" + operator_j)!=null){
+  if(document.getElementById("iframe_" + operator_j)!='undefined'||document.getElementById("iframe_" + operator_j)!=null||document.getElementById("iframe_" + operator_j)!=""){
   if (
     document.getElementById("iframe_" + operator_j).height == "100%" && document.getElementById("iframe_" + operator_j).width == "100%" 
   ) {
@@ -173,33 +173,37 @@ function loadFileToElement(filename, operator_n)
 });
 });
 } 
-function createTable(operator_p){
-	table[operator_p] = document.createElement("table");
-	table[operator_p].id = "table_" + operator_p;
-	table[operator_p].setAttribute("class", "table table-striped");
-	
-	tbody[operator_p] =  document.createElement("tbody");
-	//tr[operator_p] = document.createElement("tr");
-	
-	//tbody[operator_p].appendChild(tr[operator_p]);
-	table[operator_p].appendChild(tbody[operator_p]);
-	
-}
+
 
 var operator_l = 1;
 function createIFrame(operator_k){
-    
+    table[operator_k] = document.createElement("table");
+	table[operator_k].id = "table_" + operator_k;
+	table[operator_k].setAttribute("class", "table table-striped");
+	
+	tbody[operator_k] =  document.createElement("tbody");
+	//tr[operator_k] = document.createElement("tr");
+	
+	//tbody[operator_k].appendChild(tr[operator_k]);
+	table[operator_k].appendChild(tbody[operator_k]);
+	
+	
     var checkTarget = document.getElementById("iframe_" + operator_k);//some error 
 	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),operator_k);
     var search_result =g[operator_k].getElementsByClassName("LC20lb");
-	var tr_ele = [5];
+	var tr_ele = [];
+	tr_ele[0] = document.createElement("tr");
+	tr_ele[1] = document.createElement("tr");
+	tr_ele[2] = document.createElement("tr");
+	tr_ele[3] = document.createElement("tr");
+	tr_ele[4] = document.createElement("tr");
 	//search_result[operator_k].setAttribute("scope","row");
-    if (checkTarget == 'undefined'){
+    if (checkTarget ==null){
 	    
         ifrm[operator_k] = document.createElement("div");
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
           for (var operator_m = 0; operator_m<5;operator_m++){
-           tr_ele[operator_m] = document.createElement("tr");
+           
 		   tr_ele[operator_m].appendChild(search_result[operator_m]);
 		   tbody[operator_k].appendChild(tr_ele[operator_m]);
 		   table[operator_k].appendChild(tbody[operator_k]);
@@ -211,7 +215,7 @@ function createIFrame(operator_k){
         ifrm[operator_k].id = "iframe_" + operator_k;
         innerPost[operator_k].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(ifrm[operator_k]);
         //ifrm[operator_k].style.display = "none";
-        //ifrm[operator_k].style.height = "auto";
+        ifrm[operator_k].style.height = "100%";
         console.log("iFrame" + operator_k + "created");
     }else{
         console.log("iFrame" + operator_k + "already exists");
