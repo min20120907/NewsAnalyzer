@@ -12,21 +12,14 @@ var btn = [innerPost.length];
 var ifrm = [innerPost.length];
 var linkingPost = [innerPost.length];
 var g = [innerPost.length];
-var span = [innerPost.length];
 var table = [innerPost.length];
 var tbody = [innerPost.length];
 
 
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
-  
-  span[i] = document.createElement("span");
-  span[i].setAttribute("class", "glyphicon glyphicon-link");
-  span[i].id = "span_"+i;
-  
-  btn[i].append(span[i]);
   btn[i].innerHTML = "平衡一下"; // Insert text
-  btn[i].setAttribute("class","btn btn-primary");
+  btn[i].setAttribute("class","btn btn-warning");
   
   btn[i].id = "btn_" + i;
   (function(i) {
@@ -79,12 +72,10 @@ function autoappendChild() {
     ) {
       btn[j] = document.createElement("BUTTON");
 	  
-      span[j] = document.createElement("span");
-      span[j].setAttribute("class", "glyphicon glyphicon-link");
-	  btn[j].appendChild(span[j]);
+
 	  
       btn[j].innerHTML = "平衡一下"; // Insert text
-      btn[j].setAttribute("class","btn btn-primary");
+      btn[j].setAttribute("class","btn btn-warning");
       
       btn[j].id = "btn_" + j;
       if (!innerPost[j].innerHTML.includes('class="_52c6"')) {
@@ -158,7 +149,7 @@ function loadFileToElement(filename, operator_n)
   
   $(document).ready(function(){
   $.ajax({ type: "GET",   
-  url: filename,   
+  url: "https://cors-anywhere.herokuapp.com/"+filename,   
   async: false,
   headers: {
     "x-requested-with": "xhr" 
@@ -192,11 +183,12 @@ function createIFrame(operator_k){
 	loadFileToElement(searchBing(getTitle(linkingPost[operator_k].href)),operator_k);
     var search_result =g[operator_k].getElementsByClassName("LC20lb");
 	var tr_ele = [];
-	for (var operator_m = 0; operator_m<5;operator_m++){
-	tr_ele[operator_m] = document.createElement("tr");
-	}
-	
 
+	tr_ele[0] = document.createElement("tr");
+  tr_ele[1] = document.createElement("tr");
+  tr_ele[2] = document.createElement("tr");
+  tr_ele[3] = document.createElement("tr");
+  tr_ele[4] = document.createElement("tr");
 	//search_result[operator_k].setAttribute("scope","row");
     if (checkTarget ==null){
 	    
