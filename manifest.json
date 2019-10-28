@@ -19,8 +19,8 @@
         "matches":[
             "<all_urls>"
         ],
-        "js":["insert.js", "src/jquery-3.4.1.min.js","js/bootstrap.js"],
-        "css": ["css/bootstrap.css"]
+        "js":["insert.js", "src/jquery-3.4.1.min.js"],
+        "css":["style.css"]
     }]
     , "web_accessible_resources": [
         "css/bootstrap.css"
