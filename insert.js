@@ -196,7 +196,7 @@ function createIFrame(operator_k){
         if (innerPost[operator_k].innerHTML.includes('class="_52c6"')) {
           for (var operator_m = 0; operator_m<5;operator_m++){
            
-		   tr_ele[operator_m].appendChild(search_result[operator_m]);
+		   tr_ele[operator_m].appendChild(search_result[operator_m].parentNode);
 		   tbody[operator_k].appendChild(tr_ele[operator_m]);
 		   table[operator_k].appendChild(tbody[operator_k]);
           }
