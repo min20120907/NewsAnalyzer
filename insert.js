@@ -167,6 +167,8 @@ function createIFrame(operator_k) {
   
   for (var operator_r=0;operator_r< 5;operator_r++){	//set the icons on the search_results
 	icos[operator_r].src=search_result[operator_r].href.hostname + "favicon.ico";
+	icos[operator_r].width=12;	//set width as 12
+	icos[operator_r].height=12;	//set height as 12
   }
   
   var tr_ele = [];
