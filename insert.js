@@ -13,10 +13,10 @@ var g = [innerPost.length];
 var table = [innerPost.length];
 var tbody = [innerPost.length];
 var lpost = document.getElementsByClassName("_6m3 _--6");
-var entrSites[] = {	//Database for the entrance websites
+var entrSites = [	//Database for the entrance websites
 "yahoo.com",
 "msn.com"
-}; 
+]; 
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
   btn[i].innerHTML = "平衡一下"; // Insert text
@@ -156,7 +156,7 @@ function createIFrame(operator_k) {
   loadFileToElement(searchGoogle(lpost[operator_k].childNodes[1].childNodes[0].innerText), operator_k);
   console.log(operator_k);
   var search_result = g[operator_k].getElementsByClassName("LC20lb");
-  var icos[5] = document.createElement("img");
+  var icos = [document.createElement("img"),document.createElement("img"),document.createElement("img"),document.createElement("img"),document.createElement("img")];
   for(var operator_q = 0; operator_q < search_result.length;operator_q++){	//filter the entrance websites
 	for(var operator_p = 0; operator_p < entrSites.length;operator_p++){
 		if(search_result[operator_q].innerHTML.includes(search_result[operator_p])){
@@ -185,7 +185,7 @@ function createIFrame(operator_k) {
 	  
       for (var operator_m = 0; operator_m < 5; operator_m++) {
         tr_ele[operator_m].appendChild(search_result[operator_m].parentNode);
-		tr_ele[operator_m].appendChild(icos[operator_m]);
+		    tr_ele[operator_m].appendChild(icos[operator_m]);
         tbody[operator_k].appendChild(tr_ele[operator_m]);
         table[operator_k].appendChild(tbody[operator_k]);
       }
