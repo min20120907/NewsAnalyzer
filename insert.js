@@ -162,8 +162,8 @@ function createIFrame(operator_k) {
   loadFileToElement(searchGoogle(lpost[operator_k].childNodes[1].childNodes[0].innerText), operator_k);
   console.log(operator_k);
   var search_result = g[operator_k].getElementsByClassName("LC20lb");
-  //var icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
-  var icos = g[operator_k].getElementsByClassName("TbwUpd");
+  var icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
+ // var icos = g[operator_k].getElementsByClassName("xA33Gc");
   for (var operator_q = 0; operator_q < search_result.length; operator_q++) {	//filter the entrance websites
     for (var operator_p = 0; operator_p < entrSites.length; operator_p++) {
       if (search_result[operator_q].innerHTML.includes(search_result[operator_p])) {
@@ -177,7 +177,7 @@ function createIFrame(operator_k) {
 		l.href = href;
 		return l;
   };
-  /*
+  
   for (var operator_r = 0; operator_r < 5; operator_r++) {	//set the icons on the search_results
   
 	
@@ -191,7 +191,7 @@ function createIFrame(operator_k) {
     icos[operator_r].width = 12;	//set width as 12
     icos[operator_r].height = 12;	//set height as 12
   }
-*/
+
   var tr_ele = [];
 
   tr_ele[0] = document.createElement("tr");
@@ -205,7 +205,7 @@ function createIFrame(operator_k) {
       ifrm[operator_k] = document.createElement("div");
 
       for (var operator_m = 0; operator_m < 5; operator_m++) {
-		tr_ele[operator_m].appendChild(icos[operator_m].getElementsByTagName("img")[0]);
+		tr_ele[operator_m].appendChild(icos[operator_m]);
         tr_ele[operator_m].appendChild(search_result[operator_m].parentNode);
         tbody[operator_k].appendChild(tr_ele[operator_m]);
         table[operator_k].appendChild(tbody[operator_k]);
