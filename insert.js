@@ -14,9 +14,10 @@ var table = [innerPost.length];
 var tbody = [innerPost.length];
 var lpost = document.getElementsByClassName("_6m3 _--6");
 var entrSites = [	//Database for the entrance websites
-"yahoo.com",
-"msn.com"
-]; 
+  "yahoo.com",
+  "msn.com",
+  "facebook.com"
+];
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
   btn[i].innerHTML = "平衡一下"; // Insert text
@@ -62,7 +63,7 @@ window.addEventListener("scroll", function (e) {
   ticking = true;
 });
 
-function autoappendChild() {
+function autoappendChild() {	//autoappendChild
 
   for (var j = 0; j <= innerPost.length - 1; j++) {
 
@@ -70,9 +71,7 @@ function autoappendChild() {
       post[j].getAttribute("btn_added") == null
     ) {
       btn[j] = document.createElement("BUTTON");
-
-
-
+	  
       btn[j].innerHTML = "平衡一下"; // Insert text
       btn[j].setAttribute("class", "btn btn-warning");
 
@@ -96,7 +95,7 @@ function autoappendChild() {
   }
 }
 
-function toggleOnOff(operator_j) {
+function toggleOnOff(operator_j) {	//toggleOnOff
   if (ifrm[operator_j].style.display == "none") {
     ifrm[operator_j].setAttribute("style", "display: block");
   } else {
@@ -104,7 +103,7 @@ function toggleOnOff(operator_j) {
   }
 }
 
-function areYouInFacebook() {
+function areYouInFacebook() {	//areYouInFacebook
   if (window.location.hostname == "www.facebook.com") {
     return true;
   } else {
@@ -112,11 +111,18 @@ function areYouInFacebook() {
   }
 }
 
-function searchGoogle(googleQuery) {
+function searchGoogle(googleQuery) {	//searchGoogle
   var searchUrl = "https://www.google.com/search?q=" + googleQuery;
   return searchUrl;
 }
 
+function createElementFromHTML(htmlString) {	//createElementFromHTML
+  var div = document.createElement('div');
+  div.innerHTML = htmlString.trim();
+
+  // Change this to div.childNodes to support multiple top-level nodes
+  return div.firstChild; 
+}
 
 function loadFileToElement(filename, operator_n) {
 
@@ -140,7 +146,7 @@ function loadFileToElement(filename, operator_n) {
 }
 
 
-var operator_l = 1;
+
 
 function createIFrame(operator_k) {
   table[operator_k] = document.createElement("table");
@@ -156,21 +162,36 @@ function createIFrame(operator_k) {
   loadFileToElement(searchGoogle(lpost[operator_k].childNodes[1].childNodes[0].innerText), operator_k);
   console.log(operator_k);
   var search_result = g[operator_k].getElementsByClassName("LC20lb");
-  var icos = [document.createElement("img"),document.createElement("img"),document.createElement("img"),document.createElement("img"),document.createElement("img")];
-  for(var operator_q = 0; operator_q < search_result.length;operator_q++){	//filter the entrance websites
-	for(var operator_p = 0; operator_p < entrSites.length;operator_p++){
-		if(search_result[operator_q].innerHTML.includes(search_result[operator_p])){
-			search_result[operator_q] = search_result[operator_q + 1];
-		}
-	}
+  //var icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
+  var icos = g[operator_k].getElementsByClassName("TbwUpd");
+  for (var operator_q = 0; operator_q < search_result.length; operator_q++) {	//filter the entrance websites
+    for (var operator_p = 0; operator_p < entrSites.length; operator_p++) {
+      if (search_result[operator_q].innerHTML.includes(search_result[operator_p])) {
+        search_result[operator_q] = search_result[operator_q + 1];
+      }
+    }
   }
   
-  for (var operator_r=0;operator_r< 5;operator_r++){	//set the icons on the search_results
-	icos[operator_r].src=search_result[operator_r].href.hostname + "favicon.ico";
-	icos[operator_r].width=12;	//set width as 12
-	icos[operator_r].height=12;	//set height as 12
-  }
+	var getLocation = function(href) {
+		var l = document.createElement("a");
+		l.href = href;
+		return l;
+  };
+  /*
+  for (var operator_r = 0; operator_r < 5; operator_r++) {	//set the icons on the search_results
   
+	
+    var string1 = search_result[operator_r].parentNode.href;
+    var string2 = getLocation(string1).hostname;
+    string2.replace(window.location.href, "");
+	string2 = string2 + "/favicon.ico";
+    icos[operator_r].src = string2;
+	
+	
+    icos[operator_r].width = 12;	//set width as 12
+    icos[operator_r].height = 12;	//set height as 12
+  }
+*/
   var tr_ele = [];
 
   tr_ele[0] = document.createElement("tr");
@@ -182,10 +203,10 @@ function createIFrame(operator_k) {
   if (checkTarget == null) {
     if (search_result[operator_k] != null) {
       ifrm[operator_k] = document.createElement("div");
-	  
+
       for (var operator_m = 0; operator_m < 5; operator_m++) {
+		tr_ele[operator_m].appendChild(icos[operator_m].getElementsByTagName("img")[0]);
         tr_ele[operator_m].appendChild(search_result[operator_m].parentNode);
-		    tr_ele[operator_m].appendChild(icos[operator_m]);
         tbody[operator_k].appendChild(tr_ele[operator_m]);
         table[operator_k].appendChild(tbody[operator_k]);
       }
@@ -199,4 +220,6 @@ function createIFrame(operator_k) {
     console.log("iFrame" + operator_k + "already exists");
     toggleOnOff(operator_k);
   }
+  return {search_result: search_result, icos: icos};
+  
 }
