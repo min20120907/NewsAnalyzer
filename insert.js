@@ -12,7 +12,8 @@ var ifrm = [innerPost.length];
 var g = [innerPost.length];
 var table = [innerPost.length];
 var tbody = [innerPost.length];
-var lpost = document.getElementsByClassName("_6m3 _--6");
+//var lpost = document.getElementsByClassName("_6m3 _--6");
+//var operator_s = 0;
 var entrSites = [	//Database for the entrance websites
   "yahoo.com",
   "msn.com",
@@ -26,7 +27,8 @@ for (var i = 0; i <= post.length - 1; i++) {
   btn[i].id = "btn_" + i;
   (function (i) {
     btn[i].onclick = function () {
-      createIFrame(i);
+	  console.log(i);
+	  createIFrame(i);
     };
   })(i);
   post[i].setAttribute("btn_added", false);
@@ -86,6 +88,8 @@ function autoappendChild() {	//autoappendChild
       (function (j) {
         btn[j].onclick = function () {
           createIFrame(j);
+		  console.log(j);
+		  //console.log("operator_s = "+ operator_s);
         };
       })(j);
       innerPost[j].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(btn[j]); // appendChild button to div
@@ -159,8 +163,7 @@ function createIFrame(operator_k) {
 
 
   var checkTarget = document.getElementById("iframe_" + operator_k); //some error 
-  loadFileToElement(searchGoogle(lpost[operator_k].childNodes[1].childNodes[0].innerText), operator_k);
-  console.log(operator_k);
+  loadFileToElement(searchGoogle(innerPost[operator_k].getElementsByClassName("_6m3 _--6")[0].childNodes[1].childNodes[0].innerText), operator_k);
   var search_result = g[operator_k].getElementsByClassName("LC20lb");
   var icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
  // var icos = g[operator_k].getElementsByClassName("xA33Gc");
@@ -178,6 +181,7 @@ function createIFrame(operator_k) {
 		return l;
   };
   
+ /*
   for (var operator_r = 0; operator_r < 5; operator_r++) {	//set the icons on the search_results
   
 	
@@ -191,6 +195,7 @@ function createIFrame(operator_k) {
     icos[operator_r].width = 12;	//set width as 12
     icos[operator_r].height = 12;	//set height as 12
   }
+ */
 
   var tr_ele = [];
 
@@ -203,8 +208,7 @@ function createIFrame(operator_k) {
   if (checkTarget == null) {
     if (search_result[operator_k] != null) {
       ifrm[operator_k] = document.createElement("div");
-
-      for (var operator_m = 0; operator_m < 5; operator_m++) {
+      for (var operator_m = 0; operator_m < search_result.length; operator_m++) {
 		tr_ele[operator_m].appendChild(icos[operator_m]);
         tr_ele[operator_m].appendChild(search_result[operator_m].parentNode);
         tbody[operator_k].appendChild(tr_ele[operator_m]);
