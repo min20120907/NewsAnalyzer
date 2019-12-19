@@ -181,13 +181,13 @@ function createIFrame(operator_k) {
 		return l;
   };
   
- /*
+ 
   for (var operator_r = 0; operator_r < 5; operator_r++) {	//set the icons on the search_results
   
 	
     var string1 = search_result[operator_r].parentNode.href;
-    var string2 = getLocation(string1).hostname;
-    string2.replace(window.location.href, "");
+    var string2 = "https://"+ getLocation(string1).hostname;
+    //string2.replace(window.location.href, "");
 	string2 = string2 + "/favicon.ico";
     icos[operator_r].src = string2;
 	
@@ -195,7 +195,7 @@ function createIFrame(operator_k) {
     icos[operator_r].width = 12;	//set width as 12
     icos[operator_r].height = 12;	//set height as 12
   }
- */
+ 
 
   var tr_ele = [];
 
