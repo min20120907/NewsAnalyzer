@@ -21,7 +21,7 @@ var entrSites = [	//Database for the entrance websites
 ];
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
-  btn[i].innerHTML = "平衡一下"; // Insert text
+  btn[i].innerHTML = "more"; // Insert text
   btn[i].setAttribute("class", "btn btn-warning");
 
   btn[i].id = "btn_" + i;
@@ -74,7 +74,7 @@ function autoappendChild() {	//autoappendChild
     ) {
       btn[j] = document.createElement("BUTTON");
 	  
-      btn[j].innerHTML = "平衡一下"; // Insert text
+      btn[j].innerHTML = "more"; // Insert text
       btn[j].setAttribute("class", "btn btn-warning");
 
       btn[j].id = "btn_" + j;
@@ -186,7 +186,7 @@ function createIFrame(operator_k) {
   
 	
     var string1 = search_result[operator_r].parentNode.href;
-    var string2 = "https://"+ getLocation(string1).hostname;
+    var string2 = "http://"+ getLocation(string1).hostname;
     //string2.replace(window.location.href, "");
 	string2 = string2 + "/favicon.ico";
     icos[operator_r].src = string2;
@@ -206,10 +206,10 @@ function createIFrame(operator_k) {
   tr_ele[4] = document.createElement("tr");
 
   if (checkTarget == null) {
-    if (search_result[operator_k] != null) {
+    //if (search_result[operator_k] != null) {
       ifrm[operator_k] = document.createElement("div");
       for (var operator_m = 0; operator_m < search_result.length; operator_m++) {
-		tr_ele[operator_m].appendChild(icos[operator_m]);
+	tr_ele[operator_m].appendChild(icos[operator_m]);
         tr_ele[operator_m].appendChild(search_result[operator_m].parentNode);
         tbody[operator_k].appendChild(tr_ele[operator_m]);
         table[operator_k].appendChild(tbody[operator_k]);
@@ -219,7 +219,7 @@ function createIFrame(operator_k) {
       innerPost[operator_k].getElementsByClassName("_5pcp _5lel _2jyu _232_")[0].appendChild(ifrm[operator_k]);
       ifrm[operator_k].setAttribute("style", "display: block");
       console.log("iFrame" + operator_k + "created");
-    }
+    //}
   } else {
     console.log("iFrame" + operator_k + "already exists");
     toggleOnOff(operator_k);
