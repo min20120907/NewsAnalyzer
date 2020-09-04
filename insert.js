@@ -14,17 +14,81 @@ var table = [innerPost.length];
 var tbody = [innerPost.length];
 //var lpost = document.getElementsByClassName("_6m3 _--6");
 //var operator_s = 0;
-var entrSites = [	//Database for the entrance websites
-  "yahoo.com",
-  "msn.com",
-  "facebook.com",
-  "hinet.net",
-  "msn.com.tw",
-  "pchome.com.tw",
-  "google.com",
-  "yam.com",
-  "sina.com",
-  "cnet.com"
+var entrSites=[
+ "youthwant.com" ,
+ "openfind.com" ,
+ "timliao.com" ,
+ "taconet.com" ,
+ "gigigaga.com" ,
+ "so-net.net" ,
+ "don-net.com" ,
+ "hongkong.com" ,
+ "asiadog.com" ,
+ "gotoya.com" ,
+ "t2t.com" ,
+ "moninet.com" ,
+ "myweb.hinet.net" ,
+ "udo.idv" ,
+ "wutun.idv" ,
+ "centurys.com.tw" ,
+ "funf.tw" ,
+ "portal.tw" ,
+ "pig.tw" ,
+ "taiwanurl.com" ,
+ "263.net" ,
+ "qq.com" ,
+ "sohu.com" ,
+ "china.com" ,
+ "tom.com" ,
+"netease.com" ,
+"backchina.com" ,
+"gjj.cc" ,
+"qoos.com" ,
+"qknet.net" ,
+"facebook.com",
+"kknews.cc",
+"www.buzzhand.com",
+"www1.daliulian.net",
+"www.teepr.com",
+"bomb01.com",
+"cocomy",
+"coco01.net",
+ "cocotw.net",
+"cocomy.net",
+ "daliulian.net",
+ "e04.tv",
+ "how01.com",
+"juksy.com",
+"orange01",
+"push01.com",
+"read01",
+"thegreatdaily",
+"tw.gigacircle",
+"tw.ptt01",
+"twgreatdaily",
+"whatfunny",
+"momdata.blogspot.com",
+"onefunnyjoke.com",
+"gmter.com",
+"gigacircle.com",
+"share001.net",
+ "shareba.com",
+ "metalballs.com",
+ "ptt01",
+ "fun-vdo.com",
+"sos.tw",
+"zuopy.com",
+ "eznewlife",
+"ezvivi.com",
+"youthwant.com.tw",
+ "viralane.com",
+ "newstube01",
+ "eazon.com",
+ "mama.tw",
+"cocomy",
+"baoxiaovideo.tv",
+"apple01.net",
+"likea.ezvivi.com"
 ];
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
@@ -123,7 +187,12 @@ function areYouInFacebook() {	//areYouInFacebook
 }
 
 function searchGoogle(googleQuery) {	//searchGoogle
-  var searchUrl = "https://www.google.com/search?q=" + googleQuery;
+if(!googleQuery.includes("中天新聞")){
+  var searchUrl = "https://www.google.com/search?q=" + googleQuery.substring(0, 17) + "  -site:facebook.com -site:kknews.cc -site:google.com -site:yahoo.com -site:hinet.net -site:msn.com -site:pchome.com -site:yam.com -site:sina.com -site:cnet.com -site:seed.net. -site:url.com -site:kingnet.com -site:funp.com -site:youthwant.com -site:yahoo.com -site:cn.yahoo.com -site:openfind.com -site:timliao.com -site:taconet.com -site:gigigaga.com -site:so-net.net -site:don-net.com -site:hongkong.com -site:asiadog.com -site:gotoya.com -site:t2t.com -site:moninet.com -site:myweb.hinet.nethome1kiroro -site:udo.idv -site:wutun.idv -site:centurys.com.tw -site:funf -site:portal.tw -site:pig.tw -site:taiwanurl.com -site:263.net -site:qq.com -site:sohu.com -site:china.com -site:tom.com -site:china.com -site:netease.com -site:backchina.com -site:gjj.cc -site:qoos.com -site:qknet.net";
+  }else{
+  	var searchUrl = "https://www.google.com/search?q=" + googleQuery.substring(googleQuery.length-18,googleQuery.length ) + "  -site:facebook.com -site:kknews.cc -site:google.com -site:yahoo.com -site:hinet.net -site:msn.com -site:pchome.com -site:yam.com -site:sina.com -site:cnet.com -site:seed.net. -site:url.com -site:kingnet.com -site:funp.com -site:youthwant.com -site:yahoo.com -site:cn.yahoo.com -site:openfind.com -site:timliao.com -site:taconet.com -site:gigigaga.com -site:so-net.net -site:don-net.com -site:hongkong.com -site:asiadog.com -site:gotoya.com -site:t2t.com -site:moninet.com -site:myweb.hinet.nethome1kiroro -site:udo.idv -site:wutun.idv -site:centurys.com.tw -site:funf -site:portal.tw -site:pig.tw -site:taiwanurl.com -site:263.net -site:qq.com -site:sohu.com -site:china.com -site:tom.com -site:china.com -site:netease.com -site:backchina.com -site:gjj.cc -site:qoos.com -site:qknet.net";
+  }
+  
   return searchUrl;
 }
 
@@ -173,7 +242,6 @@ function createIFrame(operator_k) {
   loadFileToElement(searchGoogle(innerPost[operator_k].getElementsByClassName("_6m3 _--6")[0].childNodes[1].childNodes[0].innerText), operator_k);
   var search_result = g[operator_k].getElementsByClassName("LC20lb");
   var icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
- // var icos = g[operator_k].getElementsByClassName("xA33Gc");
   for (var operator_q = 0; operator_q < search_result.length; operator_q++) {	//filter the entrance websites
     for (var operator_p = 0; operator_p < entrSites.length; operator_p++) {
       if (search_result[operator_q].innerHTML.includes(entrSites[operator_p])) {
