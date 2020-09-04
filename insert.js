@@ -176,7 +176,7 @@ function createIFrame(operator_k) {
  // var icos = g[operator_k].getElementsByClassName("xA33Gc");
   for (var operator_q = 0; operator_q < search_result.length; operator_q++) {	//filter the entrance websites
     for (var operator_p = 0; operator_p < entrSites.length; operator_p++) {
-      if (search_result[operator_q].innerHTML.includes(search_result[operator_p])) {
+      if (search_result[operator_q].innerHTML.includes(entrSites[operator_p])) {
         search_result[operator_q] = search_result[operator_q + 1];
       }
     }
