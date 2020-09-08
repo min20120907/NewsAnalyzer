@@ -114,8 +114,59 @@ var entrSites = [
   "cocomy",
   "baoxiaovideo.tv",
   "apple01.net",
-  "likea.ezvivi.com"
+  "likea.ezvivi.com",
+  "facebook.com",
+  "kknews.cc",
+  "google.com",
+  "yahoo.com",
+  "hinet.net",
+  "msn.com",
+  "pchome.com",
+  "yam.com",
+  "sina.com",
+  "cnet.com",
+  "seed.net.",
+  "url.com",
+  "kingnet.com",
+  "funp.com",
+  "youthwant.com",
+  "yahoo.com",
+  "cn.yahoo.com",
+  "openfind.com",
+  "timliao.com",
+  "taconet.com",
+  "gigigaga.com",
+  "so-net.net",
+  "don-net.com",
+  "hongkong.com",
+  "asiadog.com",
+  "gotoya.com",
+  "t2t.com",
+  "moninet.com",
+  "myweb.hinet.nethome1kiroro",
+  "udo.idv",
+  "wutun.idv",
+  "centurys.com.tw",
+  "funf",
+  "portal.tw",
+  "pig.tw",
+  "taiwanurl.com",
+  "263.net",
+  "qq.com",
+  "sohu.com",
+  "china.com",
+  "tom.com",
+  "china.com",
+  "netease.com",
+  "backchina.com",
+  "gjj.cc",
+  "qoos.com",
+  "qknet.net"
 ];
+query_args = "";
+/*for (var i = 0; i < entrSites.length; i++) {
+  query_args = query_args.concat(" -site:" + entrSites[i]);
+}*/
 for (var i = 0; i <= post.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
   btn[i].innerHTML = "more"; // Insert text
@@ -239,9 +290,9 @@ function areYouInFacebook() {	//areYouInFacebook
 
 function searchGoogle(googleQuery) {	//searchGoogle
   if (!googleQuery.includes("中天新聞")) {
-    var searchUrl = "https://www.google.com/search?q=" + googleQuery.substring(0, 17) + "  -site:facebook.com -site:kknews.cc -site:google.com -site:yahoo.com -site:hinet.net -site:msn.com -site:pchome.com -site:yam.com -site:sina.com -site:cnet.com -site:seed.net. -site:url.com -site:kingnet.com -site:funp.com -site:youthwant.com -site:yahoo.com -site:cn.yahoo.com -site:openfind.com -site:timliao.com -site:taconet.com -site:gigigaga.com -site:so-net.net -site:don-net.com -site:hongkong.com -site:asiadog.com -site:gotoya.com -site:t2t.com -site:moninet.com -site:myweb.hinet.nethome1kiroro -site:udo.idv -site:wutun.idv -site:centurys.com.tw -site:funf -site:portal.tw -site:pig.tw -site:taiwanurl.com -site:263.net -site:qq.com -site:sohu.com -site:china.com -site:tom.com -site:china.com -site:netease.com -site:backchina.com -site:gjj.cc -site:qoos.com -site:qknet.net";
+    var searchUrl = "https://cse.google.com/cse?cx=9f8b720f1b3abf296&q=" + googleQuery.substring(0, 17) + query_args;
   } else {
-    var searchUrl = "https://www.google.com/search?q=" + googleQuery.substring(googleQuery.length - 18, googleQuery.length) + "  -site:facebook.com -site:kknews.cc -site:google.com -site:yahoo.com -site:hinet.net -site:msn.com -site:pchome.com -site:yam.com -site:sina.com -site:cnet.com -site:seed.net. -site:url.com -site:kingnet.com -site:funp.com -site:youthwant.com -site:yahoo.com -site:cn.yahoo.com -site:openfind.com -site:timliao.com -site:taconet.com -site:gigigaga.com -site:so-net.net -site:don-net.com -site:hongkong.com -site:asiadog.com -site:gotoya.com -site:t2t.com -site:moninet.com -site:myweb.hinet.nethome1kiroro -site:udo.idv -site:wutun.idv -site:centurys.com.tw -site:funf -site:portal.tw -site:pig.tw -site:taiwanurl.com -site:263.net -site:qq.com -site:sohu.com -site:china.com -site:tom.com -site:china.com -site:netease.com -site:backchina.com -site:gjj.cc -site:qoos.com -site:qknet.net";
+    var searchUrl = "https://cse.google.com/cse?cx=9f8b720f1b3abf296&q=" + googleQuery.substring(googleQuery.length - 18, googleQuery.length) + query_args;
   }
 
   return searchUrl;
@@ -263,7 +314,7 @@ function loadFileToElement(filename, operator_n) {
     $.ajax({
       type: "GET",
       url: "https://morning-woodland-98584.herokuapp.com/" + filename,
-      async: false,
+      async: true,
       headers: {
         "x-requested-with": "xhr"
       },
@@ -271,6 +322,7 @@ function loadFileToElement(filename, operator_n) {
       cache: 'default',
       success: function (text) {
         g[operator_n].innerHTML = text;
+        //console.log(text);
       }
     });
   });
@@ -291,13 +343,22 @@ function createIFrame(operator_k) {
 
   var checkTarget = document.getElementById("iframe_" + operator_k); //some error 
   loadFileToElement(searchGoogle(innerPost[operator_k].getElementsByClassName("qzhwtbm6 knvmm38d")[3].innerText), operator_k);
-  var search_result = g[operator_k].getElementsByClassName("LC20lb");
+  var search_results = g[operator_k].getElementsByClassName("gs-title");
+  
+  search_result=[];
+  a=0
+  for(var i = 0; i< search_results.length;i++){
+      if(search_results[i].tagName=="A"){
+          search_result[a] = search_results[i];
+          a++;
+      }
+  }
   var icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
   for (var operator_q = 0; operator_q < search_result.length; operator_q++) {	//filter the entrance websites
     for (var operator_p = 0; operator_p < entrSites.length; operator_p++) {
-      if (search_result[operator_q].parentNode.href.includes(entrSites[operator_p])) {
+      if (search_result[operator_q].href.includes(entrSites[operator_p])) {
         search_result[operator_q].remove();
-        console.log("Content Farm detected!", search_result[operator_q].parentNode.href);
+        console.log("Content Farm detected!", search_result[operator_q].href);
       }
     }
   }
@@ -312,7 +373,7 @@ function createIFrame(operator_k) {
   for (var operator_r = 0; operator_r < 5; operator_r++) {	//set the icons on the search_results
 
 
-    var string1 = search_result[operator_r].parentNode.href;
+    var string1 = search_result[operator_r].href;
     var string2 = "http://" + getLocation(string1).hostname;
     //string2.replace(window.location.href, "");
     string2 = string2 + "/favicon.ico";
