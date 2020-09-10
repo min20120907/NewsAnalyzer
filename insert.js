@@ -350,6 +350,14 @@ function createIFrame(operator_k) {
 
   var checkTarget = document.getElementById("iframe_" + operator_k); //some error 
   loadFileToElement(searchGoogle(innerPost[operator_k].getElementsByClassName("qzhwtbm6 knvmm38d")[3].innerText), operator_k);
+  var delay = function(s){
+    return new Promise(function(resolve,reject){
+     setTimeout(resolve,s); 
+    });
+  };
+  delay().then(function(){
+    return delay(1000); // 延遲ㄧ秒
+  }).then(function(){
   var search_result = [];
   for (var i = 0; i < 10; i++) {
     var result = document.createElement("div");
@@ -414,5 +422,5 @@ function createIFrame(operator_k) {
     toggleOnOff(operator_k);
   }
   return { search_result: search_result, icos: icos };
-
+});
 }
