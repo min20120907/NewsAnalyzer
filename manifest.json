@@ -2,7 +2,8 @@
     "manifest_version": 2,
     "name": "News Analyzer",
     "description": "Quick analyzing the accuracy of social media news",
-    "version": "1.4",
+    "version": "1.6",
+
     "browser_action": {
         "default_popup": "popup.html"
     },
@@ -19,7 +20,7 @@
         "matches":[
             "<all_urls>"
         ],
-        "js":["insert.js", "src/jquery-3.4.1.min.js"],
+        "js":["insert.js", "src/jquery-3.4.1.min.js", "src/loader.js"],
         "css":["style.css"]
     }]
     , "web_accessible_resources": [
