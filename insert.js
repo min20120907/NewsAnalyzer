@@ -2,7 +2,10 @@
 console.log("insert javascript executed");
 //Detecting the page if it is facebook.
 window.addEventListener("load", areYouInFacebook);
-
+for (var i = 0; i < 5; i++) {
+  var result = document.createElement("div");
+  result.id = "results-" + i;
+}
 
 //Elements proclaiming.
 //get posts by using style classes
@@ -163,7 +166,7 @@ var entrSites = [
   "qoos.com",
   "qknet.net"
 ];
-query_args = "";
+
 /*for (var i = 0; i < entrSites.length; i++) {
   query_args = query_args.concat(" -site:" + entrSites[i]);
 }*/
@@ -238,6 +241,8 @@ window.addEventListener("scroll", function (e) {
   ticking = true;
 });
 
+
+
 function autoappendChild() {	//autoappendChild
 
   for (var j = 0; j <= innerPost.length - 1; j++) {
@@ -288,11 +293,13 @@ function areYouInFacebook() {	//areYouInFacebook
   }
 }
 
+
+
 function searchGoogle(googleQuery) {	//searchGoogle
   if (!googleQuery.includes("中天新聞")) {
-    var searchUrl = "https://cse.google.com/cse?cx=9f8b720f1b3abf296&q=" + googleQuery.substring(0, 17) + query_args;
+    var searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(0, 17);
   } else {
-    var searchUrl = "https://cse.google.com/cse?cx=9f8b720f1b3abf296&q=" + googleQuery.substring(googleQuery.length - 18, googleQuery.length) + query_args;
+    var searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(googleQuery.length - 18, googleQuery.length);
   }
 
   return searchUrl;
@@ -306,9 +313,8 @@ function createElementFromHTML(htmlString) {	//createElementFromHTML
   return div.firstChild;
 }
 
+
 function loadFileToElement(filename, operator_n) {
-
-
 
   $(document).ready(function () {
     $.ajax({
@@ -318,14 +324,15 @@ function loadFileToElement(filename, operator_n) {
       headers: {
         "x-requested-with": "xhr"
       },
-      mode: 'cors',
+      mode: 'json',
       cache: 'default',
       success: function (text) {
-        g[operator_n].innerHTML = text;
-        //console.log(text);
+        g[operator_n] = text;
       }
     });
   });
+
+
 }
 
 
@@ -343,26 +350,25 @@ function createIFrame(operator_k) {
 
   var checkTarget = document.getElementById("iframe_" + operator_k); //some error 
   loadFileToElement(searchGoogle(innerPost[operator_k].getElementsByClassName("qzhwtbm6 knvmm38d")[3].innerText), operator_k);
-  var search_results = g[operator_k].getElementsByClassName("gs-title");
-  
-  search_result=[];
-  a=0
-  for(var i = 0; i< search_results.length;i++){
-      if(search_results[i].tagName=="A"){
-          search_result[a] = search_results[i];
-          a++;
-      }
-  }
-  var icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
-  for (var operator_q = 0; operator_q < search_result.length; operator_q++) {	//filter the entrance websites
-    for (var operator_p = 0; operator_p < entrSites.length; operator_p++) {
-      if (search_result[operator_q].href.includes(entrSites[operator_p])) {
-        search_result[operator_q].remove();
-        console.log("Content Farm detected!", search_result[operator_q].href);
-      }
-    }
+  var search_result = [];
+  for (var i = 0; i < 10; i++) {
+    var result = document.createElement("div");
+    result.id = "results-" + i;
+    var item = g[operator_k].items[i];
+    // in production code, item.htmlTitle should have the HTML entities escaped.
+
+    var link = document.createElement('a');
+    link.href = item.link;
+    link.innerText = item.title;
+    result.appendChild(link);
+    search_result[i] = result;
   }
 
+  //var icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
+  var icos = [];
+  for (var i = 0; i < 10; i++) {
+    icos.push(document.createElement("img"));
+  }
   var getLocation = function (href) {
     var l = document.createElement("a");
     l.href = href;
@@ -370,35 +376,30 @@ function createIFrame(operator_k) {
   };
 
 
-  for (var operator_r = 0; operator_r < 5; operator_r++) {	//set the icons on the search_results
+  for (var operator_r = 0; operator_r < 10; operator_r++) {	//set the icons on the search_results
 
 
-    var string1 = search_result[operator_r].href;
-    var string2 = "http://" + getLocation(string1).hostname;
-    //string2.replace(window.location.href, "");
-    string2 = string2 + "/favicon.ico";
-    icos[operator_r].src = string2;
+    var string1 = "http://i.olsh.me//icon?url=" + getLocation(search_result[operator_r].getElementsByTagName("A")[0].href).hostname + "&size=80..120..200";
+    icos[operator_r].src = string1;
 
 
-    icos[operator_r].width = 12;	//set width as 12
-    icos[operator_r].height = 12;	//set height as 12
+    icos[operator_r].width = 24;	//set width as 24
+    icos[operator_r].height = 24;	//set height as 24
+    icos[operator_r].style.position = "relative";
   }
 
 
   var tr_ele = [];
-
-  tr_ele[0] = document.createElement("tr");
-  tr_ele[1] = document.createElement("tr");
-  tr_ele[2] = document.createElement("tr");
-  tr_ele[3] = document.createElement("tr");
-  tr_ele[4] = document.createElement("tr");
+  for (var i = 0; i < 10; i++)
+    tr_ele[i] = document.createElement("tr");
 
   if (checkTarget == null) {
     //if (search_result[operator_k] != null) {
     ifrm[operator_k] = document.createElement("div");
     for (var operator_m = 0; operator_m < search_result.length; operator_m++) {
-      tr_ele[operator_m].appendChild(icos[operator_m]);
-      tr_ele[operator_m].appendChild(search_result[operator_m].parentNode);
+      search_result[operator_m].insertBefore(icos[operator_m], search_result[operator_m].firstChild);
+      //tr_ele[operator_m].appendChild(icos[operator_m]);
+      tr_ele[operator_m].appendChild(search_result[operator_m]);
       tbody[operator_k].appendChild(tr_ele[operator_m]);
       table[operator_k].appendChild(tbody[operator_k]);
     }
