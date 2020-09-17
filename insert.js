@@ -14,7 +14,7 @@ innerPost = [];
 //filter it with check whether has content
 a = 0;
 for (var r = 0; r < posts.length; r++) {
-  if (posts[r].innerHTML.includes("oi732d6d ik7dh3pa d2edcug0 hpfvmrgz qv66sw1b c1et5uql a8c37x1j hop8lmos enqfppq2 e9vueds3 j5wam9gi knj5qynh m9osqain hzawbc8m")) {
+  if (posts[r].innerHTML.includes("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")) {
     innerPost[a] = posts[r]; //if it is a post add it
     a++;
   }
@@ -33,7 +33,7 @@ for (var i = 0; i < link_posts.length; i++) {
 
 var post = [];
 for (var i = 0; i < innerPost.length; i++) {
-  post[i] = innerPost[i].getElementsByClassName("oi732d6d ik7dh3pa d2edcug0 hpfvmrgz qv66sw1b c1et5uql a8c37x1j hop8lmos enqfppq2 e9vueds3 j5wam9gi knj5qynh m9osqain hzawbc8m")[0];
+  post[i] = innerPost[i].getElementsByClassName("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")[0];
 }
 
 var btn = [innerPost.length];
@@ -170,7 +170,7 @@ var entrSites = [
 /*for (var i = 0; i < entrSites.length; i++) {
   query_args = query_args.concat(" -site:" + entrSites[i]);
 }*/
-for (var i = 0; i <= post.length - 1; i++) {
+for (var i = 0; i <= posts.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
   btn[i].innerHTML = "more"; // Insert text
   btn[i].setAttribute("class", "btn btn-warning");
@@ -182,7 +182,7 @@ for (var i = 0; i <= post.length - 1; i++) {
       createIFrame(i);
     };
   })(i);
-  post[i].setAttribute("btn_added", false);
+  posts[i].setAttribute("btn_added", false);
 }
 
 for (var i = 0; i <= innerPost.length - 1; i++) {
@@ -193,9 +193,9 @@ for (var i = 0; i <= innerPost.length - 1; i++) {
     g[i] = document.createElement('div');
     g[i].id = "website_" + i;
   }
-  innerPost[i].getElementsByClassName("oi732d6d ik7dh3pa d2edcug0 hpfvmrgz qv66sw1b c1et5uql a8c37x1j hop8lmos enqfppq2 e9vueds3 j5wam9gi knj5qynh m9osqain hzawbc8m")[0].appendChild(btn[i]); // appendChild button to div
+  innerPost[i].getElementsByClassName("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")[0].appendChild(btn[i]); // appendChild button to div
   console.log("button" + i + "created");
-  post[i].setAttribute("btn_added", false);
+  posts[i].setAttribute("btn_added", false);
 }
 
 var num = post.length - 1;
@@ -213,7 +213,7 @@ window.addEventListener("scroll", function (e) {
       //filter it with check whether has content
       a = 0;
       for (var r = 0; r < posts.length; r++) {
-        if (posts[r].innerHTML.includes("oi732d6d ik7dh3pa d2edcug0 hpfvmrgz qv66sw1b c1et5uql a8c37x1j hop8lmos enqfppq2 e9vueds3 j5wam9gi knj5qynh m9osqain hzawbc8m")) {
+        if (posts[r].innerHTML.includes("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")) {
           innerPost[a] = posts[r]; //if it is a post add it
           a++;
         }
@@ -231,7 +231,7 @@ window.addEventListener("scroll", function (e) {
       }
       var posts = [];
       for (var i = 0; i < innerPost.length; i++) {
-        posts[i] = innerPost[i].getElementsByClassName("oi732d6d ik7dh3pa d2edcug0 hpfvmrgz qv66sw1b c1et5uql a8c37x1j hop8lmos enqfppq2 e9vueds3 j5wam9gi knj5qynh m9osqain hzawbc8m")[0];
+        posts[i] = innerPost[i].getElementsByClassName("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")[0];
       }
       //setTimeout(function () { console.log("appendChilding..."); }, 5000);
       autoappendChild();
@@ -270,7 +270,7 @@ function autoappendChild() {	//autoappendChild
           //console.log("operator_s = "+ operator_s);
         };
       })(j);
-      innerPost[j].getElementsByClassName("oi732d6d ik7dh3pa d2edcug0 hpfvmrgz qv66sw1b c1et5uql a8c37x1j hop8lmos enqfppq2 e9vueds3 j5wam9gi knj5qynh m9osqain hzawbc8m")[0].appendChild(btn[j]); // appendChild button to div
+      innerPost[j].getElementsByClassName("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")[0].appendChild(btn[j]); // appendChild button to div
       console.log("button" + j + "created");
       posts[j].setAttribute("btn_added", false);
     }
@@ -297,9 +297,9 @@ function areYouInFacebook() {	//areYouInFacebook
 
 function searchGoogle(googleQuery) {	//searchGoogle
   if (!googleQuery.includes("中天新聞")) {
-    var searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(0, 17);
+    var searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(0, 5);
   } else {
-    var searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(googleQuery.length - 18, googleQuery.length);
+    var searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(googleQuery.length - 5, googleQuery.length);
   }
 
   return searchUrl;
@@ -356,10 +356,10 @@ function createIFrame(operator_k) {
     });
   };
   delay().then(function(){
-    return delay(1000); // 延遲ㄧ秒
+    return delay(3000); // 延遲3秒
   }).then(function(){
   var search_result = [];
-  for (var i = 0; i < 10; i++) {
+  for (var i = 0; i < g[operator_k].items.length; i++) {
     var result = document.createElement("div");
     result.id = "results-" + i;
     var item = g[operator_k].items[i];
@@ -407,13 +407,13 @@ function createIFrame(operator_k) {
     for (var operator_m = 0; operator_m < search_result.length; operator_m++) {
       search_result[operator_m].insertBefore(icos[operator_m], search_result[operator_m].firstChild);
       //tr_ele[operator_m].appendChild(icos[operator_m]);
-      tr_ele[operator_m].appendChild(search_result[operator_m]);
+tr_ele[operator_m].appendChild(search_result[operator_m]);
       tbody[operator_k].appendChild(tr_ele[operator_m]);
       table[operator_k].appendChild(tbody[operator_k]);
     }
     ifrm[operator_k].appendChild(table[operator_k]);
     ifrm[operator_k].id = "iframe_" + operator_k;
-    innerPost[operator_k].getElementsByClassName("oi732d6d ik7dh3pa d2edcug0 hpfvmrgz qv66sw1b c1et5uql a8c37x1j hop8lmos enqfppq2 e9vueds3 j5wam9gi knj5qynh m9osqain hzawbc8m")[0].appendChild(ifrm[operator_k]);
+    innerPost[operator_k].getElementsByClassName("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")[0].appendChild(ifrm[operator_k]);
     ifrm[operator_k].setAttribute("style", "display: block");
     console.log("iFrame" + operator_k + "created");
     //}
