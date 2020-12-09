@@ -328,6 +328,7 @@ function loadFileToElement(filename, operator_n) {
       cache: 'default',
       success: function (text) {
         g[operator_n] = text;
+        return text;
       }
     });
   });
@@ -335,7 +336,26 @@ function loadFileToElement(filename, operator_n) {
 
 }
 
+function keyword_extract(query) {
 
+  $(document).ready(function () {
+    $.ajax({
+      type: "GET",
+      url: "http://140.113.89.75:5000/extract?title=" + query,
+      async: true,
+      headers: {
+        "x-requested-with": "xhr"
+      },
+      mode: 'json',
+      cache: 'default',
+      success: function (text) {
+        return text;
+      }
+    });
+  });
+  return text;
+
+}
 
 
 function createIFrame(operator_k) {
@@ -349,7 +369,7 @@ function createIFrame(operator_k) {
 
 
   var checkTarget = document.getElementById("iframe_" + operator_k); //some error 
-  loadFileToElement(searchGoogle(innerPost[operator_k].getElementsByClassName("qzhwtbm6 knvmm38d")[3].innerText), operator_k);
+  loadFileToElement(searchGoogle(keyword_extract(innerPost[operator_k].getElementsByClassName("qzhwtbm6 knvmm38d")[3].innerText)), operator_k);
   var delay = function(s){
     return new Promise(function(resolve,reject){
      setTimeout(resolve,s); 
