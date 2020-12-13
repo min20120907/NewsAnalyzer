@@ -341,7 +341,7 @@ function keyword_extract(query) {
   $(document).ready(function () {
     $.ajax({
       type: "GET",
-      url: "http://140.113.89.75:5000/extract?title=" + query,
+      url: "https://morning-woodland-98584.herokuapp.com/http://140.113.89.75:5000/extract?title=" + query,
       async: true,
       headers: {
         "x-requested-with": "xhr"
