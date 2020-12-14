@@ -363,7 +363,7 @@ xhttp.onreadystatechange = function() {
     return this.responseText;
   }
 };
-xhttp.open("GET", "https://140.113.89.75:5000/extract?title=" + query, true);
+xhttp.open("GET", "https://morning-woodland-98584.herokuapp.com/140.113.89.75:5000/extract?title=" + query, true);
 xhttp.send();
 
 }
@@ -388,7 +388,11 @@ function createIFrame(operator_k) {
   };
   delay().then(function(){
     return delay(3000); // 延遲3秒
-  }).then(delay()).then(function(){
+  }).then(function(){
+    keyword_extract(innerPost[operator_k].getElementsByClassName("qzhwtbm6 knvmm38d")[3].innerText);
+    console.log("After execution: "+);
+  }).then(delay()).then(delay()).then(delay()).then(function(){
+    
     loadFileToElement(searchGoogle(keyword_result), operator_k);
   }).then(delay()).then(function(){
     
