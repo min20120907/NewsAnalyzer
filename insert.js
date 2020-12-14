@@ -335,7 +335,7 @@ function loadFileToElement(filename, operator_n) {
 
 
 }
-
+var keyword_result = "";
 function keyword_extract(query) {
   /*
   $(document).ready(function () {
@@ -358,10 +358,12 @@ function keyword_extract(query) {
 var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
   if (this.readyState == 4 && this.status == 200) {
+    console.log(this.responseText);
+    keyword_result = this.responseText;
     return this.responseText;
   }
 };
-xhttp.open("GET", "https://morning-woodland-98584.herokuapp.com/140.113.89.75:5000/extract?title=" + query, true);
+xhttp.open("GET", "https://140.113.89.75:5000/extract?title=" + query, true);
 xhttp.send();
 
 }
@@ -378,7 +380,7 @@ function createIFrame(operator_k) {
 
 
   var checkTarget = document.getElementById("iframe_" + operator_k); //some error 
-  loadFileToElement(searchGoogle(keyword_extract(innerPost[operator_k].getElementsByClassName("qzhwtbm6 knvmm38d")[3].innerText)), operator_k);
+  
   var delay = function(s){
     return new Promise(function(resolve,reject){
      setTimeout(resolve,s); 
@@ -386,7 +388,10 @@ function createIFrame(operator_k) {
   };
   delay().then(function(){
     return delay(3000); // 延遲3秒
-  }).then(function(){
+  }).then(delay()).then(function(){
+    loadFileToElement(searchGoogle(keyword_result), operator_k);
+  }).then(delay()).then(function(){
+    
   var search_result = [];
   for (var i = 0; i < g[operator_k].items.length; i++) {
     var result = document.createElement("div");
