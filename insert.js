@@ -337,11 +337,11 @@ function loadFileToElement(filename, operator_n) {
 }
 
 function keyword_extract(query) {
-
+  /*
   $(document).ready(function () {
     $.ajax({
       type: "GET",
-      url: "https://morning-woodland-98584.herokuapp.com/http://140.113.89.75:5000/extract?title=" + query,
+      url: "https://morning-woodland-98584.herokuapp.com/140.113.89.75:5000/extract?title=" + query,
       async: true,
       headers: {
         "x-requested-with": "xhr"
@@ -353,7 +353,16 @@ function keyword_extract(query) {
       }
     });
   });
-  return text;
+*/
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+  if (this.readyState == 4 && this.status == 200) {
+    return this.responseText;
+  }
+};
+xhttp.open("GET", "https://morning-woodland-98584.herokuapp.com/140.113.89.75:5000/extract?title=" + query, true);
+xhttp.send();
 
 }
 

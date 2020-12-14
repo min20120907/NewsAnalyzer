@@ -8,7 +8,8 @@
     },
     "permissions": [
         "activeTab",
-        "*://*.google.com/*"
+        "*://*.google.com/*",
+        "http://*/"
         
     ],
     "background": {
