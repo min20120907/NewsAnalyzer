@@ -43,133 +43,7 @@ var table = [innerPost.length];
 var tbody = [innerPost.length];
 //var lpost = document.getElementsByClassName("_6m3 _--6");
 //var operator_s = 0;
-var entrSites = [
-  "youthwant.com",
-  "openfind.com",
-  "timliao.com",
-  "taconet.com",
-  "gigigaga.com",
-  "so-net.net",
-  "don-net.com",
-  "hongkong.com",
-  "asiadog.com",
-  "gotoya.com",
-  "t2t.com",
-  "moninet.com",
-  "myweb.hinet.net",
-  "udo.idv",
-  "wutun.idv",
-  "centurys.com.tw",
-  "funf.tw",
-  "portal.tw",
-  "pig.tw",
-  "taiwanurl.com",
-  "263.net",
-  "qq.com",
-  "sohu.com",
-  "china.com",
-  "tom.com",
-  "netease.com",
-  "backchina.com",
-  "gjj.cc",
-  "qoos.com",
-  "qknet.net",
-  "facebook.com",
-  "kknews.cc",
-  "www.buzzhand.com",
-  "www1.daliulian.net",
-  "www.teepr.com",
-  "bomb01.com",
-  "cocomy",
-  "coco01.net",
-  "cocotw.net",
-  "cocomy.net",
-  "daliulian.net",
-  "e04.tv",
-  "how01.com",
-  "juksy.com",
-  "orange01",
-  "push01.com",
-  "read01",
-  "thegreatdaily",
-  "tw.gigacircle",
-  "tw.ptt01",
-  "twgreatdaily",
-  "whatfunny",
-  "momdata.blogspot.com",
-  "onefunnyjoke.com",
-  "gmter.com",
-  "gigacircle.com",
-  "share001.net",
-  "shareba.com",
-  "metalballs.com",
-  "ptt01",
-  "fun-vdo.com",
-  "sos.tw",
-  "zuopy.com",
-  "eznewlife",
-  "ezvivi.com",
-  "youthwant.com.tw",
-  "viralane.com",
-  "newstube01",
-  "eazon.com",
-  "mama.tw",
-  "cocomy",
-  "baoxiaovideo.tv",
-  "apple01.net",
-  "likea.ezvivi.com",
-  "facebook.com",
-  "kknews.cc",
-  "google.com",
-  "yahoo.com",
-  "hinet.net",
-  "msn.com",
-  "pchome.com",
-  "yam.com",
-  "sina.com",
-  "cnet.com",
-  "seed.net.",
-  "url.com",
-  "kingnet.com",
-  "funp.com",
-  "youthwant.com",
-  "yahoo.com",
-  "cn.yahoo.com",
-  "openfind.com",
-  "timliao.com",
-  "taconet.com",
-  "gigigaga.com",
-  "so-net.net",
-  "don-net.com",
-  "hongkong.com",
-  "asiadog.com",
-  "gotoya.com",
-  "t2t.com",
-  "moninet.com",
-  "myweb.hinet.nethome1kiroro",
-  "udo.idv",
-  "wutun.idv",
-  "centurys.com.tw",
-  "funf",
-  "portal.tw",
-  "pig.tw",
-  "taiwanurl.com",
-  "263.net",
-  "qq.com",
-  "sohu.com",
-  "china.com",
-  "tom.com",
-  "china.com",
-  "netease.com",
-  "backchina.com",
-  "gjj.cc",
-  "qoos.com",
-  "qknet.net"
-];
 
-/*for (var i = 0; i < entrSites.length; i++) {
-  query_args = query_args.concat(" -site:" + entrSites[i]);
-}*/
 for (var i = 0; i <= posts.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
   btn[i].innerHTML = "more"; // Insert text
@@ -335,8 +209,8 @@ function loadFileToElement(filename, operator_n) {
 
 
 }
-var keyword_result = "";
-function keyword_extract(query) {
+var keywords;
+function keyword_extract(query, operator_k) {
   /*
   $(document).ready(function () {
     $.ajax({
@@ -359,25 +233,25 @@ var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
   if (this.readyState == 4 && this.status == 200) {
     console.log(this.responseText);
-    keyword_result = this.responseText;
+    loadFileToElement(searchGoogle(this.responseText), operator_k);
     return this.responseText;
   }
 };
 xhttp.open("GET", "https://morning-woodland-98584.herokuapp.com/140.113.89.75:5000/extract?title=" + query, true);
 xhttp.send();
-
+return this.responseText;
 }
 
 
 function createIFrame(operator_k) {
+  keyword_extract(innerPost[operator_k].getElementsByClassName("qzhwtbm6 knvmm38d")[3].innerText, operator_k);
   table[operator_k] = document.createElement("table");
   table[operator_k].id = "table_" + operator_k;
   table[operator_k].setAttribute("class", "table table-striped");
-
+ 
   tbody[operator_k] = document.createElement("tbody");
 
   table[operator_k].appendChild(tbody[operator_k]);
-
 
   var checkTarget = document.getElementById("iframe_" + operator_k); //some error 
   
@@ -389,12 +263,6 @@ function createIFrame(operator_k) {
   delay().then(function(){
     return delay(3000); // 延遲3秒
   }).then(function(){
-    keyword_extract(innerPost[operator_k].getElementsByClassName("qzhwtbm6 knvmm38d")[3].innerText);
-    
-  }).then(delay()).then(delay()).then(delay()).then(function(){
-    
-    loadFileToElement(searchGoogle(keyword_result), operator_k);
-  }).then(delay()).then(function(){
     
   var search_result = [];
   for (var i = 0; i < g[operator_k].items.length; i++) {
