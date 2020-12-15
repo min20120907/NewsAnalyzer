@@ -390,7 +390,7 @@ function createIFrame(operator_k) {
     return delay(3000); // 延遲3秒
   }).then(function(){
     keyword_extract(innerPost[operator_k].getElementsByClassName("qzhwtbm6 knvmm38d")[3].innerText);
-    console.log("After execution: "+);
+    
   }).then(delay()).then(delay()).then(delay()).then(function(){
     
     loadFileToElement(searchGoogle(keyword_result), operator_k);
