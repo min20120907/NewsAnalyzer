@@ -3,7 +3,7 @@ import jieba
 from textblob import TextBlob
 import csv
 def extract(title):
-    model = KeyBERT('stsb-xlm-r-multilingual')
+    model = KeyBERT('paraphrase-distilroberta-base-v1')
     keywords = []
     lang = TextBlob(title)
     if(lang.detect_language()=='zh-CN' or lang.detect_language()=='zh-TW'):
