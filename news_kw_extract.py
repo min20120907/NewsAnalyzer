@@ -5,6 +5,7 @@ from flask import Flask, redirect, url_for, request
 app = Flask(__name__)
 
 @app.route('/extract', methods = ['GET'])
+jieba.set_dictionary("https://github.com/fxsjy/jieba/raw/master/extra_dict/dict.txt.big")
 def extract():
     model = KeyBERT('LaBSE')
     title = request.args.get('title')
