@@ -193,7 +193,7 @@ function loadFileToElement(filename, operator_n) {
   $(document).ready(function () {
     $.ajax({
       type: "GET",
-      url: "https://morning-woodland-98584.herokuapp.com/" + filename,
+      url: filename,
       async: true,
       headers: {
         "x-requested-with": "xhr"
@@ -237,7 +237,7 @@ xhttp.onreadystatechange = function() {
     return this.responseText;
   }
 };
-xhttp.open("GET", "https://morning-woodland-98584.herokuapp.com/140.113.89.75:5000/extract?title=" + query, true);
+xhttp.open("GET", "https://alumni.iit.tku.edu.tw:4000/extract?title=" + query, true);
 xhttp.send();
 return this.responseText;
 }
