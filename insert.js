@@ -2,8 +2,8 @@
 console.log("insert javascript executed");
 //Detecting the page if it is facebook.
 window.addEventListener("load", areYouInFacebook);
-for (var i = 0; i < 5; i++) {
-  var result = document.createElement("div");
+for (let i = 0; i < 5; i++) {
+  let result = document.createElement("div");
   result.id = "results-" + i;
 }
 
@@ -13,7 +13,7 @@ posts = document.getElementsByClassName("rq0escxv l9j0dhe7 du4w35lb hybvsw6c ue3
 innerPost = [];
 //filter it with check whether has content
 a = 0;
-for (var r = 0; r < posts.length; r++) {
+for (let r = 0; r < posts.length; r++) {
   if (posts[r].innerHTML.includes("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")) {
     innerPost[a] = posts[r]; //if it is a post add it
     a++;
@@ -23,7 +23,7 @@ for (var r = 0; r < posts.length; r++) {
 link_posts = document.getElementsByClassName("oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 a8c37x1j p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 p8dawk7l");
 linkPost = [];
 a = 0;
-for (var i = 0; i < link_posts.length; i++) {
+for (let i = 0; i < link_posts.length; i++) {
   //if it is link, then add it
   if (link_posts[i].tagName == "A") {
     linkPost[a] = link_posts[i];
@@ -31,20 +31,20 @@ for (var i = 0; i < link_posts.length; i++) {
   }
 }
 
-var post = [];
-for (var i = 0; i < innerPost.length; i++) {
+let post = [];
+for (let i = 0; i < innerPost.length; i++) {
   post[i] = innerPost[i].getElementsByClassName("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")[0];
 }
 
-var btn = [innerPost.length];
-var ifrm = [innerPost.length];
-var g = [innerPost.length];
-var table = [innerPost.length];
-var tbody = [innerPost.length];
-//var lpost = document.getElementsByClassName("_6m3 _--6");
-//var operator_s = 0;
+let btn = [innerPost.length];
+let ifrm = [innerPost.length];
+let g = [innerPost.length];
+let table = [innerPost.length];
+let tbody = [innerPost.length];
+//let lpost = document.getElementsByClassName("_6m3 _--6");
+//let operator_s = 0;
 
-for (var i = 0; i <= posts.length - 1; i++) {
+for (let i = 0; i <= posts.length - 1; i++) {
   btn[i] = document.createElement("BUTTON");
   btn[i].innerHTML = "more"; // Insert text
   btn[i].setAttribute("class", "btn btn-warning");
@@ -59,7 +59,7 @@ for (var i = 0; i <= posts.length - 1; i++) {
   posts[i].setAttribute("btn_added", false);
 }
 
-for (var i = 0; i <= innerPost.length - 1; i++) {
+for (let i = 0; i <= innerPost.length - 1; i++) {
   if (!innerPost[i].innerHTML.includes('class="oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 a8c37x1j p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 p8dawk7l"')) {
     btn[i].style.display = "none";
   }
@@ -72,9 +72,9 @@ for (var i = 0; i <= innerPost.length - 1; i++) {
   posts[i].setAttribute("btn_added", false);
 }
 
-var num = post.length - 1;
-var ticking = false;
-var last_known_scroll_position = 0;
+let num = post.length - 1;
+let ticking = false;
+let last_known_scroll_position = 0;
 
 window.addEventListener("scroll", function (e) {
   last_known_scroll_position = window.scrollY;
@@ -86,7 +86,7 @@ window.addEventListener("scroll", function (e) {
       innerPost = [];
       //filter it with check whether has content
       a = 0;
-      for (var r = 0; r < posts.length; r++) {
+      for (let r = 0; r < posts.length; r++) {
         if (posts[r].innerHTML.includes("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")) {
           innerPost[a] = posts[r]; //if it is a post add it
           a++;
@@ -96,15 +96,15 @@ window.addEventListener("scroll", function (e) {
       link_posts = document.getElementsByClassName("oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 a8c37x1j p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 p8dawk7l");
       linkPost = [];
       a = 0;
-      for (var i = 0; i < link_posts.length; i++) {
+      for (let i = 0; i < link_posts.length; i++) {
         //if it is link, then add it
         if (link_posts[i].tagName == "A") {
           linkPost[a] = link_posts[i];
           a++;
         }
       }
-      var posts = [];
-      for (var i = 0; i < innerPost.length; i++) {
+      let posts = [];
+      for (let i = 0; i < innerPost.length; i++) {
         posts[i] = innerPost[i].getElementsByClassName("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")[0];
       }
       //setTimeout(function () { console.log("appendChilding..."); }, 5000);
@@ -119,7 +119,7 @@ window.addEventListener("scroll", function (e) {
 
 function autoappendChild() {	//autoappendChild
 
-  for (var j = 0; j <= innerPost.length - 1; j++) {
+  for (let j = 0; j <= innerPost.length - 1; j++) {
 
     if (
       posts[j].getAttribute("btn_added") == null
@@ -171,16 +171,16 @@ function areYouInFacebook() {	//areYouInFacebook
 
 function searchGoogle(googleQuery) {	//searchGoogle
   if (!googleQuery.includes("中天新聞")) {
-    var searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(0, 5);
+    let searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(0, 5);
   } else {
-    var searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(googleQuery.length - 5, googleQuery.length);
+    let searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(googleQuery.length - 5, googleQuery.length);
   }
 
   return searchUrl;
 }
 
 function createElementFromHTML(htmlString) {	//createElementFromHTML
-  var div = document.createElement('div');
+  let div = document.createElement('div');
   div.innerHTML = htmlString.trim();
 
   // Change this to div.childNodes to support multiple top-level nodes
@@ -209,7 +209,7 @@ function loadFileToElement(filename, operator_n) {
 
 
 }
-var keywords;
+let keywords;
 function keyword_extract(query, operator_k) {
   /*
   $(document).ready(function () {
@@ -229,7 +229,7 @@ function keyword_extract(query, operator_k) {
   });
 */
 
-var xhttp = new XMLHttpRequest();
+let xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
   if (this.readyState == 4 && this.status == 200) {
     console.log(this.responseText);
@@ -253,9 +253,9 @@ function createIFrame(operator_k) {
 
   table[operator_k].appendChild(tbody[operator_k]);
 
-  var checkTarget = document.getElementById("iframe_" + operator_k); //some error 
+  let checkTarget = document.getElementById("iframe_" + operator_k); //some error 
   
-  var delay = function(s){
+  let delay = function(s){
     return new Promise(function(resolve,reject){
      setTimeout(resolve,s); 
     });
@@ -264,36 +264,36 @@ function createIFrame(operator_k) {
     return delay(3000); // 延遲3秒
   }).then(function(){
     
-  var search_result = [];
-  for (var i = 0; i < g[operator_k].items.length; i++) {
-    var result = document.createElement("div");
+  let search_result = [];
+  for (let i = 0; i < g[operator_k].items.length; i++) {
+    let result = document.createElement("div");
     result.id = "results-" + i;
-    var item = g[operator_k].items[i];
+    let item = g[operator_k].items[i];
     // in production code, item.htmlTitle should have the HTML entities escaped.
 
-    var link = document.createElement('a');
+    let link = document.createElement('a');
     link.href = item.link;
     link.innerText = item.title;
     result.appendChild(link);
     search_result[i] = result;
   }
 
-  //var icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
-  var icos = [];
-  for (var i = 0; i < 10; i++) {
+  //let icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
+  let icos = [];
+  for (let i = 0; i < 10; i++) {
     icos.push(document.createElement("img"));
   }
-  var getLocation = function (href) {
-    var l = document.createElement("a");
+  let getLocation = function (href) {
+    let l = document.createElement("a");
     l.href = href;
     return l;
   };
 
 
-  for (var operator_r = 0; operator_r < 10; operator_r++) {	//set the icons on the search_results
+  for (let operator_r = 0; operator_r < 10; operator_r++) {	//set the icons on the search_results
 
 
-    var string1 = "http://i.olsh.me//icon?url=" + getLocation(search_result[operator_r].getElementsByTagName("A")[0].href).hostname + "&size=80..120..200";
+    let string1 = "http://i.olsh.me//icon?url=" + getLocation(search_result[operator_r].getElementsByTagName("A")[0].href).hostname + "&size=80..120..200";
     icos[operator_r].src = string1;
 
 
@@ -303,14 +303,14 @@ function createIFrame(operator_k) {
   }
 
 
-  var tr_ele = [];
-  for (var i = 0; i < 10; i++)
+  let tr_ele = [];
+  for (let i = 0; i < 10; i++)
     tr_ele[i] = document.createElement("tr");
 
   if (checkTarget == null) {
     //if (search_result[operator_k] != null) {
     ifrm[operator_k] = document.createElement("div");
-    for (var operator_m = 0; operator_m < search_result.length; operator_m++) {
+    for (let operator_m = 0; operator_m < search_result.length; operator_m++) {
       search_result[operator_m].insertBefore(icos[operator_m], search_result[operator_m].firstChild);
       //tr_ele[operator_m].appendChild(icos[operator_m]);
 tr_ele[operator_m].appendChild(search_result[operator_m]);
