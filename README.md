@@ -70,8 +70,10 @@ Pinned(TINYINT),\
 ContributedDate(DATE)
 
 #### Rating
-_Rating_ID(INT AUTO_INCREAMENT)_,\
-_Reported_ID(INT)_,\
+_Rating_ID(INT AUTO_INCREAMENT)_,
+___
+_Reported_ID(INT)_,
+___
 Page_Reli(SMALLINT),\
 Cf_Poss(SMALLINT),\
 Phi_Poss(SMALLINT),\
@@ -80,14 +82,16 @@ Domain_Reli(SMALLINT),\
 RatedDate(DATE)
 
 #### Keywords
-_Keyword_ID (INT, AUTO_INCREMENT)_,\
+Keyword_ID (INT, AUTO_INCREMENT),
+___
 Title(VARCHAR,100),\
 Keyword1(VARCHAR,20),\
 Keyword2(VARCHAR,20),\
 Keyword3(VARCHAR,20)
 
 #### Bug_Report
-_Bug_ID(INT, AUTO_INCREMENT)_,\
+Bug_ID(INT, AUTO_INCREMENT),
+___
 DATE(DATETIME),\
 COMMENT(VARCHAR,1000),\
 IMAGE(IMAGE)
