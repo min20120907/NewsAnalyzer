@@ -49,9 +49,10 @@ Upvote(), Downvote()
 ## Database Attributes
 
 #### Reported_Links
-_Reported_ID(INT AUTO_INCREAMENT)_,\
+Reported_ID(INT AUTO_INCREAMENT),\
+___
 Reported_URL(VARCHAR, 2048),\
-Domain(VARCHAR, 2048), \
+Domain(VARCHAR, 2048),
 
 ```
 FakeReport(SMALLINT),
@@ -70,7 +71,7 @@ Pinned(TINYINT),\
 ContributedDate(DATE)
 
 #### Rating
-_Rating_ID(INT AUTO_INCREAMENT)_,
+Rating_ID(INT AUTO_INCREAMENT),
 ___
 _Reported_ID(INT)_,
 ___
