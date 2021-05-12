@@ -2,10 +2,10 @@ News Analyzer
 
 Project Members
 
-Leader 408850013 <span id="anchor"></span>林倉裕
+Leader 408850013 <span id="anchor"></span>Leader 408850013 林倉裕
 
-Member 408850310 蔡沛騰  
-Member 408850492 柯智懷  
+Member 408850310 蔡沛騰\
+Member 408850492 柯智懷\
 Member 408854015 林中南
 
 Goal
@@ -71,7 +71,7 @@ Reported\_Links
 
 Reported\_URL(VARCHAR, 2048),
 
-Domain(VARCHAR, 2048), 
+Domain(VARCHAR, 2048),
 
 FakeReport(SMALLINT),
 
@@ -79,7 +79,7 @@ BiasedReport(SMALLINT),
 
 OutdatedReport(SMALLINT)
 
-^If report number too large, automatically hidden^
+\^If report number too large, automatically hidden\^
 
 OverallScore(SMALLINT, 0\~5),
 
@@ -91,7 +91,7 @@ Contributed\_Links
 
 *Contribution\_ID(INT AUTO\_INCREAMENT)*,
 
-Contribution\_URL(VARCHAR, 2048), 
+Contribution\_URL(VARCHAR, 2048),
 
 Pinned(TINYINT),
 
