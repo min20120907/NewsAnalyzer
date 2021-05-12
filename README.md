@@ -49,7 +49,7 @@ Upvote(), Downvote()
 ## Database Attributes
 
 #### Reported_Links
-Reported_ID(INT AUTO_INCREAMENT),\
+Reported_ID(INT AUTO_INCREAMENT),
 ___
 Reported_URL(VARCHAR, 2048),\
 Domain(VARCHAR, 2048),
@@ -73,7 +73,7 @@ ContributedDate(DATE)
 #### Rating
 Rating_ID(INT AUTO_INCREAMENT),
 ___
-_Reported_ID(INT)_,
+Reported_ID(INT),
 ___
 Page_Reli(SMALLINT),\
 Cf_Poss(SMALLINT),\
