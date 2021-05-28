@@ -9,7 +9,7 @@ class UI_Elements {
     class_header = "pybr56ya dati1w0a hv4rvrfc n851cfcs btwxx1t3 j83agx80 ll8tlv6m";
     class_link = "l9j0dhe7";
 
-    constructor(class_linkpost, class_post) {
+    constructor() {
 
     }
     // The function to extract the class names into the elements array
