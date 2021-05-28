@@ -6,5 +6,9 @@ class resultFrame {
         this.URL_list = URL_list;
         this.title = title;
     }
+    // The function that one can fetch the keys from the Flask ML Server
+    getKeywords(){
 
+    }
+    
 }
