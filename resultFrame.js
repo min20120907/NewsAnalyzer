@@ -1,4 +1,5 @@
 class resultFrame {
+    state = false;
     
     constructor(title,icon_list, title_list, URL_list) {
         this.icon_list = icon_list;
@@ -10,5 +11,5 @@ class resultFrame {
     getKeywords(){
 
     }
-    
+
 }
