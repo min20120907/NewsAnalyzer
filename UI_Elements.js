@@ -31,7 +31,7 @@ class UI_Elements {
         ClassString = "";
         for(var i =0 ; i<ClassStringArr.length; i++)
             ClassString += "."+ClassStringArr[i];
-        nodes = testContainer.querySelector(ClassString);
+        nodes = element.querySelector(ClassString);
         return nodes;
     }
 
