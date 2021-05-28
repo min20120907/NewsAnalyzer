@@ -1,4 +1,4 @@
-class UI_Elements {
+static class UI_Elements {
     // Proclaim the 
     linkposts = new Array();
     headers = new Array();
