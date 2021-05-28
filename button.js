@@ -4,5 +4,5 @@ class button{
         this.text = text;
         this.color = color;
     }
-
+    
 }
