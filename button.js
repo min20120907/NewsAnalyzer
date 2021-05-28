@@ -1,5 +1,8 @@
 class button{
-    constructor(){
-        
+    
+    constructor(text, color){
+        this.text = text;
+        this.color = color;
     }
+
 }
