@@ -27,10 +27,7 @@ class UI_Elements {
     }
     // The function that one can fetch the childnodes by providing the class names
     getChildNodesByClassName(element, classNames) {
-        ClassStringArr = classNames.split(" ");
-        ClassString = "";
-        for(var i =0 ; i<ClassStringArr.length; i++)
-            ClassString += "."+ClassStringArr[i];
+        ClassString = "."+classNames.replace(" ",".");
         nodes = element.querySelector(ClassString);
         return nodes;
     }
