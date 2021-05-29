@@ -1,6 +1,6 @@
 class resultFrame {
     
-
+    
     constructor(title,icon_list, title_list, URL_list) {
         let icon_list = icon_list;
         let title_list = title_list;
@@ -39,12 +39,5 @@ class resultFrame {
     getKeywords(){
 
     }
-    // toggle the button on off state
-    toggleOnOff(element) {	//toggleOnOff
-        if (element.style.display == "none") {
-          element.setAttribute("style", "display: block");
-        } else {
-          element.setAttribute("style", "display: none");
-        }
-      }
+    
 }
