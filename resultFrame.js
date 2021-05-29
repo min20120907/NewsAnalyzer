@@ -1,12 +1,14 @@
 class resultFrame {
-    results = new Array();
-    state = false;
+    
 
     constructor(title,icon_list, title_list, URL_list) {
-        this.icon_list = icon_list;
-        this.title_list = title_list;
-        this.URL_list = URL_list;
-        this.title = title;
+        let icon_list = icon_list;
+        let title_list = title_list;
+        let URL_list = URL_list;
+        let title = title;
+        let results = new Array();
+        let state = false;
+        
     }
     // The funciton that one can fetch the top 10 Google Results
     searchGoogle(googleQuery) {	//searchGoogle
@@ -38,11 +40,11 @@ class resultFrame {
 
     }
     // toggle the button on off state
-    toggleOnOff(operator_j) {	//toggleOnOff
-        if (ifrm[operator_j].style.display == "none") {
-          ifrm[operator_j].setAttribute("style", "display: block");
+    toggleOnOff(element) {	//toggleOnOff
+        if (element.style.display == "none") {
+          element.setAttribute("style", "display: block");
         } else {
-          ifrm[operator_j].setAttribute("style", "display: none");
+          element.setAttribute("style", "display: none");
         }
       }
 }

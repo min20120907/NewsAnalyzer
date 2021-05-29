@@ -1,15 +1,14 @@
 static class UI_Elements {
-    // Proclaim the 
-    linkposts = new Array();
-    headers = new Array();
-
-    // Proclaim the initial values of class variables
-    class_linkpost = "rq0escxv l9j0dhe7 du4w35lb j83agx80 pfnyh3mw i1fnvgqd bp9cbjyn owycx6da btwxx1t3 b5q2rw42 lq239pai f10w8fjw hv4rvrfc dati1w0a pybr56ya";
-    class_post = "rq0escxv l9j0dhe7 du4w35lb hybvsw6c io0zqebd m5lcvass fbipl8qg nwvqtn77 k4urcfbm ni8dbmo4 stjgntxs sbcfpzgs";
-    class_header = "pybr56ya dati1w0a hv4rvrfc n851cfcs btwxx1t3 j83agx80 ll8tlv6m";
-    class_link = "l9j0dhe7";
-
+    // Constructor initializing
     constructor() {
+        // Proclaim the initial values of class variables
+        const class_linkpost = "rq0escxv l9j0dhe7 du4w35lb j83agx80 pfnyh3mw i1fnvgqd bp9cbjyn owycx6da btwxx1t3 b5q2rw42 lq239pai f10w8fjw hv4rvrfc dati1w0a pybr56ya";
+        const class_post = "rq0escxv l9j0dhe7 du4w35lb hybvsw6c io0zqebd m5lcvass fbipl8qg nwvqtn77 k4urcfbm ni8dbmo4 stjgntxs sbcfpzgs";
+        const class_header = "pybr56ya dati1w0a hv4rvrfc n851cfcs btwxx1t3 j83agx80 ll8tlv6m";
+        const class_link = "l9j0dhe7";
+        let linkposts = new Array();
+        let headers = new Array();
+        // Construct the document object
 
     }
     // The function to extract the class names into the elements array
@@ -27,9 +26,19 @@ static class UI_Elements {
     }
     // The function that one can fetch the childnodes by providing the class names
     getChildNodesByClassName(element, classNames) {
-        ClassString = "."+classNames.replaceAll(" ",".");
-        nodes = element.querySelector(ClassString);
-        return nodes;
+        let ClassString = "." + classNames.replaceAll(" ", ".");
+        let nodes = element.querySelector(ClassString);
+        let found = false;
+        let arrayOfNodes = new Array();       // untill spread operator is supported [...nodes], we have to use slice method
+        // Scan over the nodes that
+        for (let n of nodes) {
+            if (n.className == ClassString) {
+                arrayOfNodes.push(n);
+                found = true;
+            }
+        }
+
+        return {found: found, arrayOfNodes: arrayOfNodes};
     }
 
 }
