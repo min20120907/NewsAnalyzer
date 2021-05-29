@@ -12,6 +12,7 @@ class resultFrame {
         this.frame = document.createElement("");
         this.frame.id = ""+ID;
     }
+    
     // The function that can toggle on and off
     toggleOnOff(frame) {	//toggleOnOff
         if (frame.style.display == "none") {
