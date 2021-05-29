@@ -35,11 +35,11 @@ class resultFrame {
       return this.responseText;
       }
     // The funciton that one can fetch the top 10 Google Results
-    searchGoogle(googleQuery) {	//searchGoogle
-        if (!googleQuery.includes("中天新聞")) {
-            let searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(0, 5);
+    searchGoogle(title) {	//searchGoogle
+        if (!title.includes("中天新聞")) {
+            let searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + title.substring(0, 5);
         } else {
-            let searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + googleQuery.substring(googleQuery.length - 5, googleQuery.length);
+            let searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + title.substring(title.length - 5, title.length);
         }
         $(document).ready(function () {
             $.ajax({
