@@ -9,21 +9,25 @@ static class UI_Elements {
         this.linkposts = new Array();
         this.headers = new Array();
         // Construct the document object
+        this.normal_posts = document.getElementsByClassName(class_post);
         this.fetch_posts();
     }
     // The function to extract the class names into the elements array
     fetch_posts() {
-        normal_posts = document.getElementsByClassName(class_post);
-        for(let i =0;i<normal_posts.length;i++){
-            p = normal_posts[i];
+        
+        for(let i =0;i<this.normal_posts.length;i++){
+            p = this.normal_posts[i];
             if(this.getChildNodesByClassName(p, class_linkpost) != null)
                 this.linkposts.push(p);
         }
     }
 
     // The function to add the button inside the post
-    append_button(b) {
-
+    append_button() {
+        for(let i =0;i<this.normal_posts.length;i++)
+        this.normal_posts[i]
+        .getElementsByClassName(class_header)[0]
+        .appendChild(new button(i, "More", "btn btn-warning").dom);
     }
     // The function to add the frame that contain the results into the post
     append_result(r) {

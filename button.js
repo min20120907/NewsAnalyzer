@@ -1,9 +1,9 @@
 class button{
     
-    constructor(ID, text, color){
+    constructor(ID, text, className){
         // DOM
         this.dom = document.createElement("BUTTON");
-        this.dom.setAttribute("class", "btn btn-warning");
+        this.dom.setAttribute("class", className);
         this.dom.innerText = text;
         this.dom.id = "btn_" + ID;
         // onclick function
