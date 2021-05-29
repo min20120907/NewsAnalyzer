@@ -1,13 +1,11 @@
 class button{
     
     constructor(ID, text, color){
-        this.text = text;
-        this.color = color;
-
         // DOM
         this.dom = document.createElement("BUTTON");
-
         this.dom.setAttribute("class", "btn btn-warning");
+        this.dom.innerText = text;
+        this.dom.
         this.dom.id = ID;
         
     }
