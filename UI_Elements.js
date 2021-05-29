@@ -9,11 +9,16 @@ static class UI_Elements {
         this.linkposts = new Array();
         this.headers = new Array();
         // Construct the document object
-
+        this.fetch_posts();
     }
     // The function to extract the class names into the elements array
     fetch_posts() {
-
+        normal_posts = document.getElementsByClassName(class_post);
+        for(let i =0;i<normal_posts.length;i++){
+            p = normal_posts[i];
+            if(this.getChildNodesByClassName(p, class_linkpost) != null)
+                this.linkposts.push(p);
+        }
     }
 
     // The function to add the button inside the post
@@ -35,21 +40,8 @@ static class UI_Elements {
     // The function that one can fetch the childnodes by providing the class names
     getChildNodesByClassName(element, classNames) {
         let ClassString = "." + classNames.replaceAll(" ", ".");
-        let nodes = element.querySelector(ClassString);
-        if(nodes==null) return {found:false, arrayOfNodes: null};
-        let found = false;
-        let arrayOfNodes = new Array();       // untill spread operator is supported [...nodes], we have to use slice method
-        
-        // Scan over the nodes that
-        for (let i=0;i<nodes.length;i++) {
-            let n = nodes[i];
-            if (n.className == ClassString) {
-                arrayOfNodes.push(n);
-                found = true;
-            }
-        }
-
-        return {found: found, arrayOfNodes: arrayOfNodes};
+        let nodes = element.querySelectorAll(ClassString);
+        return nodes;
     }
 
 }
