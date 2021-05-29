@@ -6,8 +6,8 @@ static class UI_Elements {
         const class_post = "rq0escxv l9j0dhe7 du4w35lb hybvsw6c io0zqebd m5lcvass fbipl8qg nwvqtn77 k4urcfbm ni8dbmo4 stjgntxs sbcfpzgs";
         const class_header = "pybr56ya dati1w0a hv4rvrfc n851cfcs btwxx1t3 j83agx80 ll8tlv6m";
         const class_link = "l9j0dhe7";
-        let linkposts = new Array();
-        let headers = new Array();
+        this.linkposts = new Array();
+        this.headers = new Array();
         // Construct the document object
 
     }

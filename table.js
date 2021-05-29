@@ -1,7 +1,8 @@
 class table {
-    constructor() {
+    constructor(ID) {
         this.dom = document.createElement("table");
-        this.dom.id = "table_" + operator_k;
+        this.dom.id = "table_" + ID;
+        // add some style
         this.dom.setAttribute("class", "table table-striped");
 
         tbody[operator_k] = document.createElement("tbody");

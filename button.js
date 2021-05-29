@@ -5,8 +5,7 @@ class button{
         this.dom = document.createElement("BUTTON");
         this.dom.setAttribute("class", "btn btn-warning");
         this.dom.innerText = text;
-        this.dom.
-        this.dom.id = ID;
+        this.dom.id = "btn_" + ID;
         
     }
     // toggle the button on off state

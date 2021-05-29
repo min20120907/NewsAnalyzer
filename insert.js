@@ -321,10 +321,10 @@ tr_ele[operator_m].appendChild(search_result[operator_m]);
     ifrm[operator_k].id = "iframe_" + operator_k;
     innerPost[operator_k].getElementsByClassName("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")[0].appendChild(ifrm[operator_k]);
     ifrm[operator_k].setAttribute("style", "display: block");
-    console.log("iFrame" + operator_k + "created");
+    //console.log("iFrame" + operator_k + "created");
     //}
   } else {
-    console.log("iFrame" + operator_k + "already exists");
+    //console.log("iFrame" + operator_k + "already exists");
     toggleOnOff(operator_k);
   }
   return { search_result: search_result, icos: icos };

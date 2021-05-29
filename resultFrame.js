@@ -9,8 +9,8 @@ class resultFrame {
         this.results = new Array();
         this.state = false;
         
-        this.frame = document.createElement("");
-        this.frame.id = ""+ID;
+        this.frame = document.createElement("div");
+        this.frame.id = "frame_"+ID;
     }
     
     // The function that can toggle on and off
@@ -22,16 +22,15 @@ class resultFrame {
         }
     }
     // Extract the keywords by title
-    keyword_extract(query, operator_k) {
+    keyword_extract(title) {
       let xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-          console.log(this.responseText);
-          loadFileToElement(searchGoogle(this.responseText), operator_k);
+          // console.log(this.responseText);
           return this.responseText;
         }
       };
-      xhttp.open("GET", "https://alumni.iit.tku.edu.tw:4000/extract?title=" + query, true);
+      xhttp.open("GET", "https://alumni.iit.tku.edu.tw:4000/extract?title=" + title, true);
       xhttp.send();
       return this.responseText;
       }
