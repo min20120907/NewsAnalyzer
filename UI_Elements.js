@@ -24,8 +24,8 @@ static class UI_Elements {
 
     // The function to add the button inside the post
     append_button() {
-        for(let i =0;i<this.normal_posts.length;i++)
-        this.normal_posts[i]
+        for(let i =0;i<this.linkposts.length;i++)
+        this.linkposts[i]
         .getElementsByClassName(class_header)[0]
         .appendChild(new button(i, "More", "btn btn-warning").dom);
     }
