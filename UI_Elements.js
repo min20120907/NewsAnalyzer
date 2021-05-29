@@ -12,7 +12,7 @@ static class UI_Elements {
 
     }
     // The function to extract the class names into the elements array
-    fetch_posts(params) {
+    fetch_posts() {
 
     }
 
@@ -36,10 +36,13 @@ static class UI_Elements {
     getChildNodesByClassName(element, classNames) {
         let ClassString = "." + classNames.replaceAll(" ", ".");
         let nodes = element.querySelector(ClassString);
+        if(nodes==null) return {found:false, arrayOfNodes: null};
         let found = false;
         let arrayOfNodes = new Array();       // untill spread operator is supported [...nodes], we have to use slice method
+        
         // Scan over the nodes that
-        for (let n of nodes) {
+        for (let i=0;i<nodes.length;i++) {
+            let n = nodes[i];
             if (n.className == ClassString) {
                 arrayOfNodes.push(n);
                 found = true;
