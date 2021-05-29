@@ -24,6 +24,14 @@ static class UI_Elements {
     append_result(r) {
 
     }
+    // The function creating the element div from pure HTML
+    createElementFromHTML(htmlString) {	//createElementFromHTML
+        let div = document.createElement('div');
+        div.innerHTML = htmlString.trim();
+      
+        // Change this to div.childNodes to support multiple top-level nodes
+        return div.firstChild;
+      }
     // The function that one can fetch the childnodes by providing the class names
     getChildNodesByClassName(element, classNames) {
         let ClassString = "." + classNames.replaceAll(" ", ".");
