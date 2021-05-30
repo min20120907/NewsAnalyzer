@@ -10,7 +10,7 @@ class button{
         (function (i) {
             this.dom.onclick = function () {
               console.log(i);
-              createIFrame(i);
+              // createIFrame(i);
             };
           })(i);
     }

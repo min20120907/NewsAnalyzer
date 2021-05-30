@@ -5,29 +5,37 @@ static class UI_Elements {
         const class_linkpost = "rq0escxv l9j0dhe7 du4w35lb j83agx80 pfnyh3mw i1fnvgqd bp9cbjyn owycx6da btwxx1t3 b5q2rw42 lq239pai f10w8fjw hv4rvrfc dati1w0a pybr56ya";
         const class_post = "rq0escxv l9j0dhe7 du4w35lb hybvsw6c io0zqebd m5lcvass fbipl8qg nwvqtn77 k4urcfbm ni8dbmo4 stjgntxs sbcfpzgs";
         const class_header = "pybr56ya dati1w0a hv4rvrfc n851cfcs btwxx1t3 j83agx80 ll8tlv6m";
+        const class_linkaddr = "oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 a8c37x1j p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 p8dawk7l";
         const class_link = "l9j0dhe7";
         this.linkposts = new Array();
         this.headers = new Array();
+        this.links = new Array();
         // Construct the document object
         this.normal_posts = document.getElementsByClassName(class_post);
         this.fetch_posts();
     }
     // The function to extract the class names into the elements array
     fetch_posts() {
-        
-        for(let i =0;i<this.normal_posts.length;i++){
+
+        for (let i = 0; i < this.normal_posts.length; i++) {
             p = this.normal_posts[i];
-            if(this.getChildNodesByClassName(p, class_linkpost) != null)
+            if (this.getChildNodesByClassName(p, class_linkpost) != null)
                 this.linkposts.push(p);
         }
     }
 
     // The function to add the button inside the post
     append_button() {
-        for(let i =0;i<this.linkposts.length;i++)
-        this.linkposts[i]
-        .getElementsByClassName(class_header)[0]
-        .appendChild(new button(i, "More", "btn btn-warning").dom);
+        for (let i = 0; i < this.linkposts.length; i++) {
+            this.linkposts[i]
+                .getElementsByClassName(class_header)[0]
+                .appendChild(new button(i, "More", "btn btn-warning").dom);
+            this.linkposts[i].setAttribute("btn_added", true);
+        }
+    }
+    // The function to export the link
+    getLink(){
+        links.push(new linkpost());
     }
     // The function to add the frame that contain the results into the post
     append_result(r) {
@@ -37,10 +45,10 @@ static class UI_Elements {
     createElementFromHTML(htmlString) {	//createElementFromHTML
         let div = document.createElement('div');
         div.innerHTML = htmlString.trim();
-      
+
         // Change this to div.childNodes to support multiple top-level nodes
         return div.firstChild;
-      }
+    }
     // The function that one can fetch the childnodes by providing the class names
     getChildNodesByClassName(element, classNames) {
         let ClassString = "." + classNames.replaceAll(" ", ".");
