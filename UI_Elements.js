@@ -47,7 +47,7 @@ let UI_Elements = class {
         this.links.push(new linkpost(
             document.querySelectorAll("a." + this.queryOf(class_linkaddr))[i].href,
             document.querySelectorAll("a." + this.queryOf(class_linkaddr))[i]
-                .querySelectorAll("span." + this.queryOf(class_linktitle))[0].innerText
+                .querySelectorAll("span." + this.queryOf(class_linktitle))[1].innerText
         ));
     }
     // The function to add the frame that contain the results into the post
