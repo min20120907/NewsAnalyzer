@@ -8,7 +8,7 @@ let icon = class{
         this.dom.height = 24;	//set height as 24
         this.dom.style.position = "relative";
     }
-    // The fincton to get link
+    // The function to get link
     getLink(href) {
         let l = document.createElement("a");
         l.href = href;
