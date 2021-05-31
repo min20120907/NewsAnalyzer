@@ -7,12 +7,12 @@ class button{
         this.dom.innerText = text;
         this.dom.id = "btn_" + ID;
         // onclick function
-        (function (i) {
+        (function (ID) {
             this.dom.onclick = function () {
-              console.log(i);
+              console.log(ID);
               // createIFrame(i);
             };
-          })(i);
+          })(ID);
     }
     // toggle the button on off state
     toggleOnOff(element) {	//toggleOnOff
