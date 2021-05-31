@@ -23,20 +23,26 @@ let UI_Elements = class {
     fetch_posts() {
         for (let i = 0; i < this.normal_posts.length; i++) {
             let p = this.normal_posts[i];
-            if (this.getChildNodesByClassName(p, class_linkpost) != null)
+            if (this.getChildNodesByClassName(p, class_linkpost).length > 0)
                 this.linkposts.push(p);
         }
     }
 
     // The function to add the button inside the post
     append_button() {
+
         for (let i = 0; i < this.linkposts.length; i++) {
-            this.linkposts[i]
-                .getElementsByClassName(class_header)[0]
-                .appendChild(new button(i, "More", "btn btn-warning").dom);
-            this.linkposts[i].setAttribute("btn_added", true);
-            this.getLink(i);
+            try {
+                this.linkposts[i]
+                    .getElementsByClassName(class_header)[0]
+                    .appendChild(new button(i, "More", "btn btn-warning").dom);
+                this.linkposts[i].setAttribute("btn_added", true);
+                this.getLink(i);
+            } catch (error) {
+                console.log("No linkposts found");
+            }
         }
+
     }
     // The function to export the link
     getLink(i) {
