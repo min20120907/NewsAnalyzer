@@ -38,9 +38,7 @@ let UI_Elements = class {
                     .appendChild(new button(i, "More", "btn btn-warning").dom);
                 this.linkposts[i].setAttribute("btn_added", true);
                 this.getLink(i);
-            } catch (error) {
-                console.log("No linkposts found");
-            }
+            } catch (error){}
         }
 
     }
