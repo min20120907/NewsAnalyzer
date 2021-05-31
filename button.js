@@ -1,4 +1,4 @@
-class button{
+let button = new class{
     
     constructor(ID, text, className){
         // DOM
