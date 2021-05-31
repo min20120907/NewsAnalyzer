@@ -1,3 +1,5 @@
+// Class: Website
+// Usage: An object to collect all the information inside the Google search result querys
 class website {
     constructor(ID) {
         this.dom = document.createElement('div');
