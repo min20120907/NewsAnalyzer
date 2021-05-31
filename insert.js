@@ -1,5 +1,5 @@
 // Loading event listener
-window.addEventListener("load", UI_Elements.areYouInFacebook);
+window.addEventListener("load", checkFacebook.areYouInFacebook);
 let UI = new UI_Elements();
 // delay function
 let delay = function (s) {

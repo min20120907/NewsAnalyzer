@@ -1,5 +1,5 @@
-static class checkFacebook {
-    areYouInFacebook() {	//areYouInFacebook
+let checkFacebook = class{
+    static areYouInFacebook() {	//areYouInFacebook
         if (window.location.hostname == "www.facebook.com") {
             return true;
         } else {

@@ -1,4 +1,4 @@
-class table {
+let table = class{
     constructor(ID) {
         this.dom = document.createElement("table");
         this.dom.id = "table_" + ID;

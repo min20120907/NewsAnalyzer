@@ -1,4 +1,4 @@
-class resultFrame {
+let resultFrame = class {
 
 
     constructor(title, ID, icon_list, title_list, URL_list) {
@@ -8,7 +8,7 @@ class resultFrame {
         this.title = title;
         this.results = new Array();
         this.state = false;
-        this.keywords = "";
+        this.keywords = this.keyword_extract(this.title);
         this.frame = document.createElement("div");
         this.frame.id = "frame_" + ID;
     }

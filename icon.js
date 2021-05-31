@@ -1,4 +1,4 @@
-class icon {
+let icon = class{
     constructor(search_result) {
         this.dom = document.createElement("img");
         this.dom.src = "http://i.olsh.me//icon?url=" +

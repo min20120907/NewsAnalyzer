@@ -20,7 +20,7 @@
         "matches":[
             "<all_urls>"
         ],
-        "js":["insert.js", "src/jquery-3.4.1.min.js", "src/loader.js"],
+        "js":["insert.js","icon.js","checkFacebook.js","linkpost.js","UI_Elements.js", "post.js","table.js","website.js", "src/jquery-3.4.1.min.js", "src/loader.js"],
         "css":["style.css"]
     }]
     , "web_accessible_resources": [
