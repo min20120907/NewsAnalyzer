@@ -46,7 +46,7 @@ let UI_Elements = class {
     }
     // The function to export the link
     getLink(i) {
-        this.links[i](new linkpost(
+        this.links[i] = (new linkpost(
             document.querySelectorAll("a." + this.queryOf(class_linkaddr))[i].href,
             document.querySelectorAll("a." + this.queryOf(class_linkaddr))[i]
                 .querySelectorAll("span." + this.queryOf(class_linktitle))[1].innerText
