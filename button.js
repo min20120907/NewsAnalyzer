@@ -1,10 +1,11 @@
 let button = class {
 
   constructor(ID, text, className) {
-    if(document.getElementById("btn_"+this.ID)!=null)
-      throw new TargetExistedException("Target element is existed!");
+    
     
     this.ID=ID;
+    if(document.getElementById("btn_"+this.ID)!=null)
+      throw (new TargetExistedException("Target element is existed!"));
     this.text = text;
     this.className = className;
     
