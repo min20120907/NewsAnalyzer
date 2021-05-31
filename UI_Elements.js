@@ -14,6 +14,7 @@ static class UI_Elements {
         // Construct the document object
         this.normal_posts = document.getElementsByClassName(class_post);
         this.fetch_posts();
+        this.append_button();
     }
     // The function to extract the class names into the elements array
     fetch_posts() {
