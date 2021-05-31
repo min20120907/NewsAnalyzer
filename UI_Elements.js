@@ -37,8 +37,9 @@ let UI_Elements = class {
                     .getElementsByClassName(class_header)[0]
                     .appendChild(new button(i, "More", "btn btn-warning").dom);
                 this.linkposts[i].setAttribute("btn_added", true);
-                this.getLink(i);
+                
             } catch (TargetExistedException){}
+            this.getLink(i);
         }
 
     }
