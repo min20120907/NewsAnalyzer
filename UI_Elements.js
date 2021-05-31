@@ -32,6 +32,7 @@ let UI_Elements = class {
     append_button() {
 
         for (let i = 0; i < this.linkposts.length; i++) {
+            this.getLink(i);
             try {
                 this.linkposts[i]
                     .getElementsByClassName(class_header)[0]
@@ -39,7 +40,7 @@ let UI_Elements = class {
                 this.linkposts[i].setAttribute("btn_added", true);
                 
             } catch (TargetExistedException){}
-            this.getLink(i);
+            
         }
 
     }
