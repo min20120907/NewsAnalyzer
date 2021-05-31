@@ -7,6 +7,7 @@ static class UI_Elements {
         const class_header = "pybr56ya dati1w0a hv4rvrfc n851cfcs btwxx1t3 j83agx80 ll8tlv6m";
         const class_linkaddr = "oajrlxb2 g5ia77u1 qu0x051f esr5mh6w e9989ue4 r7d6kgcz rq0escxv nhd2j8a9 a8c37x1j p7hjln8o kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x jb3vyjys rz4wbd8a qt6c0cv9 a8nywdso i1ao9s8h esuyzwwr f1sip0of lzcic4wl gmql0nx0 p8dawk7l";
         const class_link = "l9j0dhe7";
+        const class_linktitle = "a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7";
         this.linkposts = new Array();
         this.headers = new Array();
         this.links = new Array();
@@ -31,15 +32,24 @@ static class UI_Elements {
                 .getElementsByClassName(class_header)[0]
                 .appendChild(new button(i, "More", "btn btn-warning").dom);
             this.linkposts[i].setAttribute("btn_added", true);
+            this.getLink(i);
         }
     }
     // The function to export the link
-    getLink(){
-        links.push(new linkpost());
+    getLink(i){
+        links.push(new linkpost(
+            document.querySelectorAll("a."+this.queryOf(class_linkaddr))[i].href,
+            document.querySelectorAll("a."+this.queryOf(class_linkaddr))[i]
+            .querySelectorAll("span."+this.queryOf(class_linktitle))[0].innerText
+        ));
     }
     // The function to add the frame that contain the results into the post
     append_result(r) {
 
+    }
+    // The function to convert class name into query selector
+    queryOf(className){
+        return className.replaceAll(" ", ".");
     }
     // The function creating the element div from pure HTML
     createElementFromHTML(htmlString) {	//createElementFromHTML
