@@ -48,16 +48,16 @@ let UI_Elements = class {
     getLink(i) {
         this.links[i] = (new linkpost(
             this.FacebookLinkParse(
-            decodeURIComponent(document.querySelectorAll("a." + this.queryOf(class_linkaddr))[i].href)),
+            document.querySelectorAll("a." + this.queryOf(class_linkaddr))[i].href),
             document.querySelectorAll("a." + this.queryOf(class_linkaddr))[i]
                 .querySelectorAll("span." + this.queryOf(class_linktitle))[1].innerText
         ));
     }
     // The function to parse facebook link into normal simple form
     FacebookLinkParse(URL){
-        return URL
+        return decodeURIComponent(URL
         .substring(0,URL.indexOf("fbclid")-1)
-        .replace("https://l.facebook.com/l.php?u=","");
+        .replace("https://l.facebook.com/l.php?u=",""));
     }
     // The function to add the frame that contain the results into the post
     append_result(r) {
