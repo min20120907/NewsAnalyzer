@@ -229,17 +229,17 @@ function keyword_extract(query, operator_k) {
   });
 */
 
-let xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-  if (this.readyState == 4 && this.status == 200) {
-    console.log(this.responseText);
-    loadFileToElement(searchGoogle(this.responseText), operator_k);
-    return this.responseText;
-  }
-};
-xhttp.open("GET", "https://alumni.iit.tku.edu.tw:4000/extract?title=" + query, true);
-xhttp.send();
-return this.responseText;
+  let xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function () {
+    if (this.readyState == 4 && this.status == 200) {
+      console.log(this.responseText);
+      loadFileToElement(searchGoogle(this.responseText), operator_k);
+      return this.responseText;
+    }
+  };
+  xhttp.open("GET", "https://alumni.iit.tku.edu.tw:4000/extract?title=" + query, true);
+  xhttp.send();
+  return this.responseText;
 }
 
 
@@ -248,85 +248,85 @@ function createIFrame(operator_k) {
   table[operator_k] = document.createElement("table");
   table[operator_k].id = "table_" + operator_k;
   table[operator_k].setAttribute("class", "table table-striped");
- 
+
   tbody[operator_k] = document.createElement("tbody");
 
   table[operator_k].appendChild(tbody[operator_k]);
 
   let checkTarget = document.getElementById("iframe_" + operator_k); //some error 
-  
-  let delay = function(s){
-    return new Promise(function(resolve,reject){
-     setTimeout(resolve,s); 
+
+  let delay = function (s) {
+    return new Promise(function (resolve, reject) {
+      setTimeout(resolve, s);
     });
   };
-  delay().then(function(){
+  delay().then(function () {
     return delay(3000); // 延遲3秒
-  }).then(function(){
-    
-  let search_result = [];
-  for (let i = 0; i < g[operator_k].items.length; i++) {
-    let result = document.createElement("div");
-    result.id = "results-" + i;
-    let item = g[operator_k].items[i];
-    // in production code, item.htmlTitle should have the HTML entities escaped.
+  }).then(function () {
 
-    let link = document.createElement('a');
-    link.href = item.link;
-    link.innerText = item.title;
-    result.appendChild(link);
-    search_result[i] = result;
-  }
+    let search_result = [];
+    for (let i = 0; i < g[operator_k].items.length; i++) {
+      let result = document.createElement("div");
+      result.id = "results-" + i;
+      let item = g[operator_k].items[i];
+      // in production code, item.htmlTitle should have the HTML entities escaped.
 
-  //let icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
-  let icos = [];
-  for (let i = 0; i < 10; i++) {
-    icos.push(document.createElement("img"));
-  }
-  let getLocation = function (href) {
-    let l = document.createElement("a");
-    l.href = href;
-    return l;
-  };
-
-
-  for (let operator_r = 0; operator_r < 10; operator_r++) {	//set the icons on the search_results
-
-
-    let string1 = "http://i.olsh.me//icon?url=" + getLocation(search_result[operator_r].getElementsByTagName("A")[0].href).hostname + "&size=80..120..200";
-    icos[operator_r].src = string1;
-
-
-    icos[operator_r].width = 24;	//set width as 24
-    icos[operator_r].height = 24;	//set height as 24
-    icos[operator_r].style.position = "relative";
-  }
-
-
-  let tr_ele = [];
-  for (let i = 0; i < 10; i++)
-    tr_ele[i] = document.createElement("tr");
-
-  if (checkTarget == null) {
-    //if (search_result[operator_k] != null) {
-    ifrm[operator_k] = document.createElement("div");
-    for (let operator_m = 0; operator_m < search_result.length; operator_m++) {
-      search_result[operator_m].insertBefore(icos[operator_m], search_result[operator_m].firstChild);
-      //tr_ele[operator_m].appendChild(icos[operator_m]);
-tr_ele[operator_m].appendChild(search_result[operator_m]);
-      tbody[operator_k].appendChild(tr_ele[operator_m]);
-      table[operator_k].appendChild(tbody[operator_k]);
+      let link = document.createElement('a');
+      link.href = item.link;
+      link.innerText = item.title;
+      result.appendChild(link);
+      search_result[i] = result;
     }
-    ifrm[operator_k].appendChild(table[operator_k]);
-    ifrm[operator_k].id = "iframe_" + operator_k;
-    innerPost[operator_k].getElementsByClassName("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")[0].appendChild(ifrm[operator_k]);
-    ifrm[operator_k].setAttribute("style", "display: block");
-    //console.log("iFrame" + operator_k + "created");
-    //}
-  } else {
-    //console.log("iFrame" + operator_k + "already exists");
-    toggleOnOff(operator_k);
-  }
-  return { search_result: search_result, icos: icos };
-});
+
+    //let icos = [document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img")]; //old icon functions
+    let icos = [];
+    for (let i = 0; i < 10; i++) {
+      icos.push(document.createElement("img"));
+    }
+    let getLocation = function (href) {
+      let l = document.createElement("a");
+      l.href = href;
+      return l;
+    };
+
+
+    for (let operator_r = 0; operator_r < 10; operator_r++) {	//set the icons on the search_results
+
+
+      let string1 = "http://i.olsh.me//icon?url=" + getLocation(search_result[operator_r].getElementsByTagName("A")[0].href).hostname + "&size=80..120..200";
+      icos[operator_r].src = string1;
+
+
+      icos[operator_r].width = 24;	//set width as 24
+      icos[operator_r].height = 24;	//set height as 24
+      icos[operator_r].style.position = "relative";
+    }
+
+
+    let tr_ele = [];
+    for (let i = 0; i < 10; i++)
+      tr_ele[i] = document.createElement("tr");
+
+    if (checkTarget == null) {
+      //if (search_result[operator_k] != null) {
+      ifrm[operator_k] = document.createElement("div");
+      for (let operator_m = 0; operator_m < search_result.length; operator_m++) {
+        search_result[operator_m].insertBefore(icos[operator_m], search_result[operator_m].firstChild);
+        //tr_ele[operator_m].appendChild(icos[operator_m]);
+        tr_ele[operator_m].appendChild(search_result[operator_m]);
+        tbody[operator_k].appendChild(tr_ele[operator_m]);
+        table[operator_k].appendChild(tbody[operator_k]);
+      }
+      ifrm[operator_k].appendChild(table[operator_k]);
+      ifrm[operator_k].id = "iframe_" + operator_k;
+      innerPost[operator_k].getElementsByClassName("kvgmc6g5 cxmmr5t8 oygrvhab hcukyx3x c1et5uql ii04i59q")[0].appendChild(ifrm[operator_k]);
+      ifrm[operator_k].setAttribute("style", "display: block");
+      //console.log("iFrame" + operator_k + "created");
+      //}
+    } else {
+      //console.log("iFrame" + operator_k + "already exists");
+      toggleOnOff(operator_k);
+    }
+    return { search_result: search_result, icos: icos };
+  });
 }
