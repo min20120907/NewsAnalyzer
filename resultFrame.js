@@ -2,17 +2,21 @@ let resultFrame = class {
 
 
     constructor(title, ID, rows, lpost) {
-        this.lpost = lpost;
-        this.title = title;
-        this.results = new website(ID);
-        this.icon_list = new Array(rows);
-        this.search_result = new Array(rows);
         this.state = false;
-        this.keywords = this.keyword_extract(this.title);
-        this.toggleOnOff();
         // initialize the DOM object
         this.frame = document.createElement("div");
         this.frame.id = "frame_" + ID;
+        if(document.getElementById(this.frame.id)!=null){
+            this.state = !this.state;
+            this.toggleOnOff();
+            throw (new TargetExistedException("Target element is existed!"));
+        }
+        this.lpost = lpost;
+        this.title = title;
+        this.icon_list = new Array(rows);
+        this.search_result = new Array(rows);
+        this.keywords = this.keyword_extract(this.title);
+        
     }
     // The function to fetch the search results
     fetch_results() {
