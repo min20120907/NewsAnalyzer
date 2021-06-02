@@ -1,44 +1,22 @@
 let resultFrame = class {
 
 
-    constructor(title, ID, rows, lpost) {
+    constructor(ID, rows, lpost) {
         this.state = false;
         // initialize the DOM object
         this.frame = document.createElement("div");
         this.frame.id = "frame_" + ID;
-        if(document.getElementById(this.frame.id)!=null){
+        // if element existed change the state of display
+        if (document.getElementById(this.frame.id) != null) {
             this.state = !this.state;
             this.toggleOnOff();
             throw (new TargetExistedException("Target element is existed!"));
         }
-        this.lpost = lpost;
-        this.title = title;
-        this.icon_list = new Array(rows);
-        this.search_result = new Array(rows);
-        this.keywords = this.keyword_extract(this.title);
+        this.table = new table(ID, rows, lpost);
+        this.frame.appendChild(this.table.dom);
         
     }
-    // The function to fetch the search results
-    fetch_results() {
-        for (let i = 0; i < rows; i++) {
-            // Initialize dom elements
-            let result = document.createElement("div");
-            result.id = "result_" + i;
-            let link = document.createElement('a');
-            link.href = this.lpost.URL;
-            link.innerText = this.lpost.title;
-
-            result.appendChild(link);
-
-            this.search_result[i] = result;
-        }
-    }
-    // The function to import all the icons by URLs
-    importIcons() {
-        for (let i = 0; i < this.results.length; i++) {
-            this.icon_list.push(new icon(this.results[i]));
-        }
-    }
+    
     // toggle the button on off state
     toggleOnOff() {	//toggleOnOff
         if (this.frame.style.display == "none") {
@@ -47,49 +25,5 @@ let resultFrame = class {
             this.frame.setAttribute("style", "display: none");
         }
     }
-    // Extract the keywords by title
-    keyword_extract(title) {
-        let xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                // console.log(this.responseText);
-                return this.responseText;
-            }
-        };
-        xhttp.open("GET", "https://alumni.iit.tku.edu.tw:4000/extract?title=" + title, true);
-        xhttp.send();
-        return xhttp.responseText;
-    }
-    // async keyword_extract(title) {
-    //     let text = await fetch('https://alumni.iit.tku.edu.tw:4000/extract?title='+title, {method:'GET'})
-    //                         .then((responce) => {return responce.text()});
-    //     return text;
-    // }
-
-    // The funciton that one can fetch the top 10 Google Results
-    searchGoogle(keywords) {	//searchGoogle
-        if (!keywords.includes("中天新聞")) {
-            let searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + title.substring(0, 5);
-        } else {
-            let searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + title.substring(title.length - 5, title.length);
-        }
-        $(document).ready(function () {
-            $.ajax({
-                type: "GET",
-                url: filename,
-                async: true,
-                headers: {
-                    "x-requested-with": "xhr"
-                },
-                mode: 'json',
-                cache: 'default',
-                success: function (text) {
-                    // assign the result to website element
-                    new website(this.ID, text);
-                    return text;
-                }
-            });
-        });
-        return searchUrl;
-    }
+    
 }
