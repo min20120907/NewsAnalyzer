@@ -41,7 +41,7 @@ let UI_Elements = class {
                 // Append Post
                 this.linkposts[i]
                     .getElementsByClassName(class_header)[0]
-                    .appendChild();
+                    .appendChild(new resultFrame(this.links[i].title).frame);
             } catch (TargetExistedException){}
         }
 

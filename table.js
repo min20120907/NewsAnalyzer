@@ -6,8 +6,8 @@ let table = class{
         // add some style
         this.dom.setAttribute("class", "table table-striped");
         this.page = new website(this.ID);
-        tbody[operator_k] = document.createElement("tbody");
-
+        tbody = document.createElement("tbody");
+        
         this.dom.appendChild(tbody[operator_k]);
     }
 }

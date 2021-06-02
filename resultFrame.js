@@ -1,15 +1,33 @@
 let resultFrame = class {
 
 
-    constructor(title, ID) {
+    constructor(title, ID, rows, lpost) {
+        this.lpost = lpost;
         this.title = title;
         this.results = new website(ID);
-        this.icon_list = new Array(10);
+        this.icon_list = new Array(rows);
+        this.search_result = new Array(rows);
         this.state = false;
         this.keywords = this.keyword_extract(this.title);
+        this.toggleOnOff();
         // initialize the DOM object
         this.frame = document.createElement("div");
         this.frame.id = "frame_" + ID;
+    }
+    // The function to fetch the search results
+    fetch_results() {
+        for (let i = 0; i < rows; i++) {
+            // Initialize dom elements
+            let result = document.createElement("div");
+            result.id = "result_" + i;
+            let link = document.createElement('a');
+            link.href = this.lpost.URL;
+            link.innerText = this.lpost.title;
+
+            result.appendChild(link);
+
+            this.search_result[i] = result;
+        }
     }
     // The function to import all the icons by URLs
     importIcons() {
@@ -63,7 +81,7 @@ let resultFrame = class {
                 cache: 'default',
                 success: function (text) {
                     // assign the result to website element
-                    new website(this.ID).dom = text;
+                    new website(this.ID, text);
                     return text;
                 }
             });
