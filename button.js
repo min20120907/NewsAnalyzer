@@ -21,17 +21,9 @@ let button = class {
     (function (ID, btn) {
       btn.dom.onclick = function () {
         console.log(ID);
-        toggleOnOff(document.getElementById("frame_"+ID));
+        new resultFrame(ID).toggleOnOff();
         // createIFrame(i);
       };
     })(this.ID, this);
-  }
-  // toggle the button on off state
-  toggleOnOff(element) {	//toggleOnOff
-    if (element.style.display == "none") {
-      element.setAttribute("style", "display: block");
-    } else {
-      element.setAttribute("style", "display: none");
-    }
   }
 }
