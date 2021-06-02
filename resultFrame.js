@@ -35,6 +35,12 @@ let resultFrame = class {
         xhttp.send();
         return xhttp.responseText;
     }
+    // async keyword_extract(title) {
+    //     let text = await fetch('https://alumni.iit.tku.edu.tw:4000/extract?title='+title, {method:'GET'})
+    //                         .then((responce) => {return responce.text()});
+    //     return text;
+    // }
+
     // The funciton that one can fetch the top 10 Google Results
     searchGoogle(keywords) {	//searchGoogle
         if (!keywords.includes("中天新聞")) {
@@ -61,5 +67,4 @@ let resultFrame = class {
         });
         return searchUrl;
     }
-
 }
