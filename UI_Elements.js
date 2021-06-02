@@ -34,13 +34,15 @@ let UI_Elements = class {
         for (let i = 0; i < this.linkposts.length; i++) {
             this.getLink(i);
             try {
+                // Append Button
                 this.linkposts[i]
                     .getElementsByClassName(class_header)[0]
                     .appendChild(new button(i, "More", "btn btn-warning").dom);
-                this.linkposts[i].setAttribute("btn_added", true);
-                
+                // Append Post
+                this.linkposts[i]
+                    .getElementsByClassName(class_header)[0]
+                    .appendChild();
             } catch (TargetExistedException){}
-            
         }
 
     }
@@ -55,9 +57,9 @@ let UI_Elements = class {
     }
     // The function to parse facebook link into normal simple form
     FacebookLinkParse(URL){
-        return decodeURIComponent(URL
+        return decodeURIComponent(URL)
         .substring(0,URL.indexOf("fbclid")-1)
-        .replace("https://l.facebook.com/l.php?u=",""));
+        .replace("https://l.facebook.com/l.php?u=","");
     }
     // The function to add the frame that contain the results into the post
     append_result(r) {
