@@ -4,6 +4,7 @@ let resultFrame = class {
     constructor(title, ID) {
         this.title = title;
         this.results = new website(ID);
+        this.icon_list = new Array(10);
         this.state = false;
         this.keywords = this.keyword_extract(this.title);
         // initialize the DOM object
@@ -13,7 +14,7 @@ let resultFrame = class {
     // The function to import all the icons by URLs
     importIcons() {
         for (let i = 0; i < this.results.length; i++) {
-
+            this.icon_list.push(new icon(this.results[i]));
         }
     }
     // toggle the button on off state
