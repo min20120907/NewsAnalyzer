@@ -1,25 +1,27 @@
 let resultFrame = class {
 
 
-    constructor(title, ID, icon_list, title_list, URL_list) {
-        this.icon_list = icon_list;
-        this.title_list = title_list;
-        this.URL_list = URL_list;
+    constructor(title, ID) {
         this.title = title;
-        this.results = new Array();
+        this.results = new website(ID);
         this.state = false;
         this.keywords = this.keyword_extract(this.title);
         // initialize the DOM object
         this.frame = document.createElement("div");
         this.frame.id = "frame_" + ID;
     }
+    // The function to import all the icons by URLs
+    importIcons() {
+        for (let i = 0; i < this.results.length; i++) {
 
-    // The function that can toggle on and off
-    toggleOnOff(frame) {	//toggleOnOff
-        if (frame.style.display == "none") {
-            frame.setAttribute("style", "display: block");
+        }
+    }
+    // toggle the button on off state
+    toggleOnOff() {	//toggleOnOff
+        if (this.frame.style.display == "none") {
+            this.frame.setAttribute("style", "display: block");
         } else {
-            frame.setAttribute("style", "display: none");
+            this.frame.setAttribute("style", "display: none");
         }
     }
     // Extract the keywords by title
