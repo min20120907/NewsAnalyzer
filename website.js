@@ -4,7 +4,7 @@ let website=class {
     constructor(ID) {
         this.dom = document.createElement('div');
         this.dom.id = "website_" + ID;
-        this.search_result = [];
+        this.search_result = new Array(this.dom.items.length);
         this.fetch_results();
     }
     fetch_results() {
