@@ -9,6 +9,7 @@ let resultFrame = class {
         this.results = new Array();
         this.state = false;
         this.keywords = this.keyword_extract(this.title);
+        // initialize the DOM object
         this.frame = document.createElement("div");
         this.frame.id = "frame_" + ID;
     }

@@ -21,6 +21,7 @@ let button = class {
     (function (ID, btn) {
       btn.dom.onclick = function () {
         console.log(ID);
+        toggleOnOff(document.getElementById("frame_"+ID));
         // createIFrame(i);
       };
     })(this.ID, this);
