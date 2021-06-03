@@ -7,19 +7,22 @@ let table = class {
         // add some style
         this.dom.setAttribute("class", "table table-striped");
         this.title = lpost.title;
+        this.keywords="";
         let delay = function (s) {
             return new Promise(function (resolve, reject) {
                 setTimeout(resolve, s);
             });
         };
-        delay().then(function () {
-            return delay(3000); // 延遲3秒
-        }).then(function () {
-            this.resultContent = this.searchGoogle(this.keyword_extract(this.title));
-        });
-        this.page = new website(this.ID, this.resultContent);
-        this.search_result = this.page.items;
-        this.tbody = document.createElement("tbody");
+        delay().then(function (tab) {
+            tab.keywords = tab.keyword_extract(tab.title);
+            return delay(10000); // 延遲3秒
+        }(this)).then(function (tab) {
+            tab.resultContent = tab.searchGoogle(tab.keywords);
+            tab.page = new website(tab.ID, tab.resultContent);
+        tab.search_result = tab.page.items;
+        tab.tbody = document.createElement("tbody");
+        }(this));
+        
 
     }
     // The function to fetch the search results
