@@ -1,6 +1,6 @@
 jieba
 flask
 flask-cors
-textbert
+keybert
 textblob
 
