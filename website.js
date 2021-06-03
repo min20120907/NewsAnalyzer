@@ -2,11 +2,12 @@
 // Usage: An object to collect all the information inside the Google search result querys
 let website=class {
     constructor(ID, text) {
-        this.dom.id = "website_" + ID;
-        if(document.getElementById())
+        if(document.getElementById("website_"+ID))
             throw (new TargetExistedException("Target is existed!"));
         
-        this.dom = text;
+        this.dom = document.createElement("div");
+        this.dom.innerHTML = text;
+        this.dom.id = "website_" + ID;
         this.items = this.dom.items;
     }
     

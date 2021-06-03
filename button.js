@@ -1,6 +1,6 @@
 let button = class {
 
-  constructor(ID, text, className) {
+  constructor(ID, text, className, lpost) {
     
     
     this.ID=ID;
@@ -8,7 +8,7 @@ let button = class {
       throw (new TargetExistedException("Target element is existed!"));
     this.text = text;
     this.className = className;
-    
+    this.lpost = lpost;
     this.constructButton();
   }
   constructButton(){
@@ -21,9 +21,9 @@ let button = class {
     (function (ID, btn) {
       btn.dom.onclick = function () {
         console.log(ID);
-        try{
-        new resultFrame(ID);
-        }catch(TargetExistedException){}
+        
+        new resultFrame(ID,10,btn.lpost);
+        
         // createIFrame(i);
       };
     })(this.ID, this);

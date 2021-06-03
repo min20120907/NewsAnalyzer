@@ -6,37 +6,32 @@ let table = class {
         this.dom.id = "table_" + ID;
         // add some style
         this.dom.setAttribute("class", "table table-striped");
-        this.page = new website(this.ID);
+        this.title = lpost.title;
+        this.resultContent = this.searchGoogle(this.keyword_extract(this.title));
+        this.page = new website(this.ID, this.resultContent);
         this.search_result = this.page.items;
         this.tbody = document.createElement("tbody");
-        this.title = lpost.title;
-        this.searchGoogle(this.keyword_extract(this.title));
-
-
-        // construct the grids
-        for (let i = 0; i < rows; i++) {
-            tr_ele = document.createElement("tr");
-            this.page.dom.insertBefore(new icon(this.search_result[i].dom), search_result[i].firstChild);
-            tr_ele.appendChild(search_result[i]);
-            this.tbody.appendChild(tr_ele);
-            this.dom.appendChild(this.tbody);
-        }
-        this.dom.appendChild(this.tbody);
+        
     }
     // The function to fetch the search results
     fetch_results() {
         for (let i = 0; i < rows; i++) {
+            // initialize the structure
+            tr_ele = document.createElement("tr");
+            this.page.dom.insertBefore(new icon(this.search_result[i]), search_result[i].firstChild);
+            tr_ele.appendChild(search_result[i]);
+            this.tbody.appendChild(tr_ele);
+            this.dom.appendChild(this.tbody);
             // Initialize dom elements
             let result = document.createElement("div");
             result.id = "result_" + i;
             let link = document.createElement('a');
-            link.href = this.lpost.URL;
-            link.innerText = this.lpost.title;
-
+            link.href = this.search_result.URL;
+            link.innerText = this.search_result.title;
             result.appendChild(link);
-
             this.search_result[i] = result;
         }
+        this.dom.appendChild(this.tbody);
     }
     // The function to import all the icons by URLs
     importIcons() {
@@ -65,15 +60,11 @@ let table = class {
 
     // The funciton that one can fetch the top 10 Google Results
     searchGoogle(keywords) {	//searchGoogle
-        if (!keywords.includes("中天新聞")) {
-            let searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + title.substring(0, 5);
-        } else {
-            let searchUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug&cx=9f8b720f1b3abf296&q=" + title.substring(title.length - 5, title.length);
-        }
+        let searchUrl = "https://customsearch.googleapis.com/customsearch/v1?key=AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ&cx=9f8b720f1b3abf296" + keywords.replaceAll("//","");
         $(document).ready(function () {
             $.ajax({
                 type: "GET",
-                url: filename,
+                url: searchUrl,
                 async: true,
                 headers: {
                     "x-requested-with": "xhr"
