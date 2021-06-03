@@ -17,7 +17,7 @@ def extract(title):
 # Main Program #
 colnames = ['新聞來源', '新聞標題','關鍵字1','關鍵字2','關鍵字3']
 # open the file in universal line ending mode 
-with open('AI_keywords.csv', 'rU') as infile:
+with open('../db/AI_keywords.csv', 'rU') as infile:
   # read the file as a dictionary for each row ({header : value})
   reader = csv.DictReader(infile)
   data = {}

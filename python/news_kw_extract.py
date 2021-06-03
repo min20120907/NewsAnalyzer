@@ -6,7 +6,10 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "https://localhose:4000"}})
+app.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy   dog'
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 @app.route('/extract', methods = ['GET'])
 def extract():
     kw=[]
@@ -30,5 +33,5 @@ def extract():
     return "//".join(kw)
 
 if __name__ == '__main__':
-    app.run(debug = True, host="0.0.0.0", port=4000)
+    app.run(debug = True, host="0.0.0.0",ssl_context=("/etc/letsencrypt/live/shipaicraft.asuscomm.com/fullchain.pem", "/etc/letsencrypt/live/shipaicraft.asuscomm.com/privkey.pem"), port=4000)
 

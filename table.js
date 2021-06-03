@@ -7,11 +7,20 @@ let table = class {
         // add some style
         this.dom.setAttribute("class", "table table-striped");
         this.title = lpost.title;
-        this.resultContent = this.searchGoogle(this.keyword_extract(this.title));
+        let delay = function (s) {
+            return new Promise(function (resolve, reject) {
+                setTimeout(resolve, s);
+            });
+        };
+        delay().then(function () {
+            return delay(3000); // 延遲3秒
+        }).then(function () {
+            this.resultContent = this.searchGoogle(this.keyword_extract(this.title));
+        });
         this.page = new website(this.ID, this.resultContent);
         this.search_result = this.page.items;
         this.tbody = document.createElement("tbody");
-        
+
     }
     // The function to fetch the search results
     fetch_results() {
@@ -48,7 +57,7 @@ let table = class {
                 return this.responseText;
             }
         };
-        xhttp.open("GET", "https://alumni.iit.tku.edu.tw:4000/extract?title=" + title, true);
+        xhttp.open("GET", "https://shipaicraft.asuscomm.com:4000/extract?title=" + title, true);
         xhttp.send();
         return xhttp.responseText;
     }
@@ -60,7 +69,7 @@ let table = class {
 
     // The funciton that one can fetch the top 10 Google Results
     searchGoogle(keywords) {	//searchGoogle
-        let searchUrl = "https://customsearch.googleapis.com/customsearch/v1?key=AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ&cx=9f8b720f1b3abf296" + keywords.replaceAll("//","");
+        let searchUrl = "https://customsearch.googleapis.com/customsearch/v1?key=AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ&cx=9f8b720f1b3abf296&q=" + keywords.replaceAll("//", "");
         $(document).ready(function () {
             $.ajax({
                 type: "GET",
