@@ -22,7 +22,7 @@ let button = class {
       btn.dom.onclick = function () {
         console.log(ID);
         try{
-        new resultFrame(ID, 10, btn.lpost,true).clickTime++;
+        new resultFrame(ID, 10, btn.lpost,true);
         }catch(TargetExistedException){}
         // createIFrame(i);
       };
