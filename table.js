@@ -14,10 +14,12 @@ let table = class {
         this.title = lpost.title;
         this.keywords = "default";
         console.log("searching title...")
+        this.page = new website(this.ID, "");
         this.keywords = this.keyword_extract(this.title, this);
 
-        this.page = new website(this.ID, "");
+        
         this.search_result = this.page.items;
+        console.log(this.page.items);
         this.tbody = document.createElement("tbody");
 
 
@@ -88,6 +90,7 @@ let table = class {
                     // assign the result to website element
                     try {
                         k.page = new website(this.ID, text);
+                        console.log()
                     } catch (TargetExistedException) {
                     }
                     return text;
