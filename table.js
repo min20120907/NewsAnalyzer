@@ -35,7 +35,7 @@ let table = class {
             let title_elem = document.createElement("a");
             title_elem.innerText = this.search_result[i].title;
             title_elem.href = this.search_result[i].link;
-            let icon_elem = new icon(this.search_result[i]).dom;
+            let icon_elem = new icon(this.search_result[i].link).dom;
             data.appendChild(icon_elem);
             data.appendChild(title_elem);
 
