@@ -33,29 +33,12 @@ let table = class {
             let tr_ele = document.createElement("tr");
             let data = document.createElement("div");
             let title_elem = document.createElement("a");
-            if (listing_mode == "whitelist") {
-                if (whitelist.inWhiteList(this.search_result[i].link)) {
-                    title_elem.innerText = this.search_result[i].title;
-                    title_elem.href = this.search_result[i].link;
-                    let icon_elem = new icon(this.search_result[i].link).dom;
-                    data.appendChild(icon_elem);
-                    data.appendChild(title_elem);
-                }
-            } else if (listing_mode == "blacklist") {
-                if (blacklist.inBlackList(this.search_result[i].link)) {
-                    title_elem.innerText = this.search_result[i].title;
-                    title_elem.href = this.search_result[i].link;
-                    let icon_elem = new icon(this.search_result[i].link).dom;
-                    data.appendChild(icon_elem);
-                    data.appendChild(title_elem);
-                }
-            } else {
-                title_elem.innerText = this.search_result[i].title;
-                title_elem.href = this.search_result[i].link;
-                let icon_elem = new icon(this.search_result[i].link).dom;
-                data.appendChild(icon_elem);
-                data.appendChild(title_elem);
-            }
+
+            title_elem.innerText = this.search_result[i].title;
+            title_elem.href = this.search_result[i].link;
+            let icon_elem = new icon(this.search_result[i].link).dom;
+            data.appendChild(icon_elem);
+            data.appendChild(title_elem);
             tr_ele.appendChild(data);
             this.tbody.appendChild(tr_ele);
             this.dom.appendChild(this.tbody);
@@ -87,6 +70,11 @@ let table = class {
 
     // The funciton that one can fetch the top 10 Google Results
     searchGoogle(keywords, outerThis) {	//searchGoogle
+        // another keys
+        // key1: AIzaSyB_CgV1NI-PR1CE5dp0sKa7Y4MLm92qbpg
+        // key2: AIzaSyAHh1ZV235Ubhy6bQwYa4E9pp22kNcwY_k
+        // key3: AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ
+        // key4: AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug
         let searchUrl = "https://customsearch.googleapis.com/customsearch/v1?key=AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ&cx=9f8b720f1b3abf296&q=" + keywords + "&num=" + this.rows;
         $(document).ready(function () {
             $.ajax({
