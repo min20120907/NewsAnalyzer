@@ -78,7 +78,7 @@ let table = class {
 
     // The funciton that one can fetch the top 10 Google Results
     searchGoogle(keywords) {	//searchGoogle
-        let searchUrl = "https://customsearch.googleapis.com/customsearch/v1?key=AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ&cx=9f8b720f1b3abf296&q=" + keywords;
+        let searchUrl = "https://customsearch.googleapis.com/customsearch/v1?key=AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ&cx=9f8b720f1b3abf296&q=" + keywords+"&num="+this.rows;
         $(document).ready(function () {
             $.ajax({
                 type: "GET",
