@@ -47,12 +47,6 @@ let table = class {
         }
         this.dom.appendChild(this.tbody);
     }
-    // The function to import all the icons by URLs
-    importIcons() {
-        for (let i = 0; i < this.results.length; i++) {
-            this.icon_list.push(new icon(this.results[i]));
-        }
-    }
     // Extract the keywords by title
     keyword_extract(title, k) {
         let xhttp = new XMLHttpRequest();
