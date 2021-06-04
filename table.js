@@ -33,12 +33,29 @@ let table = class {
             let tr_ele = document.createElement("tr");
             let data = document.createElement("div");
             let title_elem = document.createElement("a");
-            title_elem.innerText = this.search_result[i].title;
-            title_elem.href = this.search_result[i].link;
-            let icon_elem = new icon(this.search_result[i].link).dom;
-            data.appendChild(icon_elem);
-            data.appendChild(title_elem);
-
+            if (listing_mode == "whitelist") {
+                if (whitelist.inWhiteList(this.search_result[i].link)) {
+                    title_elem.innerText = this.search_result[i].title;
+                    title_elem.href = this.search_result[i].link;
+                    let icon_elem = new icon(this.search_result[i].link).dom;
+                    data.appendChild(icon_elem);
+                    data.appendChild(title_elem);
+                }
+            } else if (listing_mode == "blacklist") {
+                if (blacklist.inBlackList(this.search_result[i].link)) {
+                    title_elem.innerText = this.search_result[i].title;
+                    title_elem.href = this.search_result[i].link;
+                    let icon_elem = new icon(this.search_result[i].link).dom;
+                    data.appendChild(icon_elem);
+                    data.appendChild(title_elem);
+                }
+            } else {
+                title_elem.innerText = this.search_result[i].title;
+                title_elem.href = this.search_result[i].link;
+                let icon_elem = new icon(this.search_result[i].link).dom;
+                data.appendChild(icon_elem);
+                data.appendChild(title_elem);
+            }
             tr_ele.appendChild(data);
             this.tbody.appendChild(tr_ele);
             this.dom.appendChild(this.tbody);

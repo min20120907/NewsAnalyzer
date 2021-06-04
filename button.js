@@ -20,7 +20,7 @@ let button = class {
     // onclick function
     (function (ID, btn) {
       btn.dom.onclick = function () {
-        console.log(ID);
+        // console.log(ID);
         try{
         new resultFrame(ID, 10, btn.lpost,true);
         }catch(TargetExistedException){}

@@ -27,7 +27,7 @@ let resultFrame = class {
         this.frame = document.createElement("div");
         this.frame.id = "frame_" + ID;
         this.frame.setAttribute("style", "display: none");
-        console.log("frame created!");
+        // console.log("frame created!");
 
     }
 

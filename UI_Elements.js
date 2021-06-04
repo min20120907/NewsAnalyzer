@@ -1,4 +1,8 @@
 // Global Variables
+// listing mode constant, one can select them by following enumerators
+// blacklist: blacklist mode
+// whitelist: whitelist mode
+// none/default or any other strings: normal mode (No filterings) 
 const listing_mode = "blacklist";
 const class_linkpost = "rq0escxv l9j0dhe7 du4w35lb j83agx80 pfnyh3mw i1fnvgqd bp9cbjyn owycx6da btwxx1t3 b5q2rw42 lq239pai f10w8fjw hv4rvrfc dati1w0a pybr56ya";
 const class_post = "rq0escxv l9j0dhe7 du4w35lb hybvsw6c io0zqebd m5lcvass fbipl8qg nwvqtn77 k4urcfbm ni8dbmo4 stjgntxs sbcfpzgs";
