@@ -1,9 +1,10 @@
+import torch
 from keybert import KeyBERT
 import jieba
 from textblob import TextBlob
 import csv
 def extract(title):
-    model = KeyBERT('stsb-xlm-r-multilingual')
+    model = KeyBERT('LaBSE')
     keywords = []
     lang = TextBlob(title)
     if(lang.detect_language()=='zh-CN' or lang.detect_language()=='zh-TW'):
@@ -15,9 +16,13 @@ def extract(title):
     return keywords
 
 # Main Program #
+# setting device on GPU if available, else CPU
+device = torch.device( 'cpu')
+print('Using device:', device)
+print()
 colnames = ['新聞來源', '新聞標題','關鍵字1','關鍵字2','關鍵字3']
 # open the file in universal line ending mode 
-with open('AI_keywords.csv', 'rU') as infile:
+with open('../db/AI_keywords.csv', 'rU') as infile:
   # read the file as a dictionary for each row ({header : value})
   reader = csv.DictReader(infile)
   data = {}
@@ -30,7 +35,11 @@ with open('AI_keywords.csv', 'rU') as infile:
 titles= data['新聞標題']
 for a in titles:
     keywords = extract(a)
-    kw_out = " ".join(keywords)
-    print(kw_out)
+    print(keywords)
+    if device.type == 'cuda':
+        print(torch.cuda.get_device_name(0))
+        print('Memory Usage:')
+        print('Allocated:', round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
+        print('Cached:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
 
 

@@ -2,15 +2,16 @@ from keybert import KeyBERT
 import jieba
 from textblob import TextBlob
 from flask import Flask, redirect, url_for, request
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
 
-cors = CORS(app, resources={r"/api/*": {"origins": "https://localhose:4000"}})
+cors = CORS(app, resources={r"/api/*": {"origins": ["https://www.facebook.com"]}}, support_credentials=True)
 app.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy   dog'
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route('/extract', methods = ['GET'])
+@cross_origin()
 def extract():
     kw=[]
     jieba.set_dictionary("dict.txt.big")
@@ -30,7 +31,8 @@ def extract():
         keywords = model.extract_keywords(title,stop_words='english')
         for a in keywords:
             kw.append(a[0])
-    return "//".join(kw)
+    response = "//".join(kw)
+    return response
 
 if __name__ == '__main__':
     app.run(debug = True, host="0.0.0.0",ssl_context=("/etc/letsencrypt/live/shipaicraft.asuscomm.com/fullchain.pem", "/etc/letsencrypt/live/shipaicraft.asuscomm.com/privkey.pem"), port=4000)
