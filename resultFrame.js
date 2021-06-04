@@ -3,6 +3,7 @@ let resultFrame = class {
 
     constructor(ID, rows, lpost,onclick) {
         this.state = false;
+        this.clickTime = 0;
         // initialize the DOM object
         // if element existed change the state of display
         if (document.getElementById("frame_"+ID) != null) {

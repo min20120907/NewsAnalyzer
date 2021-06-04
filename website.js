@@ -5,10 +5,7 @@ let website=class {
         if(document.getElementById("website_"+ID)!=null)
             throw (new TargetExistedException("Target is existed!"));
         
-        this.dom = document.createElement("div");
-        this.dom.innerHTML = text;
-        this.dom.id = "website_" + ID;
-        this.items = this.dom.items;
+        this.items = text.items;
     }
     
 }

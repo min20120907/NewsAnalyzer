@@ -34,6 +34,10 @@ def extract():
     del keywords
     response = "//".join(kw)
     del kw
+    del model
+    del title
+    del lang
+
     return response
 
 if __name__ == '__main__':
