@@ -16,11 +16,11 @@ let table = class {
         this.keywords = "default";
         console.log("searching title...");
         this.keywords = this.keyword_extract(this.title, this);
-        this.search_result = this.text.items;
-        this.tbody = document.createElement("tbody");
+
 
 
     }
+
     // The function to fetch the web page
     fetch_page(text) {
         console.log(text);
@@ -28,22 +28,20 @@ let table = class {
     }
     // The function to fetch the search results
     fetch_results() {
-        console.log(this.page.search_result);
         for (let i = 0; i < this.rows; i++) {
             // initialize the structure
             let tr_ele = document.createElement("tr");
-            this.dom.insertBefore(new icon(this.search_result[i]), this.search_result[i].firstChild);
-            tr_ele.appendChild(search_result[i]);
+            let data = document.createElement("div");
+            let title_elem = document.createElement("a");
+            title_elem.innerText = this.search_result[i].title;
+            title_elem.href = this.search_result[i].link;
+            let icon_elem = new icon(this.search_result[i]).dom;
+            data.appendChild(icon_elem);
+            data.appendChild(title_elem);
+
+            tr_ele.appendChild(data);
             this.tbody.appendChild(tr_ele);
             this.dom.appendChild(this.tbody);
-            // Initialize dom elements
-            let result = document.createElement("div");
-            result.id = "result_" + i;
-            let link = document.createElement('a');
-            link.href = this.search_result[i].URL;
-            link.innerText = this.search_result[i].title;
-            result.appendChild(link);
-            this.search_result[i] = result;
         }
         this.dom.appendChild(this.tbody);
     }
@@ -54,8 +52,8 @@ let table = class {
             if (this.readyState == 4 && this.status == 200) {
                 // console.log(this.responseText);
                 k.keywords = this.responseText;
-                k.searchGoogle(this.responseText.replaceAll("//", " "));
-                k.fetch_results();
+                k.searchGoogle(this.responseText.replaceAll("//", " "), k);
+
                 console.log("searching completed!");
                 return this.responseText;
             }
@@ -71,8 +69,8 @@ let table = class {
     // }
 
     // The funciton that one can fetch the top 10 Google Results
-    searchGoogle(keywords) {	//searchGoogle
-        let searchUrl = "https://customsearch.googleapis.com/customsearch/v1?key=AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ&cx=9f8b720f1b3abf296&q=" + keywords+"&num="+this.rows;
+    searchGoogle(keywords, outerThis) {	//searchGoogle
+        let searchUrl = "https://customsearch.googleapis.com/customsearch/v1?key=AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ&cx=9f8b720f1b3abf296&q=" + keywords + "&num=" + this.rows;
         $(document).ready(function () {
             $.ajax({
                 type: "GET",
@@ -85,7 +83,11 @@ let table = class {
                 cache: 'default',
                 success: function (text) {
                     // assign the result to website element
-                    this.items = text.items;
+                    outerThis.text = text;
+                    outerThis.search_result = outerThis.text.items;
+                    console.log(outerThis.search_result);
+                    outerThis.tbody = document.createElement("tbody");
+                    outerThis.fetch_results();
                     return text;
                 }
             });

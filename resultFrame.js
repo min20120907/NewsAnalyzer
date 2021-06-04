@@ -9,10 +9,10 @@ let resultFrame = class {
         if (document.getElementById("frame_"+ID) != null) {
             if(onclick){
             this.frame = document.getElementById("frame_"+ID);
+            this.frame.appendChild(new table(ID, rows, lpost).dom);
             this.state = !this.state;
             this.toggleOnOff();
-            this.table = new table(ID, rows, lpost);
-            this.frame.appendChild(this.table.dom);
+            
             }
             throw (new TargetExistedException("[WARNING] Target element is existed!"));
         }
