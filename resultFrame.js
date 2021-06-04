@@ -8,15 +8,15 @@ let resultFrame = class {
         // if element existed change the state of display
         if (document.getElementById("frame_" + ID) != null) {
             if (onclick) {
-                this.frame.setAttribute("clicktime", this.clickTime++);
+                
                 this.frame = document.getElementById("frame_" + ID);
-                if (this.frame.clickTime >= 0){
+                this.frame.setAttribute("clicktime", this.frame.getAttribute("clicktime")+1);
+                if (this.frame.getAttribute("clicktime") >= 0){
                     this.clickTime = this.frame.getAttribute("clicktime");
-                    console.log("attribute set!");
+                   //  console.log("attribute set!");
                 }
-
-                console.log(this.frame.getAttribute("clicktime"));
-                if (this.clickTime <= 0){
+                // console.log(this.frame.getAttribute("clicktime"));
+                if (this.frame.getAttribute("clicktime")==1){
                     this.frame.appendChild(new table(ID, rows, lpost).dom);}
                 this.state = !this.state;
                 this.toggleOnOff();
