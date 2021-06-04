@@ -38,7 +38,15 @@ let UI_Elements = class {
                 this.linkposts[i]
                     .getElementsByClassName(class_header)[0]
                     .appendChild(new button(i, "More", "btn btn-warning", this.links[i]).dom);
-            } catch (TargetExistedException){}
+
+            } catch (TargetExistedException){
+            }
+            try{
+            this.linkposts[i]
+            .getElementsByClassName(class_header)[0]
+            .appendChild(new resultFrame(i,10, this.links[i]).frame);
+            }catch(TargetExistedException){
+            }
         }
 
     }

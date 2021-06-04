@@ -31,7 +31,9 @@ def extract():
         keywords = model.extract_keywords(title,stop_words='english')
         for a in keywords:
             kw.append(a[0])
+    del keywords
     response = "//".join(kw)
+    del kw
     return response
 
 if __name__ == '__main__':
