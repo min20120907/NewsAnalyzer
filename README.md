@@ -12,6 +12,9 @@ The goal is to demonstrate technologies that can be used to improve prevention o
 
 ## Presentation
 https://drive.google.com/file/d/1kn-UqlCPElJ_qvs7id2387om14KRjknp/view?usp=sharing
+
+## IMPORTANT NOTICE!!!!
+**This application is using free licence of Google Custom Search API, please use it wisely, because there are only 100 queries per day.**
 ## Platforms
 
 Open source on GitHub.
