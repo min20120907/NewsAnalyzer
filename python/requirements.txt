@@ -1,0 +1,6 @@
+jieba
+flask
+flask-cors
+keybert
+textblob
+
