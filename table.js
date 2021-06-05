@@ -9,14 +9,16 @@ let table = class {
         this.ID = ID;
         this.dom = document.createElement("table");
         this.dom.id = "table_" + ID;
+        
         // add some style
         this.dom.setAttribute("class", "table table-striped");
         this.title = lpost.title;
         this.text = null;
+        this.key_id = 0;
         this.keywords = "default";
         console.log("searching title...");
         this.keywords = this.keyword_extract(this.title, this);
-
+        
 
 
     }
@@ -75,7 +77,14 @@ let table = class {
         // key2: AIzaSyAHh1ZV235Ubhy6bQwYa4E9pp22kNcwY_k
         // key3: AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ
         // key4: AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug
-        let searchUrl = "https://customsearch.googleapis.com/customsearch/v1?key=AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ&cx=9f8b720f1b3abf296&q=" + keywords + "&num=" + this.rows;
+        let keys = [
+            "AIzaSyB_CgV1NI-PR1CE5dp0sKa7Y4MLm92qbpg",
+            "AIzaSyAHh1ZV235Ubhy6bQwYa4E9pp22kNcwY_k",
+            "AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ",
+            "AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug"
+        ];
+
+        let searchUrl = "https://customsearch.googleapis.com/customsearch/v1?key=" + keys[outerThis.key_id] + "&cx=9f8b720f1b3abf296&q=" + keywords + "&num=" + this.rows;
         $(document).ready(function () {
             $.ajax({
                 type: "GET",
@@ -94,6 +103,15 @@ let table = class {
                     outerThis.tbody = document.createElement("tbody");
                     outerThis.fetch_results();
                     return text;
+                },
+                error: function (text) {
+                    // if error 429
+                    outerThis.key_id++;
+                    console.log(outerThis.key_id);
+                    outerThis.searchGoogle(keywords,outerThis);
+
+                    // print error
+                    console.log(text);
                 }
             });
         });
