@@ -73,8 +73,15 @@ let table = class {
     // The funciton that one can fetch the top 10 Google Results
     searchGoogle(keywords, outerThis) {	//searchGoogle
         // another keys
+        // key1: AIzaSyB_CgV1NI-PR1CE5dp0sKa7Y4MLm92qbpg
+        // key2: AIzaSyAHh1ZV235Ubhy6bQwYa4E9pp22kNcwY_k
+        // key3: AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ
+        // key4: AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug
         let keys = [
-
+            "AIzaSyB_CgV1NI-PR1CE5dp0sKa7Y4MLm92qbpg",
+            "AIzaSyAHh1ZV235Ubhy6bQwYa4E9pp22kNcwY_k",
+            "AIzaSyCLgHAaCCuvQjtDkWqUUzdIwCCs_yfGPXQ",
+            "AIzaSyBOXrA4oFgl1SNyxm9sA_vTzaAVYorQDug"
         ];
 
         let searchUrl = "https://customsearch.googleapis.com/customsearch/v1?key=" + keys[outerThis.key_id] + "&cx=9f8b720f1b3abf296&q=" + keywords + "&num=" + this.rows;
