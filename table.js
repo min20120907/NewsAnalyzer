@@ -16,7 +16,7 @@ let table = class {
         this.text = null;
         this.key_id = 0;
         this.keywords = "default";
-        console.log("searching title...");
+        //console.log("searching title...");
         this.keywords = this.keyword_extract(this.title, this);
         
 
@@ -56,7 +56,7 @@ let table = class {
                 k.keywords = this.responseText;
                 k.searchGoogle(this.responseText.replaceAll("//", " "), k);
 
-                console.log("searching completed!");
+                //console.log("searching completed!");
                 return this.responseText;
             }
         };
@@ -99,7 +99,7 @@ let table = class {
                     // assign the result to website element
                     outerThis.text = text;
                     outerThis.search_result = outerThis.text.items;
-                    console.log(outerThis.search_result);
+                    //console.log(outerThis.search_result);
                     outerThis.tbody = document.createElement("tbody");
                     outerThis.fetch_results();
                     return text;
@@ -107,7 +107,7 @@ let table = class {
                 error: function (text) {
                     // if error 429
                     outerThis.key_id++;
-                    console.log(outerThis.key_id);
+                   // console.log(outerThis.key_id);
                     outerThis.searchGoogle(keywords,outerThis);
 
                     // print error
