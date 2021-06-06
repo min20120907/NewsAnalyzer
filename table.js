@@ -13,7 +13,7 @@ let table = class {
         // add some style
         this.dom.setAttribute("class", "table table-striped");
         this.title = lpost.title;
-        this.text = null;
+        this.search_result = null;
         this.keywords = "default";
         //console.log("searching title...");
         this.keywords = this.keyword_extract(this.title, this);
@@ -37,6 +37,7 @@ let table = class {
 
             title_elem.innerText = this.search_result[i].title;
             title_elem.href = this.search_result[i].link;
+            console.log(this.search_result[i].link);
             let icon_elem = new icon(this.search_result[i].link).dom;
             data.appendChild(icon_elem);
             data.appendChild(title_elem);
@@ -85,9 +86,9 @@ let table = class {
                 mode: 'json',
                 cache: 'default',
                 success: function (text) {
+                    console.log(JSON.parse(text));
                     // assign the result to website element
-                    outerThis.text = text;
-                    outerThis.search_result = outerThis.text;
+                    outerThis.search_result = JSON.parse(text);
                     //console.log(outerThis.search_result);
                     outerThis.tbody = document.createElement("tbody");
                     outerThis.fetch_results();
