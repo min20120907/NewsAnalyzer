@@ -6,17 +6,17 @@ The goal is to demonstrate technologies that can be used to improve prevention o
 
 ## Installation
 ### Client
-    Go to chrome store with the link below and press "add to chrome" button.  
+ Go to chrome store with the link below and press "add to chrome" button.  
 ### Server
 With server side, we have the features as following below, and all the scripts are storing inside python folder:  
-    1. CSV keywords analyzing tool (local): kw_analyzing_[algo].py
-    2. Flask keyword extracting server (HTTPS): news_extract.py  
+ 1. CSV keywords analyzing tool (local): kw_analyzing_[algo].py
+ 2. Flask keyword extracting server (HTTPS): news_extract.py  
 #### Prequirements
-    - Python 3.8
-    - Flask
-    - Jieba
-    - PyTorch
-    - KeyBERT
+ - Python 3.8
+ - Flask
+ - Jieba
+ - PyTorch
+ - KeyBERT
 #### Prerequirements Installation
     pip3 install -r requirements.txt
 
@@ -123,6 +123,8 @@ IMAGE(IMAGE)
 
 ## Contact Information
 If you have any bugs or any issues on this chrome extension feel free to establish issues or pull request on Github, or send a email to me: jefflin.je598@gmail.com, and if it is possible, giving us some donation or Google Custom Search API key will be much appreciated!  
+  
+  
 XMR: 47Dt6wfBx37W3VNVFofU1cM1RmBoXfBvvNivdcc8cpWpejuubuyGqeKL45JHHJ9wVc4DN7B8zkVyM1WMctd8imMG5YXnU6d  
-ETH:
-0x62C8d6Dbb39141Db60C0BD60C4c2111079438E04
+ETH: 0x62C8d6Dbb39141Db60C0BD60C4c2111079438E04
+XCH: xch1uezmv85upf8geynz7qpqad37m9ju8p7ug3ucm87f64lhvjr4tdns4rwntc
