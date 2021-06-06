@@ -1,4 +1,3 @@
-import torch
 from keybert import KeyBERT
 import jieba
 from textblob import TextBlob
@@ -13,9 +12,6 @@ def extract(title):
 
 # Main Program #
 # setting device on GPU if available, else CPU
-device = torch.device( 'cpu')
-print('Using device:', device)
-print()
 colnames = ['新聞來源', '新聞標題','關鍵字1','關鍵字2','關鍵字3']
 # open the file in universal line ending mode 
 with open('../db/AI_keywords.csv', 'rU') as infile:
@@ -32,10 +28,3 @@ titles= data['新聞標題']
 for a in titles:
     keywords = extract(a)
     print(keywords)
-    if device.type == 'cuda':
-        print(torch.cuda.get_device_name(0))
-        print('Memory Usage:')
-        print('Allocated:', round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
-        print('Cached:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
-
-
