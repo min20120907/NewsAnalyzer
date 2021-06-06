@@ -126,5 +126,5 @@ If you have any bugs or any issues on this chrome extension feel free to establi
   
   
 XMR: 47Dt6wfBx37W3VNVFofU1cM1RmBoXfBvvNivdcc8cpWpejuubuyGqeKL45JHHJ9wVc4DN7B8zkVyM1WMctd8imMG5YXnU6d  
-ETH: 0x62C8d6Dbb39141Db60C0BD60C4c2111079438E04
+ETH: 0x62C8d6Dbb39141Db60C0BD60C4c2111079438E04  
 XCH: xch1uezmv85upf8geynz7qpqad37m9ju8p7ug3ucm87f64lhvjr4tdns4rwntc
