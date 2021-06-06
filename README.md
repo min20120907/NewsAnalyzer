@@ -18,7 +18,7 @@ With server side, we have the features as following below, and all the scripts a
     - PyTorch
     - KeyBERT
 #### Prerequirements Installation
-    `pip3 install -r requirements.txt`
+    pip3 install -r requirements.txt
 
 
 ## Extension Link
