@@ -10,6 +10,23 @@ Member 408854015 林中南
 
 The goal is to demonstrate technologies that can be used to improve prevention of the spread of fake news on Facebook, these technologies including a simple interface to compare source news with other related articles, text recognize system such as JIEBA, and a transparent user report system that will also allow public and professionals of a variety of fields to help submit and examine reports for fake or biased news if they want to.
 
+## Installation
+### Client
+    Go to chrome store with the link below and press "add to chrome" button.  
+### Server
+With server side, we have the features as following below, and all the scripts are storing inside python folder:  
+    1. CSV keywords analyzing tool (local): kw_analyzing_[algo].py
+    2. Flask keyword extracting server (HTTPS): news_extract.py  
+#### Prequirements
+    - Python 3.8
+    - Flask
+    - Jieba
+    - PyTorch
+    - KeyBERT
+#### Prerequirements Installation
+    `pip3 install -r requirements.txt`
+
+
 ## Extension Link
 https://chrome.google.com/webstore/detail/news-analyzer/hedmeapammhcjoelaceokinbhgjiiifk?hl=zh-TW&authuser=0
 
@@ -17,7 +34,7 @@ https://chrome.google.com/webstore/detail/news-analyzer/hedmeapammhcjoelaceokinb
 https://drive.google.com/file/d/1kn-UqlCPElJ_qvs7id2387om14KRjknp/view?usp=sharing
 
 ## IMPORTANT NOTICE!!!!
-**This application is using free licence of Google Custom Search API, please use it wisely, because there are currently 12,700 queries per day.**
+**This application is using free licence of Google Custom Search API, please use it wisely, because there are currently 12,700 queries per day.**  
 And this project is focus on the users in Taiwan or other Mandarin speaking countries, other locale would be differ in the results, if you would like to contribute this project feel free to pull the request.
 
 ## Official Webpage
