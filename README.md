@@ -1,10 +1,4 @@
 # News Analyzer
-## Project Members
-
-Leader 408850013 林倉裕\
-Member 408850310 蔡沛騰\
-Member 408850492 柯智懷\
-Member 408854015 林中南
 
 ## Goal
 
@@ -128,7 +122,7 @@ COMMENT(VARCHAR,1000),\
 IMAGE(IMAGE)
 
 ## Contact Information
-If you have any bugs or any issues on this chrome extension feel free to establish issues or pull request on Github, or send a email to me: jefflin.je598@gmail.com, and if it is possible, giving us some donation or Google Custom Search API key will be much appreciated!
-XMR: 47Dt6wfBx37W3VNVFofU1cM1RmBoXfBvvNivdcc8cpWpejuubuyGqeKL45JHHJ9wVc4DN7B8zkVyM1WMctd8imMG5YXnU6d
+If you have any bugs or any issues on this chrome extension feel free to establish issues or pull request on Github, or send a email to me: jefflin.je598@gmail.com, and if it is possible, giving us some donation or Google Custom Search API key will be much appreciated!  
+XMR: 47Dt6wfBx37W3VNVFofU1cM1RmBoXfBvvNivdcc8cpWpejuubuyGqeKL45JHHJ9wVc4DN7B8zkVyM1WMctd8imMG5YXnU6d  
 ETH:
 0x62C8d6Dbb39141Db60C0BD60C4c2111079438E04
