@@ -17,12 +17,16 @@ https://chrome.google.com/webstore/detail/news-analyzer/hedmeapammhcjoelaceokinb
 https://drive.google.com/file/d/1kn-UqlCPElJ_qvs7id2387om14KRjknp/view?usp=sharing
 
 ## IMPORTANT NOTICE!!!!
+<<<<<<< HEAD
 **This application is using free licence of Google Custom Search API, please use it wisely, because there are currently 12,700 queries per day.**
 And this project is focus on the users in Taiwan or other Mandarin speaking countries, other locale would be differ in the results, if you would like to contribute this project feel free to pull the request.
 
 ## Official Webpage
 **Coming Soon...**
 
+=======
+**This application is using free licence of Google Custom Search API, please use it wisely, because there are only 12,700 queries per day.**
+>>>>>>> 8ecd95088fec9db7520ace9f907a47d795afeb5b
 ## Platforms
 
 Open source on GitHub.
