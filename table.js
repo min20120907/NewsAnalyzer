@@ -22,11 +22,6 @@ let table = class {
 
     }
 
-    // The function to fetch the web page
-    fetch_page(text) {
-        console.log(text);
-        this.page = new website(this.ID, text);
-    }
     // The function to fetch the search results
     fetch_results() {
         for (let i = 0; i < this.rows; i++) {
