@@ -125,6 +125,6 @@ IMAGE(IMAGE)
 If you have any bugs or any issues on this chrome extension feel free to establish issues or pull request on Github, or send a email to me: jefflin.je598@gmail.com, and if it is possible, giving us some donation or Google Custom Search API key will be much appreciated!  
   
   
-XMR: 47Dt6wfBx37W3VNVFofU1cM1RmBoXfBvvNivdcc8cpWpejuubuyGqeKL45JHHJ9wVc4DN7B8zkVyM1WMctd8imMG5YXnU6d  
-ETH: 0x62C8d6Dbb39141Db60C0BD60C4c2111079438E04  
-XCH: xch1uezmv85upf8geynz7qpqad37m9ju8p7ug3ucm87f64lhvjr4tdns4rwntc
+XMR:47Dt6wfBx37W3VNVFofU1cM1RmBoXfBvvNivdcc8cpWpejuubuyGqeKL45JHHJ9wVc4DN7B8zkVyM1WMctd8imMG5YXnU6d  
+ETH:0x62C8d6Dbb39141Db60C0BD60C4c2111079438E04  
+XCH:xch1uezmv85upf8geynz7qpqad37m9ju8p7ug3ucm87f64lhvjr4tdns4rwntc
