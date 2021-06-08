@@ -70,10 +70,7 @@ let UI_Elements = class {
         .substring(0,URL.indexOf("fbclid")-1)
         .replace("https://l.facebook.com/l.php?u=","");
     }
-    // The function to add the frame that contain the results into the post
-    append_result(r) {
-
-    }
+    
     // The function to convert class name into query selector
     queryOf(className) {
         return className.replaceAll(" ", ".");
