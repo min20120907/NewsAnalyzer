@@ -50,23 +50,54 @@ Backend Database Management System: mySQL or MariaDB, yet to be determined
 
 The functions listed here are partly logical, not necessarily physically implemented under the exact name or being made as a single physical function.
 
-*Extension: Interface Preperation Functions*
-DetectWebsite(), Append(), Search()
+*Extension: Interface Preperation Functions*  
+getChildNodesByClassName(DOM object, string): DOM array  
+fetch_posts(void): DOM object   Calls getChildNodesByClassName()  
+FacebookLinkParse(URL): URL  
+queryOf(string): string  
+getLink(integer): DOM object  Calls FacebookLinkParse() and queryOf()
+  
+*Extension: Interface Trigger (User Interaction) Functions*  
+UI_Elements：  
+getChildNodesByClassName(DOM object, string): DOM array  
+fetch_posts(void): DOM object   Calls getChildNodesByClassName()  
+FacebookLinkParse(URL): URL  
+queryOf(string): string   
+getLink(integer): DOM object  Calls FacebookLinkParse() and queryOf()  
+UI_Elements(Creates linkpost objects)：  
+append_button(void): DOM object  Calls getLink()  
+UI_Elements(Creates resultFrame and button objects):  
+createElementFromHTML(string): DOM object  
+button:  
+onclick(void): void  If there exists a sibling resultFrame object,Triggers sibling resultFrame object to react,and throws exception,else creates a sibling resultFrame object  
+insert.js:  
+detectLoad(action): boolean  
+delay(integer): promise  
+detectScroll(action): DOM object  
+checkFacebook.js:  
+areYouInFacebook(string): boolean  
+background.js：  
+executeScript(file): boolean  
+resultFrame(Creates a table object):  
+toggleOnOff(void): CSS text  If there exists a sibling table object,triggers sibling table object to react,and throws exception.  
+exception.js:  
+TargetExistedException(string, string): error object  
+table:  
+fetch_results(void): DOM objects  
+Creates an icon object:  
+search_google(string, DOM object): string    Calls fetch_results()  
+keyword_extract(string, DOM object): string  Calls search_google()  
 
-*Extension: Middle Tier Functions*
-TextRecognization()
 
-*Extension: Interface Trigger (User Interaction) Functions*
-Toggle(), Expand(), ObviousReport(), Rate(), BugReport(), Contribute()
 
-*Database: Manipulation, Calculation and Administration Functions*
-Weight(), Hide(), Show()
+*Database: Manipulation, Calculation and Administration Functions*  
+Weight(), Hide(), Show()  
 
-*Webpage: Interface Preperation Functions*
-ShowReport(), ShowRating(), ShowBugs(), ShowSubmissions()
+*Webpage: Interface Preperation Functions*  
+ShowReport(), ShowRating(), ShowBugs(), ShowSubmissions()  
 
-*Webpage: Interface Trigger (User Interaction) Functions*
-Upvote(), Downvote()
+*Webpage: Interface Trigger (User Interaction) Functions*  
+Upvote(), Downvote()  
 
 
 
