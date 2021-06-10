@@ -1,0 +1,32 @@
+{
+    "manifest_version": 2,
+    "name": "News Analyzer",
+    "description": "Quick analyzing the accuracy of social media news",
+    "version": "3.1",
+    "browser_action": {
+        "default_popup": "html/popup.html"
+    },
+    "permissions": [
+        "activeTab",
+        "*://*.google.com/*",
+        "http://*/"
+        
+    ],
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": true
+    },
+    "content_scripts":[{
+        "matches":[
+            "<all_urls>"
+        ],
+        "js":["exceptions.js","resultFrame.js", "icon.js","button.js","checkFacebook.js","linkpost.js","UI_Elements.js","table.js", "src/jquery-3.4.1.min.js", "src/loader.js","insert.js"],
+        "css":["css/style.css"]
+    }]
+    , "web_accessible_resources": [
+        "css/bootstrap.css"
+    ],
+    "icons": { 
+          "128": "src/icon128.png" },
+    "permissions": ["https://facebook.com/*"]
+}
