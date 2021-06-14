@@ -50,8 +50,8 @@ Backend Database Management System: mySQL or MariaDB, yet to be determined
 
 The functions listed here are partly logical, not necessarily physically implemented under the exact name or being made as a single physical function.
 
-**`UI_Elements()`**    
-- getChildNodesByClassName(DOM object, string): DOM array  
+**UI_Elements()**    
+- `getChildNodesByClassName(DOM object, string)`: DOM array  
 - fetch_posts(void): DOM object   Calls getChildNodesByClassName()  
 - FacebookLinkParse(URL): URL  
 - queryOf(string): string   
