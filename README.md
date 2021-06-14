@@ -50,45 +50,45 @@ Backend Database Management System: mySQL or MariaDB, yet to be determined
 
 The functions listed here are partly logical, not necessarily physically implemented under the exact name or being made as a single physical function.
 
-**UI_Elements()**    
-- `getChildNodesByClassName(DOM object, string)`: DOM array  
-- fetch_posts(void): DOM object   Calls getChildNodesByClassName()  
-- FacebookLinkParse(URL): URL  
-- queryOf(string): string   
-- getLink(integer): DOM object  Calls FacebookLinkParse() and queryOf()
+**UI_Elements**    
+- `getChildNodesByClassName(DOM object, string)0`: DOM array
+- `fetch_posts(void)`: DOM object   Calls getChildNodesByClassName()  
+- `FacebookLinkParse(URL)`: URL  
+- `queryOf(string)`: string   
+- `getLink(integer)`: DOM object  Calls FacebookLinkParse() and queryOf()
 
 *UI_Elements(Creates linkpost objects)：*  
-- append_button(void): DOM object  Calls getLink() 
+- `append_button(void)`: DOM object  Calls getLink() 
 
 *UI_Elements(Creates resultFrame and button objects):*  
-- createElementFromHTML(string): DOM object  
+- `createElementFromHTML(string)`: DOM object  
 
-**`button()`**
-- onclick(void): void  If there exists a sibling resultFrame object,Triggers sibling resultFrame object to react,and throws exception,else creates a sibling resultFrame object 
+**button**
+- `onclick(void)`: void  If there exists a sibling resultFrame object,Triggers sibling resultFrame object to react,and throws exception,else creates a sibling resultFrame object 
  
-**`insert.js()`**  
-- detectLoad(action): boolean  
-- delay(integer): promise  
-- detectScroll(action): DOM object  
+**insert.js**  
+- `detectLoad(action)`: ```boolean  
+- `delay(integer)`: promise  
+- `detectScroll(action)`: DOM object  
 
-**`checkFacebook.js()`**
-- areYouInFacebook(string): boolean  
+**checkFacebook.js**
+- `areYouInFacebook(string)`: boolean  
 
-**`background.js()`**  
-- executeScript(file): boolean  
-- resultFrame(Creates a table object):  
+**background.js**  
+- `executeScript(file)`: boolean  
+- `resultFrame(Creates a table object)`:  
 
-**`resultFrmae()`**
-- toggleOnOff(void): CSS text  If there exists a sibling table object,triggers sibling table object to react,and throws exception.  
+**resultFrmae**
+- `toggleOnOff(void)`: CSS text  If there exists a sibling table object,triggers sibling table object to react,and throws exception.  
 
-**`exception.js()`**  
-- TargetExistedException(string, string): error object  
+**exception.js**  
+- `TargetExistedException(string, string)`: error object  
 
-**`table()`**  
-- fetch_results(void): DOM objects  
-- Creates an icon object:  
-- search_google(string, DOM object): string    Calls fetch_results()  
-- keyword_extract(string, DOM object): string  Calls search_google()  
+**table**  
+- `fetch_results(void)`: DOM objects  
+- `Creates an icon object`:  
+- `search_google(string, DOM object)`: string    Calls fetch_results()  
+- `keyword_extract(string, DOM object)`: string  Calls search_google()  
 
 
 
