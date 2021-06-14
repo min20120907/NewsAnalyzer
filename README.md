@@ -25,7 +25,7 @@ With server side, we have the features as following below, and all the scripts a
 https://chrome.google.com/webstore/detail/news-analyzer/hedmeapammhcjoelaceokinbhgjiiifk?hl=zh-TW&authuser=0
 
 ## Presentation
-https://drive.google.com/file/d/1kn-UqlCPElJ_qvs7id2387om14KRjknp/view?usp=sharing
+https://docs.google.com/presentation/d/13tSNQkl2zfKoES5x7gSMWOmaYE6C3uziWJS8KeCy4Ro/edit#slide=id.p2
 
 ## IMPORTANT NOTICE!!!!
 **This application is using free licence of Google Custom Search API, please use it wisely, because there are currently 12,700 queries per day.**  
@@ -50,43 +50,45 @@ Backend Database Management System: mySQL or MariaDB, yet to be determined
 
 The functions listed here are partly logical, not necessarily physically implemented under the exact name or being made as a single physical function.
 
-*Extension: Interface Preperation Functions*  
-getChildNodesByClassName(DOM object, string): DOM array  
-fetch_posts(void): DOM object   Calls getChildNodesByClassName()  
-FacebookLinkParse(URL): URL  
-queryOf(string): string  
-getLink(integer): DOM object  Calls FacebookLinkParse() and queryOf()
-  
-*Extension: Interface Trigger (User Interaction) Functions*  
-UI_Elements：  
-getChildNodesByClassName(DOM object, string): DOM array  
-fetch_posts(void): DOM object   Calls getChildNodesByClassName()  
-FacebookLinkParse(URL): URL  
-queryOf(string): string   
-getLink(integer): DOM object  Calls FacebookLinkParse() and queryOf()  
-UI_Elements(Creates linkpost objects)：  
-append_button(void): DOM object  Calls getLink()  
-UI_Elements(Creates resultFrame and button objects):  
-createElementFromHTML(string): DOM object  
-button:  
-onclick(void): void  If there exists a sibling resultFrame object,Triggers sibling resultFrame object to react,and throws exception,else creates a sibling resultFrame object  
-insert.js:  
-detectLoad(action): boolean  
-delay(integer): promise  
-detectScroll(action): DOM object  
-checkFacebook.js:  
-areYouInFacebook(string): boolean  
-background.js：  
-executeScript(file): boolean  
-resultFrame(Creates a table object):  
-toggleOnOff(void): CSS text  If there exists a sibling table object,triggers sibling table object to react,and throws exception.  
-exception.js:  
-TargetExistedException(string, string): error object  
-table:  
-fetch_results(void): DOM objects  
-Creates an icon object:  
-search_google(string, DOM object): string    Calls fetch_results()  
-keyword_extract(string, DOM object): string  Calls search_google()  
+**UI_Elements**    
+- `getChildNodesByClassName(DOM object, string)`: DOM array
+- `fetch_posts(void)`: DOM object   Calls getChildNodesByClassName()  
+- `FacebookLinkParse(URL)`: URL  
+- `queryOf(string)`: string   
+- `getLink(integer)`: DOM object  Calls FacebookLinkParse() and queryOf()
+
+*UI_Elements(Creates linkpost objects)：*  
+- `append_button(void)`: DOM object  Calls getLink() 
+
+*UI_Elements(Creates resultFrame and button objects):*  
+- `createElementFromHTML(string)`: DOM object  
+
+**button**
+- `onclick(void)`: void  If there exists a sibling resultFrame object,Triggers sibling resultFrame object to react,and throws exception,else creates a sibling resultFrame object 
+ 
+**insert.js**  
+- `detectLoad(action)`:boolean  
+- `delay(integer)`: promise  
+- `detectScroll(action)`: DOM object  
+
+**checkFacebook.js**
+- `areYouInFacebook(string)`: boolean  
+
+**background.js**  
+- `executeScript(file)`: boolean  
+- `resultFrame(Creates a table object)`:  
+
+**resultFrmae**
+- `toggleOnOff(void)`: CSS text  If there exists a sibling table object,triggers sibling table object to react,and throws exception.  
+
+**exception.js**  
+- `TargetExistedException(string, string)`: error object  
+
+**table**  
+- `fetch_results(void)`: DOM objects  
+- `Creates an icon object`:  
+- `search_google(string, DOM object)`: string    Calls fetch_results()  
+- `keyword_extract(string, DOM object)`: string  Calls search_google()  
 
 
 
