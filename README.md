@@ -67,7 +67,7 @@ The functions listed here are partly logical, not necessarily physically impleme
 - `onclick(void)`: void  If there exists a sibling resultFrame object,Triggers sibling resultFrame object to react,and throws exception,else creates a sibling resultFrame object 
  
 **insert.js**  
-- `detectLoad(action)`: ```boolean  
+- `detectLoad(action)`:boolean  
 - `delay(integer)`: promise  
 - `detectScroll(action)`: DOM object  
 
