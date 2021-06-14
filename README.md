@@ -48,9 +48,9 @@ Backend Database Management System: mySQL or MariaDB, yet to be determined
 
 ## Functions
 
-The functions listed here are partly logical, not necessarily physically implemented under the exact name or being made as a single physical function
+The functions listed here are partly logical, not necessarily physically implemented under the exact name or being made as a single physical function.
 
-**UI_Elements：**  
+**`UI_Elements()`**    
 - getChildNodesByClassName(DOM object, string): DOM array  
 - fetch_posts(void): DOM object   Calls getChildNodesByClassName()  
 - FacebookLinkParse(URL): URL  
@@ -63,28 +63,28 @@ The functions listed here are partly logical, not necessarily physically impleme
 *UI_Elements(Creates resultFrame and button objects):*  
 - createElementFromHTML(string): DOM object  
 
-**button:**
+**`button()`**
 - onclick(void): void  If there exists a sibling resultFrame object,Triggers sibling resultFrame object to react,and throws exception,else creates a sibling resultFrame object 
  
-**insert.js:**  
+**`insert.js()`**  
 - detectLoad(action): boolean  
 - delay(integer): promise  
 - detectScroll(action): DOM object  
 
-**checkFacebook.js:**
+**`checkFacebook.js()`**
 - areYouInFacebook(string): boolean  
 
-**background.js：**  
+**`background.js()`**  
 - executeScript(file): boolean  
 - resultFrame(Creates a table object):  
 
-**resultFrmae**
+**`resultFrmae()`**
 - toggleOnOff(void): CSS text  If there exists a sibling table object,triggers sibling table object to react,and throws exception.  
 
-**exception.js:**  
+**`exception.js()`**  
 - TargetExistedException(string, string): error object  
 
-**table:**  
+**`table()`**  
 - fetch_results(void): DOM objects  
 - Creates an icon object:  
 - search_google(string, DOM object): string    Calls fetch_results()  
