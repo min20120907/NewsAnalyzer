@@ -1,5 +1,5 @@
 # Job arrangement
-## member
+## Members
 408850013Tsangyu Lin:  
 Job List:
   1. Make prior progress into Object Orienting  
