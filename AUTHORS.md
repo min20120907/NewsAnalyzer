@@ -10,9 +10,9 @@ Job List:
   
 408850310 Tsai-peiteng:
 Job List:
-  1.Support er-diagram processing 
-  2.Github readme.md edit/revise 
-  3.Providing english version presentation.
+  1. Support er-diagram processing 
+  2. Github readme.md edit/revise 
+  3. Providing english version presentation.
   
 408850492 Ke Zhi-Huai
 Job List:
