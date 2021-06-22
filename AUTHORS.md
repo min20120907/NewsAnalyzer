@@ -11,8 +11,9 @@ Job List:
 Job List:
   1.Support er-diagram processing 
   2.Github readme.md edit/revise 
-  3.Providing english version presentation. 
+  3.Providing english version presentation.  
 408850492 Ke Zhi-Huai
+Job List:
   1. Part of the initial design and architecture of main program (insert.js)
   2. System analysis, concept clarification, organization and visualization
   3. Web side user submission system demo (incomplete)
