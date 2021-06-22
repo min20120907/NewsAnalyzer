@@ -3,7 +3,7 @@
 408850310 Tsai-peiteng:
 
 
-408850013Tsangyu Lin:
+408850013Tsangyu Lin:  
 Job List:
   1. Make prior progress into Object Orienting  
   2. Providing Chinese version of the presentation  
