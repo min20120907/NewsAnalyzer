@@ -25,7 +25,7 @@ With server side, we have the features as following below, and all the scripts a
 https://chrome.google.com/webstore/detail/news-analyzer/hedmeapammhcjoelaceokinbhgjiiifk?hl=zh-TW&authuser=0
 
 ## Presentation
-https://docs.google.com/presentation/d/13tSNQkl2zfKoES5x7gSMWOmaYE6C3uziWJS8KeCy4Ro/edit#slide=id.p2
+https://docs.google.com/presentation/d/1-9oklMaZNwUgcYp1YqPlsp5KgSeX8qrVf7_BtksuyQY/edit
 
 ## IMPORTANT NOTICE!!!!
 **This application is using free licence of Google Custom Search API, please use it wisely, because there are currently 12,700 queries per day.**  
