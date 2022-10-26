@@ -55,7 +55,7 @@ let table = class {
                 return this.responseText;
             }
         };
-        xhttp.open("GET", "https://shipaicraft.asuscomm.com:4000/extract?title=" + title, false);
+        xhttp.open("GET", "https://min20120907.asuscomm.com:4000/extract?title=" + title, false);
         xhttp.send();
         return xhttp.responseText;
     }
@@ -69,7 +69,7 @@ let table = class {
     searchGoogle(keywords, outerThis) {	//searchGoogle
         // another keys
 
-        let searchUrl = "https://shipaicraft.asuscomm.com/google-api-php-client-unlimited/example.php?q=" + keywords + "&num=" + this.rows;
+        let searchUrl = "https://min20120907.asuscomm.com/google-api-php-client-unlimited/example.php?q=" + keywords + "&num=" + this.rows;
         $(document).ready(function () {
             $.ajax({
                 type: "GET",
