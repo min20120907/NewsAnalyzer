@@ -8,6 +8,9 @@ if res.status_code==requests.codes.ok:
 objsoup=BeautifulSoup(res.text,'lxml')
 # Find all of the text between paragraph tags and strip out the html
 content_body=objsoup.find('div',{"class":"caas-body"})
+title=objsoup.find('h1',{"date-test-locator":"headline"}).text
+print("新聞標題: ",title)
+print("文章內容: ")
 for content in content_body:
     #過濾掉 更多 TVBS 報導
     if "更多 TVBS 報導" in content.getText():

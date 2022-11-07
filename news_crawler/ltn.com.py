@@ -9,7 +9,9 @@ objsoup=BeautifulSoup(res.text,'lxml')
 # Find all of the text between paragraph tags and strip out the html
 title=objsoup.find('h1')
 #印出title的文字
-print(title.text)
-contents=objsoup.find('div',{"class":"text boxTitle boxText"})
+print("新聞標題: ",title.text)
+#contents=objsoup.find('div',{"class":"text boxTitle boxText"})
+contents=objsoup.find_all('p')
+print("文章內容: ")
 for content in contents:
-    print(content.getText())
+    print(content.text)

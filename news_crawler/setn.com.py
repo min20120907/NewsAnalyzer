@@ -8,7 +8,8 @@ if res.status_code==requests.codes.ok:
 objsoup=BeautifulSoup(res.text,'lxml')
 # Find all of the text between paragraph tags and strip out the html
 title=objsoup.find('h1',{"class":"news-title-3"})
-print(title.text)
+print("新聞標題: ",title.text)
+print("文章內容: ")
 contents=objsoup.find_all('p')
 for content in contents:
     print(content.text)

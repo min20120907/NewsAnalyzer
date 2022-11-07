@@ -8,9 +8,10 @@ if res.status_code==requests.codes.ok:
 objsoup=BeautifulSoup(res.text,'lxml')
 title=objsoup.find('h1',{"class":"article-content__title"})
 #印出title的文字
-print(title.text)
+print("新聞標題: ",title.text)
 contents=objsoup.find_all('div',{"class":"article-content__paragraph"})
 contents_list=[]
+print("文章內容: ")
 for content in contents:
     contents_list.append(content)
     print(str(content.text.strip(' ')).replace('\n',' '))
