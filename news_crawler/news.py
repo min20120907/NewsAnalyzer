@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 import re
 from tldextract import tldextract
+from urllib import request
+from requests import get
 #設定fake-useragent
 #假的user-agent,產生 headers
 ua=UserAgent()
@@ -18,12 +20,12 @@ htmlfile.encoding='utf-8' #亂碼時,加上這個就好,使用utf-8編碼
 #print(type(htmlfile)) #印出網頁源代碼,因為得到一個物件,我這邊要取出物件中的文字
 #print(objsoup.prettify()) #印出美化後的網頁源代碼
 
-#domain check
-def domain_check(domain):
+def domain_check(domain,news_url):
     match domain:
         case 'yahoo.com':
             #如果條件match,就執行以下事情
             #抓文章標題以及內文
+            res=requests.get(news_url)
             res.encoding='utf-8'
             #開始使用bs4 解析
             objsoup2=BeautifulSoup(res.text,"lxml")
@@ -35,22 +37,76 @@ def domain_check(domain):
                     print('')
                 else:
                     print(content.getText())
-            return ...
         case 'chinatimes.com':
+            res=requests.get(news_url)
             res.encoding='utf-8'
-            return ...
+            res=requests.get(url)
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1',{"class":"article-title"})
+            #印出title的文字
+            print('新聞標題: ',title.text)
+            print("文章內容: ")
+            contents=objsoup.find_all('p')
+            for content in contents:
+                print(content.text)
         case 'udn.com':
+            res=requests.get(news_url)
             res.encoding='utf-8'
-            return ...
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1',{"class":"article-content__title"})
+            #印出title的文字
+            print("新聞標題: ",title.text)
+            contents=objsoup.find_all('div',{"class":"article-content__paragraph"})
+            contents_list=[]
+            print("文章內容: ")
+            for content in contents:
+                contents_list.append(content)
+                print(str(content.text.strip(' ')).replace('\n',' '))
         case 'cna.com.tw':
+            res=requests.get(news_url)
             res.encoding='utf-8'
-            return ...
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            # Find all of the text between paragraph tags and strip out the html
+            title=objsoup.find('h1')
+            print("新聞標題: ",title.text)
+            contents=objsoup.find_all('p')
+            print("文章內容: ")
+            for content in contents:
+                print(content.text)
         case 'setn.com':
+            res=requests.get(news_url)
             res.encoding='utf-8'
-            return ...
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            # Find all of the text between paragraph tags and strip out the html
+            title=objsoup.find('h1',{"class":"news-title-3"})
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find_all('p')
+            for content in contents:
+                print(content.text)
         case 'ltn.com.tw':
+            res=requests.get(news_url)
             res.encoding='utf-8'
-            return ...
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            # Find all of the text between paragraph tags and strip out the html
+            title=objsoup.find('h1')
+            #印出title的文字
+            print("新聞標題: ",title.text)
+            #contents=objsoup.find('div',{"class":"text boxTitle boxText"})
+            contents=objsoup.find_all('p')
+            print("文章內容: ")
+            for content in contents:
+                print(content.text)
         case _:
             return "url missing!"
 
@@ -71,29 +127,33 @@ objsoup=BeautifulSoup(htmlfile.text,"lxml")
 url_link_list=[]
 h3_all_links=objsoup.find_all('h3',{"class":"ipQwMb ekueJc RD0gLb"})
 for h3_all_link in h3_all_links:
+    #print(h3_all_link.text)
     url_link_list.append(h3_all_link.find('a')['href'])
 #    print(h3_all_link.find('a')['href'])
+#把link拿出來看看
+#print(url_link_list)
+url_link_list_remove_dot=[]
+for link in url_link_list:
+    url_link_list_remove_dot.append(link.replace('./','',1))
+#print(url_link_list_remove_dot)
 
-#前往每一個link抓標題以及內文
-#先前往抓到的第一篇好了 yahoo新聞
-#print(url_link_list[0])
-#news1=requests.get(url_link_list[0],headers=headers,timeout=3)#他這邊請求website後,得到一個物件
+#解決短網址問題
+def shortlink_converter(url):
+    resp = requests.get(url)
+    return resp.url
 
 #連到多家新聞媒體
-for link in url_link_list:
+for link in url_link_list_remove_dot:
     url='https://news.google.com/'+str(link)
-    res=requests.get(url,headers=headers,timeout=2) #對這個link進行連線
+    original_url=shortlink_converter(url)
+    res=requests.get(original_url,headers=headers,timeout=2) 
     if res.status_code==requests.codes.ok:
         print('ok')
-    news_url=res.request.url #特定新聞媒體的url
+    
 
     #判斷連到的是哪個domain,以抓去特定媒體的內文tag
+    news_url=res.request.url #特定新聞媒體的url
     #解析domain    
     te_result = tldextract.extract(news_url)
     domain = '{}.{}'.format(te_result.domain, te_result.suffix)
-
-    domain_check(domain) #給domain check 檢查一下
-
-    #解析htmlfile
-    def parse_htmlfile():
-        objsoup=BeautifulSoup(res.text,'lxml')
+    domain_check(domain,news_url)
