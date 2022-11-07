@@ -13,4 +13,12 @@ contents_list=[]
 print("文章內容: ")
 for content in contents:
     contents_list.append(content)
-    print(str(content.text.strip(' ')).replace('\n',' '))
+for content in contents_list:
+    if "Photo Credit: BBC News" or "Photo Credit: Getty Images / BBC News" in content.text:
+        pass
+    #elif("Photo Credit: Getty Images / BBC News" in content.text):
+        #pass
+    elif'本文經《BBC News 中文》授權轉載，原文發表於此'==content.text:
+        break
+    else:
+        print(content.text)
