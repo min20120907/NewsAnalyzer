@@ -15,5 +15,3 @@ htmlfile=requests.get(url,headers=headers,timeout=3)#他這邊請求website後,�
 if htmlfile.status_code==requests.codes.ok:
     print("成功連線到google news")
 htmlfile.encoding='utf-8'
-#開始使用bs4 解析
-objsoup=BeautifulSoup(htmlfile.text,"lxml")
