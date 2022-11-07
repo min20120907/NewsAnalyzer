@@ -28,6 +28,9 @@ for h3_all_link in h3_all_links:
     url_link_list.append(h3_all_link.find('a')['href'])
 #    print(h3_all_link.find('a')['href'])
 #把link拿出來看看
-print(url_link_list)
-#for link in url_link_list:
+#print(url_link_list)
+url_link_list_remove_dot=[]
+for link in url_link_list:
+    url_link_list_remove_dot.append(link.replace('.','',1))
+print(url_link_list_remove_dot)
     
