@@ -8,7 +8,8 @@ five='https://www.cna.com.tw/news/acn/202211040205.aspx'
 six='https://www.setn.com/News.aspx?NewsID=1202853'
 seven='https://newtalk.tw/news/view/2022-11-04/841336' #新頭殼
 eight='https://market.ltn.com.tw/article/13375' #自由時報
-list1=[one,two,three,four,five,six,seven,eight]
+nine='https://www.ettoday.net/news/20221107/2374934.htm' #ettoday
+list1=[one,two,three,four,five,six,seven,eight,nine]
 for url in list1:
     te_result = tldextract.extract(url)
     domain = '{}.{}'.format(te_result.domain, te_result.suffix)
