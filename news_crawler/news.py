@@ -107,6 +107,23 @@ def domain_check(domain,news_url):
             print("文章內容: ")
             for content in contents:
                 print(content.text)
+        case 'ettoday.net':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            # Find all of the text between paragraph tags and strip out the html
+            title=objsoup.find('h1',{"class":"title"})
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find('div',attrs={"class":"story"})
+            tests=contents.find_all('p')
+            for test in tests:
+                if(test.text=="省錢大作戰！超夯優惠等你GO"):
+                    break
+                else:
+                    print(test.text)
         case _:
             return "url missing!"
 
