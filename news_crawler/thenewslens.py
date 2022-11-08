@@ -15,10 +15,10 @@ print("文章內容: ")
 for content in contents:
     contents_list.append(content)
 for content in contents_list:
-    if "Photo Credit: BBC News" in content.text:
+    if "Photo Credit:" in content.text:
         pass
-    elif "Photo Credit: Getty Images / BBC News" in content.text:
-        pass
+    #elif "Photo Credit: Getty Images / BBC News" in content.text:
+        #pass
     elif "每月一杯咖啡的金額，支持優質觀點的誕生，享有更好的閱讀體驗。" in content.text:
         pass
     elif "本文經《BBC News 中文》授權轉載，原文發表於此"==content.text:
