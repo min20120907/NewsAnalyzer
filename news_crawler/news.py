@@ -171,6 +171,6 @@ for link in url_link_list_remove_dot:
     #判斷連到的是哪個domain,以抓去特定媒體的內文tag
     news_url=res.request.url #特定新聞媒體的url
     #解析domain    
-    te_result = tldextract.extract(news_url)
-    domain = '{}.{}'.format(te_result.domain, te_result.suffix)
+    tld_result = tldextract.extract(news_url)
+    domain = '{}.{}'.format(tld_result.domain, tld_result.suffix)
     domain_check(domain,news_url)
