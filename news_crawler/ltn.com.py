@@ -11,7 +11,12 @@ title=objsoup.find('h1')
 #印出title的文字
 print("新聞標題: ",title.text)
 #contents=objsoup.find('div',{"class":"text boxTitle boxText"})
-contents=objsoup.find_all('p')
+contents=objsoup.find('div',{"class":"text boxTitle boxText"}).find_all('p')
 print("文章內容: ")
 for content in contents:
-    print(content.text)
+    if "請繼續往下閱讀..." in content.text:
+        print('')
+    elif "不用抽 不用搶 現在用APP看新聞 保證天天中獎" in content.text:
+        break
+    else:
+        print(content.text)
