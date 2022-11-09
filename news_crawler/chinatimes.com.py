@@ -12,4 +12,9 @@ print('新聞標題: ',title.text)
 print("文章內容: ")
 contents=objsoup.find_all('p')
 for content in contents:
-    print(content.text)
+    if "中時新聞網對留言" in content.text:
+        pass
+    elif "違反上述規定者" in content.text:
+        pass
+    else:
+        print(content.text)
