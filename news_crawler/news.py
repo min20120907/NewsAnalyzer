@@ -20,37 +20,146 @@ htmlfile.encoding='utf-8' #亂碼時,加上這個就好,使用utf-8編碼
 #print(type(htmlfile)) #印出網頁源代碼,因為得到一個物件,我這邊要取出物件中的文字
 #print(objsoup.prettify()) #印出美化後的網頁源代碼
 
+
 def domain_check(domain,news_url):
+    #ban strings
+    ban_set={"© 2022 BBC. BBC對外部網站內容不負責任。 閱讀了解我們對待外部鏈接的做法。","圖像來源，Reuters"
+    ,"中時新聞網對留言系統使用者發布的文字、圖片或檔案保有片面修改或移除的權利。當使用者使用本網站留言服務時，表示已詳細閱讀並完全了解，且同意配合下述規定：","違反上述規定者，中時新聞網有權刪除留言，或者直接封鎖帳號！請使用者在發言前，務必先閱讀留言板規則，謝謝配合。"
+    ,"本網站之文字","本網站之文字、圖片及影音，非經授權，不得轉載、公開播送或公開傳輸及利用。"
+    ,"省錢大作戰！超夯優惠等你GO"
+    ,"請繼續往下閱讀...","不用抽 不用搶 現在用APP看新聞 保證天天中獎"
+    ,"Photo Credit:","每月一杯咖啡的金額，支持優質觀點的誕生，享有更好的閱讀體驗。","本文經《BBC News 中文》授權轉載，原文發表於此"
+    ,"更多 TVBS 報導","更多相關新聞"}
     match domain:
-        case 'yahoo.com':
-            #如果條件match,就執行以下事情
-            #抓文章標題以及內文
+        case 'bbc.com':
             res=requests.get(news_url)
             res.encoding='utf-8'
-            #開始使用bs4 解析
-            objsoup2=BeautifulSoup(res.text,"lxml")
-            # Find all of the text between paragraph tags and strip out the html
-            content_body=objsoup.find('div',{"class":"caas-body"})
-            for content in content_body:
-                #過濾掉 更多 TVBS 報導
-                if "更多 TVBS 報導" in content.getText():
-                    print('')
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1',{"class":"bbc-1tk77pb e1p3vdyi0"})
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find_all('p')
+            for content in contents:
+                if  content.text in ban_set:
+                    pass
                 else:
-                    print(content.getText())
+                    print(content.text)
         case 'chinatimes.com':
             res=requests.get(news_url)
             res.encoding='utf-8'
-            res=requests.get(url)
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1',{"class":"article-title"})
+            print('新聞標題: ',title.text)
+            print("文章內容: ")
+            contents=objsoup.find_all('p')
+            for content in contents:
+                if content.text in ban_set:
+                    pass
+                else:
+                    print(content.text)
+        case 'cna.com.tw':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1')
+            print("新聞標題: ",title.text)
+            contents=objsoup.find_all('p')
+            print("文章內容: ")
+            for content in contents:
+                if  content.text in ban_set:
+                    pass
+                else:
+                    print(content.text)
+        case 'ettoday.net':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1',{"class":"title"})
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find('div',attrs={"class":"story"}).find_all('p')
+            for content in contents:
+                if content.text in ban_set: 
+                    break
+                else:
+                    print(content.text)
+        case 'ltn.com.tw':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1')
+            ban_set={"請繼續往下閱讀...","不用抽 不用搶 現在用APP看新聞 保證天天中獎"}
+            print("新聞標題: ",title.text)
+            contents=objsoup.find('div',{"class":"text boxTitle boxText"}).find_all('p')
+            print("文章內容: ")
+            for content in contents:
+                if content.text in ban_set:
+                    break
+                else:
+                    print(content.text)
+        case 'news.pts':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
                 print('ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-title"})
             #印出title的文字
-            print('新聞標題: ',title.text)
+            print("新聞標題: ",title.text)
             print("文章內容: ")
             contents=objsoup.find_all('p')
             for content in contents:
                 print(content.text)
+        case 'newtalk.tw':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1',{"class":"content_title"})
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find('div',{"id":"news_content"}).find_all('p')
+            for content in contents:
+                print(content.text)
+        case 'setn.tw':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1',{"class":"news-title-3"})
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find_all('p')
+            for content in contents:
+                print(content.text)
+        case 'thenewslens.com':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1',{"class":"article-title"})
+            print("新聞標題: ",title.text)
+            contents=objsoup.find('div',{"class":"article-content AdAsia"}).find_all('p')
+            ban_set={"Photo Credit: BBC News","Photo Credit: Getty Images / BBC News","每月一杯咖啡的金額，支持優質觀點的誕生，享有更好的閱讀體驗。","本文經《BBC News 中文》授權轉載，原文發表於此","【加入關鍵評論網會員】每天精彩好文直送你的信箱，每週獨享編輯精選、時事精選、藝文週報等特製電子報。還可留言與作者、記者、編輯討論文章內容。立刻點擊免費加入會員！"}
+            print("文章內容: ")
+            for content in contents:
+                if content.text in ban_set:
+                    pass
+                else:
+                    print(content.text)
         case 'udn.com':
             res=requests.get(news_url)
             res.encoding='utf-8'
@@ -58,7 +167,6 @@ def domain_check(domain,news_url):
                 print('ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-content__title"})
-            #印出title的文字
             print("新聞標題: ",title.text)
             contents=objsoup.find_all('div',{"class":"article-content__paragraph"})
             contents_list=[]
@@ -66,64 +174,22 @@ def domain_check(domain,news_url):
             for content in contents:
                 contents_list.append(content)
                 print(str(content.text.strip(' ')).replace('\n',' '))
-        case 'cna.com.tw':
+
+        case 'yahoo.com':
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
                 print('ok')
             objsoup=BeautifulSoup(res.text,'lxml')
-            # Find all of the text between paragraph tags and strip out the html
-            title=objsoup.find('h1')
+            title=objsoup.find('header',{"class":"caas-header"}).find('h1')
             print("新聞標題: ",title.text)
-            contents=objsoup.find_all('p')
+            content_body=objsoup.find('div',{"class":"caas-body"})
             print("文章內容: ")
-            for content in contents:
-                print(content.text)
-        case 'setn.com':
-            res=requests.get(news_url)
-            res.encoding='utf-8'
-            if res.status_code==requests.codes.ok:
-                print('ok')
-            objsoup=BeautifulSoup(res.text,'lxml')
-            # Find all of the text between paragraph tags and strip out the html
-            title=objsoup.find('h1',{"class":"news-title-3"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
-            contents=objsoup.find_all('p')
-            for content in contents:
-                print(content.text)
-        case 'ltn.com.tw':
-            res=requests.get(news_url)
-            res.encoding='utf-8'
-            if res.status_code==requests.codes.ok:
-                print('ok')
-            objsoup=BeautifulSoup(res.text,'lxml')
-            # Find all of the text between paragraph tags and strip out the html
-            title=objsoup.find('h1')
-            #印出title的文字
-            print("新聞標題: ",title.text)
-            #contents=objsoup.find('div',{"class":"text boxTitle boxText"})
-            contents=objsoup.find_all('p')
-            print("文章內容: ")
-            for content in contents:
-                print(content.text)
-        case 'ettoday.net':
-            res=requests.get(news_url)
-            res.encoding='utf-8'
-            if res.status_code==requests.codes.ok:
-                print('ok')
-            objsoup=BeautifulSoup(res.text,'lxml')
-            # Find all of the text between paragraph tags and strip out the html
-            title=objsoup.find('h1',{"class":"title"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
-            contents=objsoup.find('div',attrs={"class":"story"})
-            tests=contents.find_all('p')
-            for test in tests:
-                if(test.text=="省錢大作戰！超夯優惠等你GO"):
-                    break
+            for content in content_body:
+                if  content.text in ban_set:
+                    pass
                 else:
-                    print(test.text)
+                    print(content.getText())
         case _:
             return "url missing!"
 
