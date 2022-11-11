@@ -5,12 +5,9 @@ res=requests.get(url2)
 if res.status_code==requests.codes.ok:
     print('ok')
 objsoup=BeautifulSoup(res.text,'lxml')
-# Find all of the text between paragraph tags and strip out the html
 title=objsoup.find('h1')
-#印出title的文字
 ban_set={"請繼續往下閱讀...","不用抽 不用搶 現在用APP看新聞 保證天天中獎"}
 print("新聞標題: ",title.text)
-#contents=objsoup.find('div',{"class":"text boxTitle boxText"})
 contents=objsoup.find('div',{"class":"text boxTitle boxText"}).find_all('p')
 print("文章內容: ")
 for content in contents:
