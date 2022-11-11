@@ -5,8 +5,7 @@ import re
 from tldextract import tldextract
 from urllib import request
 from requests import get
-#設定fake-useragent
-#假的user-agent,產生 headers
+
 ua=UserAgent()
 usar=ua.random #產生header 字串
 headers={'user-agent':usar}
@@ -16,7 +15,7 @@ htmlfile=requests.get(url,headers=headers,timeout=3)#他這邊請求website後,�
 
 if htmlfile.status_code==requests.codes.ok:
     print("成功連線到google news")
-htmlfile.encoding='utf-8' #亂碼時,加上這個就好,使用utf-8編碼
+htmlfile.encoding='utf-8' 
 #print(type(htmlfile)) #印出網頁源代碼,因為得到一個物件,我這邊要取出物件中的文字
 #print(objsoup.prettify()) #印出美化後的網頁源代碼
 
@@ -98,6 +97,7 @@ def domain_check(domain,news_url):
                 print('ltn ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1')
+            ban_set={"請繼續往下閱讀...","不用抽 不用搶 現在用APP看新聞 保證天天中獎"}
             print("新聞標題: ",title.text)
             contents=objsoup.find('div',{"class":"text boxTitle boxText"}).find_all('p')
             print("文章內容: ")
