@@ -35,7 +35,7 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('ok')
+                print('bbc news ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"bbc-1tk77pb e1p3vdyi0"})
             print("新聞標題: ",title.text)
@@ -50,7 +50,7 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('ok')
+                print('chinatimes ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-title"})
             print('新聞標題: ',title.text)
@@ -65,7 +65,7 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('ok')
+                print('cna ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1')
             print("新聞標題: ",title.text)
@@ -80,7 +80,7 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('ok')
+                print('ettoday ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"title"})
             print("新聞標題: ",title.text)
@@ -95,7 +95,7 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('ok')
+                print('ltn ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1')
             ban_set={"請繼續往下閱讀...","不用抽 不用搶 現在用APP看新聞 保證天天中獎"}
@@ -111,7 +111,7 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('ok')
+                print('news.pts ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-title"})
             #印出title的文字
@@ -124,7 +124,7 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('ok')
+                print('newtalk ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"content_title"})
             print("新聞標題: ",title.text)
@@ -136,7 +136,7 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('ok')
+                print('setn ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"news-title-3"})
             print("新聞標題: ",title.text)
@@ -148,7 +148,7 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('ok')
+                print('thenewslens ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-title"})
             print("新聞標題: ",title.text)
@@ -164,7 +164,7 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('ok')
+                print('udn.com ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-content__title"})
             print("新聞標題: ",title.text)
@@ -179,7 +179,7 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('ok')
+                print('yahoo.com ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('header',{"class":"caas-header"}).find('h1')
             print("新聞標題: ",title.text)
