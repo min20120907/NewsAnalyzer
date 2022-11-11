@@ -7,14 +7,13 @@ if res.status_code==requests.codes.ok:
     print('ok')
 objsoup=BeautifulSoup(res.text,'lxml')
 title=objsoup.find('h1',{"class":"article-title"})
-#印出title的文字
+
+ban_set={"中時新聞網對留言系統使用者發布的文字、圖片或檔案保有片面修改或移除的權利。當使用者使用本網站留言服務時，表示已詳細閱讀並完全了解，且同意配合下述規定：","違反上述規定者，中時新聞網有權刪除留言，或者直接封鎖帳號！請使用者在發言前，務必先閱讀留言板規則，謝謝配合。"}
 print('新聞標題: ',title.text)
 print("文章內容: ")
 contents=objsoup.find_all('p')
 for content in contents:
-    if "中時新聞網對留言" in content.text:
-        pass
-    elif "違反上述規定者" in content.text:
+    if content.text in ban_set:
         pass
     else:
         print(content.text)

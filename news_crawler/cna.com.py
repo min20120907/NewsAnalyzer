@@ -8,11 +8,12 @@ if res.status_code==requests.codes.ok:
 objsoup=BeautifulSoup(res.text,'lxml')
 # Find all of the text between paragraph tags and strip out the html
 title=objsoup.find('h1')
+ban_set={"本網站之文字","本網站之文字、圖片及影音，非經授權，不得轉載、公開播送或公開傳輸及利用。"}
 print("新聞標題: ",title.text)
 contents=objsoup.find_all('p')
 print("文章內容: ")
 for content in contents:
-    if "本網站之文字" in content.text:
+    if  content.text in ban_set:
         pass
     else:
         print(content.text)

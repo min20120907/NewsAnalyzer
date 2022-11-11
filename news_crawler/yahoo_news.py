@@ -7,15 +7,13 @@ if res.status_code==requests.codes.ok:
     print('ok')
 objsoup=BeautifulSoup(res.text,'lxml')
 # Find all of the text between paragraph tags and strip out the html
-content_body=objsoup.find('div',{"class":"caas-body"})
 title=objsoup.find('header',{"class":"caas-header"}).find('h1')
+ban_set={"更多 TVBS 報導"}
 print("新聞標題: ",title.text)
+content_body=objsoup.find('div',{"class":"caas-body"})
 print("文章內容: ")
 for content in content_body:
-    #過濾掉 更多 TVBS 報導
-    if "更多 TVBS 報導" in content.text:
-        pass
-    elif "更多相關新聞" in content.text:
+    if  content.text in ban_set:
         pass
     else:
         print(content.getText())
