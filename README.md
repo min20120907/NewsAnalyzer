@@ -13,6 +13,10 @@ With server side, we have the features as following below, and all the scripts a
  2. Flask keyword extracting server (HTTPS): news_extract.py  
 #### Prequirements
  - Python 3.10 or later
+ - requests 2.28.1
+ - fake-useragent 0.1.14
+ - beautifulsoup4 4.11.1
+ - tldextract 3.4.0
  - Flask
  - Jieba
  - PyTorch
