@@ -12,7 +12,11 @@ nine='https://www.ettoday.net/news/20221107/2374934.htm' #ettoday
 ten='https://www.thenewslens.com/article/175883' 
 eleven='https://www.bbc.com/zhongwen/trad/world-63314791' #bbc
 twelve='https://news.pts.org.tw/article/605194' #pts
-list1=[one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve]
+thirteen='https://news.google.com/search?q=%E7%83%8F%E5%85%8B%E8%98%AD%20%E6%88%B0%E7%88%AD%20%E4%BF%84%E7%BE%85%E6%96%AF&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+forteen='https://www.rfi.fr/tw/國際/20221110-英國對烏追加提供約1千枚地空導彈-英防相-俄羅斯正在慢慢輸掉戰爭' # 法國國際廣播電台
+fifthteen='https://www.rti.org.tw/news/view/id/2150127' # Rti 中央廣播電臺
+sixteen='https://www.storm.mg/article/4575743' # 風傳媒
+list1=[one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,forteen,fifthteen,sixteen]
 for url in list1:
     te_result = tldextract.extract(url)
     domain = '{}.{}'.format(te_result.domain, te_result.suffix)
