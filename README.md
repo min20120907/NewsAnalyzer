@@ -12,7 +12,7 @@ With server side, we have the features as following below, and all the scripts a
  1. CSV keywords analyzing tool (local): kw_analyzing_[algo].py
  2. Flask keyword extracting server (HTTPS): news_extract.py  
 #### Prequirements
- - Python 3.8
+ - Python 3.10 or later
  - Flask
  - Jieba
  - PyTorch
