@@ -11,12 +11,15 @@ The goal is to demonstrate technologies that can be used to improve prevention o
 With server side, we have the features as following below, and all the scripts are storing inside python folder:  
  1. CSV keywords analyzing tool (local): kw_analyzing_[algo].py
  2. Flask keyword extracting server (HTTPS): news_extract.py  
-#### Prequirements
+### Prequirements
+#### News Crawler
  - Python 3.10 or later
  - requests 2.28.1
  - fake-useragent 0.1.14
  - beautifulsoup4 4.11.1
  - tldextract 3.4.0
+ - lxml
+#### Keyword Extractor Backend
  - Flask
  - Jieba
  - PyTorch
