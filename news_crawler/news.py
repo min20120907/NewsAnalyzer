@@ -23,8 +23,9 @@ def domain_check(domain,news_url):
     ,"請繼續往下閱讀...","不用抽 不用搶 現在用APP看新聞 保證天天中獎"
     ,"Photo Credit:","每月一杯咖啡的金額，支持優質觀點的誕生，享有更好的閱讀體驗。","本文經《BBC News 中文》授權轉載，原文發表於此"
     ,"更多 TVBS 報導","更多相關新聞"
+    ,'圖／TVBS'
     ,'[啟動LINE推播] 每日重大新聞通知'
-    ,}
+    ,'下載法廣應用程序跟蹤國際時事'}
     match domain:
         case 'bbc.com':
             res=requests.get(news_url)
@@ -182,6 +183,8 @@ def domain_check(domain,news_url):
             for content in content_body:
                 if  content.text in ban_set:
                     pass
+                elif content.text=='相關新聞影音':
+                    break
                 else:
                     print(content.getText())
         case 'rfi.fr':
