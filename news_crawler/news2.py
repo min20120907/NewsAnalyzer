@@ -177,7 +177,6 @@ def domain_check(domain,news_url):
             for content in contents:
                 contents_list.append(content)
                 print(str(content.text.strip(' ')).replace('\n',' '))
-
         case 'yahoo.com':
             res=requests.get(news_url)
             res.encoding='utf-8'
@@ -186,15 +185,13 @@ def domain_check(domain,news_url):
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('header',{"class":"caas-header"}).find('h1')
             print("新聞標題: ",title.text)
-            content_body=objsoup.find('div',{"class":"caas-body"})
+            contents=objsoup.find('div',{"class":"caas-body"}).find_all('p')
             print("文章內容: ")
-            for content in content_body:
+            for content in contents:
                 if  content.text in ban_set:
                     pass
-                elif content.text=='相關新聞影音':
-                    break
                 else:
-                    print(content.getText())
+                    print(content.text)
         case 'rfi.fr':
             res=requests.get(news_url)
             res.encoding='utf-8'
