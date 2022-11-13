@@ -1,13 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
-import re
 from tldextract import tldextract
-from urllib import request
-from requests import get
 
 ua=UserAgent()
-usar=ua.random #產生header 字串
+usar=ua.random 
 headers={'user-agent':usar}
 url='https://news.google.com/topstories?hl=zh-TW&gl=TW&ceid=TW:zh-Hant'
 
@@ -16,9 +13,6 @@ htmlfile=requests.get(url,headers=headers,timeout=3)#他這邊請求website後,�
 if htmlfile.status_code==requests.codes.ok:
     print("成功連線到google news")
 htmlfile.encoding='utf-8' 
-#print(type(htmlfile)) #印出網頁源代碼,因為得到一個物件,我這邊要取出物件中的文字
-#print(objsoup.prettify()) #印出美化後的網頁源代碼
-
 
 def domain_check(domain,news_url):
     #ban strings
@@ -28,7 +22,9 @@ def domain_check(domain,news_url):
     ,"省錢大作戰！超夯優惠等你GO"
     ,"請繼續往下閱讀...","不用抽 不用搶 現在用APP看新聞 保證天天中獎"
     ,"Photo Credit:","每月一杯咖啡的金額，支持優質觀點的誕生，享有更好的閱讀體驗。","本文經《BBC News 中文》授權轉載，原文發表於此"
-    ,"更多 TVBS 報導","更多相關新聞"}
+    ,"更多 TVBS 報導","更多相關新聞"
+    ,'[啟動LINE推播] 每日重大新聞通知'
+    ,}
     match domain:
         case 'bbc.com':
             res=requests.get(news_url)
@@ -188,6 +184,22 @@ def domain_check(domain,news_url):
                     pass
                 else:
                     print(content.getText())
+        case 'rfi.fr':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print("rfi.fr ok")
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('article').find('h1')
+            ban_set={'下載法廣應用程序跟蹤國際時事'}
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find('article').find('div',{"class":"t-content__body u-clearfix"}).find_all('p')
+            for content in contents:
+                if content.text in ban_set:
+                    pass
+                else:
+                    print(content.text)
         case 'rti.org.tw':
             res=requests.get(news_url)
             res.encoding='utf-8'
@@ -200,6 +212,21 @@ def domain_check(domain,news_url):
             contents=objsoup.find('article').find_all('p')
             for content in contents:
                 print(content.text)
+        case 'storm.mg':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('storm.mg ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1',{"id":"article_title"})
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find('div',{"id":"CMS_wrapper"}).find_all('p')
+            for content in contents:
+                if content.text in ban_set:
+                    pass
+                else:
+                    print(content.text)
         case _:
             return "url missing!"
 
@@ -209,20 +236,13 @@ objsoup=BeautifulSoup(htmlfile.text,"lxml")
 #取得objsoup所有的文字
 #print(objsoup.get_text())
 
-#找到所有h3標籤
-#all_h3_tag=objsoup.find_all('h3')
-#for texts in all_h3_tag:
-#    print(texts.text)
-    #pass
-
-
 #找到所有google新聞的link
 url_link_list=[]
 h3_all_links=objsoup.find_all('h3',{"class":"ipQwMb ekueJc RD0gLb"})
 for h3_all_link in h3_all_links:
     #print(h3_all_link.text)
     url_link_list.append(h3_all_link.find('a')['href'])
-#    print(h3_all_link.find('a')['href'])
+
 #把link拿出來看看
 #print(url_link_list)
 url_link_list_remove_dot=[]

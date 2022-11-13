@@ -31,7 +31,10 @@ def domain_check(domain,news_url):
     ,"省錢大作戰！超夯優惠等你GO"
     ,"請繼續往下閱讀...","不用抽 不用搶 現在用APP看新聞 保證天天中獎"
     ,"Photo Credit:","每月一杯咖啡的金額，支持優質觀點的誕生，享有更好的閱讀體驗。","本文經《BBC News 中文》授權轉載，原文發表於此"
-    ,"更多 TVBS 報導","更多相關新聞"}
+    ,"更多 TVBS 報導","更多相關新聞"
+    ,'圖／TVBS'
+    ,'[啟動LINE推播] 每日重大新聞通知'
+    ,'下載法廣應用程序跟蹤國際時事'}
     match domain:
         case 'bbc.com':
             res=requests.get(news_url)
@@ -188,8 +191,52 @@ def domain_check(domain,news_url):
             for content in content_body:
                 if  content.text in ban_set:
                     pass
+                elif content.text=='相關新聞影音':
+                    break
                 else:
                     print(content.getText())
+        case 'rfi.fr':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print("rfi.fr ok")
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('article').find('h1')
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find('article').find('div',{"class":"t-content__body u-clearfix"}).find_all('p')
+            for content in contents:
+                if content.text in ban_set:
+                    pass
+                else:
+                    print(content.text)
+        case 'rti.org.tw':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('rti.org.tw ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('section',{"class":"news-detail-box"}).find('h1')
+            print("新聞標題: ",title.text.replace(' 用Podcast訂閱本節目 ','').strip())
+            print("文章內容: ")
+            contents=objsoup.find('article').find_all('p')
+            for content in contents:
+                print(content.text)
+        case 'storm.mg':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('storm.mg ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1',{"id":"article_title"})
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find('div',{"id":"CMS_wrapper"}).find_all('p')
+            for content in contents:
+                if content.text in ban_set:
+                    pass
+                else:
+                    print(content.text)
         case _:
             return "url missing!"
 
@@ -230,8 +277,8 @@ for link in url_link_list_remove_dot:
     url='https://news.google.com/'+str(link)
     original_url=shortlink_converter(url)
     res=requests.get(original_url,headers=headers,timeout=2) 
-    if res.status_code==requests.codes.ok:
-        print('ok')
+    #if res.status_code==requests.codes.ok:
+    #    print('ok')
     
 
     #判斷連到的是哪個domain,以抓去特定媒體的內文tag
