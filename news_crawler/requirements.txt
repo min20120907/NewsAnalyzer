@@ -2,3 +2,4 @@ requests
 fake-useragent
 beautifulsoup4
 tldextract
+lxml
