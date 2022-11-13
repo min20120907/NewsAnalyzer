@@ -1,19 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
-url='https://news.google.com/'+'./articles/CBMi2QFodHRwczovL3R3Lm5ld3MueWFob28uY29tLyVFNSVCOSVCNCVFOSVBMyVBRiVFOSU4QyVBMiVFNSU4NSVBOCVFNSU4RCU4NyVFNyVBOSVCQS0lRTUlOEMlOTclRTklOUYlOTMlRTklQTMlOUIlRTUlQkQlODgtJUU1JTk2JUFFJUU2JTk3JUE1MjUlRTklODAlQTMlRTclOTklQkMtJUU5JUE5JTlBJUU0JUJBJUJBJUU2JTg4JTkwJUU2JTlDJUFDJUU2JTlCJTlELTA0MDA0NTU2Mi5odG1s0gHhAWh0dHBzOi8vdHcubmV3cy55YWhvby5jb20vYW1waHRtbC8lRTUlQjklQjQlRTklQTMlQUYlRTklOEMlQTIlRTUlODUlQTglRTUlOEQlODclRTclQTklQkEtJUU1JThDJTk3JUU5JTlGJTkzJUU5JUEzJTlCJUU1JUJEJTg4LSVFNSU5NiVBRSVFNiU5NyVBNTI1JUU5JTgwJUEzJUU3JTk5JUJDLSVFOSVBOSU5QSVFNCVCQSVCQSVFNiU4OCU5MCVFNiU5QyVBQyVFNiU5QiU5RC0wNDAwNDU1NjIuaHRtbA?hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
-
+url='https://tw.news.yahoo.com/%E8%94%A3%E8%90%AC%E5%AE%89-%E5%BA%A6%E5%B7%AE%E9%BB%9E%E8%A2%AB%E5%A4%AA%E5%A4%AA%E7%9F%B3%E8%88%AB%E4%BA%98%E5%88%86%E6%89%8B-%E5%8B%B8%E5%92%8C%E9%97%9C%E9%8D%B5%E4%BA%BA%E6%98%AF-%E4%BB%96-135443409.html'
 res=requests.get(url)
 if res.status_code==requests.codes.ok:
-    print('ok')
+    print('yahoo.com ok')
 objsoup=BeautifulSoup(res.text,'lxml')
-# Find all of the text between paragraph tags and strip out the html
 title=objsoup.find('header',{"class":"caas-header"}).find('h1')
 ban_set={"更多 TVBS 報導"}
 print("新聞標題: ",title.text)
-content_body=objsoup.find('div',{"class":"caas-body"})
+contents=objsoup.find('div',{"class":"caas-body"}).find_all('p')
 print("文章內容: ")
-for content in content_body:
+for content in contents:
     if  content.text in ban_set:
         pass
     else:
-        print(content.getText())
+        print(content.text)
+

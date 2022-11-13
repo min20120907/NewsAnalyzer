@@ -101,6 +101,8 @@ def domain_check(domain,news_url):
             for content in contents:
                 if content.text in ban_set:
                     break
+                elif content.text=='相關新聞影音':
+                    break
                 else:
                     print(content.text)
         case 'news.pts':
@@ -233,7 +235,6 @@ def domain_check(domain,news_url):
         case _:
             return "url missing!"
 
-#開始使用bs4 解析
 objsoup=BeautifulSoup(htmlfile.text,"lxml")
 
 #取得objsoup所有的文字
