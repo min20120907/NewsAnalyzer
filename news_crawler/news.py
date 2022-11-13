@@ -188,6 +188,18 @@ def domain_check(domain,news_url):
                     pass
                 else:
                     print(content.getText())
+        case 'rti.org.tw':
+            res=requests.get(news_url)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('rti.org.tw ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('section',{"class":"news-detail-box"}).find('h1')
+            print("新聞標題: ",title.text.replace(' 用Podcast訂閱本節目 ','').strip())
+            print("文章內容: ")
+            contents=objsoup.find('article').find_all('p')
+            for content in contents:
+                print(content.text)
         case _:
             return "url missing!"
 
