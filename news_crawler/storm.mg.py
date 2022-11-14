@@ -13,5 +13,7 @@ contents=objsoup.find('div',{"id":"CMS_wrapper"}).find_all('p')
 for content in contents:
     if content.text in ban_set:
         pass
+    elif '更多風傳媒報導' in content.text:
+        break
     else:
         print(content.text)

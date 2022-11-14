@@ -33,8 +33,11 @@ def domain_check(domain,news_url):
     ,"Photo Credit:","每月一杯咖啡的金額，支持優質觀點的誕生，享有更好的閱讀體驗。","本文經《BBC News 中文》授權轉載，原文發表於此"
     ,"更多 TVBS 報導","更多相關新聞"
     ,'圖／TVBS'
+    ,'圖像來源，Getty Images'
+    ,'相關新聞影音'
     ,'[啟動LINE推播] 每日重大新聞通知'
     ,'下載法廣應用程序跟蹤國際時事'}
+    break_set={'點我看更多華視新聞＞＞＞','更多風傳媒報導',}
     match domain:
         case 'bbc.com':
             res=requests.get(news_url)
@@ -169,14 +172,25 @@ def domain_check(domain,news_url):
             if res.status_code==requests.codes.ok:
                 print('udn.com ok')
             objsoup=BeautifulSoup(res.text,'lxml')
-            title=objsoup.find('h1',{"class":"article-content__title"})
-            print("新聞標題: ",title.text)
-            contents=objsoup.find_all('div',{"class":"article-content__paragraph"})
-            contents_list=[]
-            print("文章內容: ")
-            for content in contents:
-                contents_list.append(content)
-                print(str(content.text.strip(' ')).replace('\n',' '))
+            try:
+                title=objsoup.find('h1',{"class":"article-content__title"})
+                print("新聞標題: ",title.text)
+                contents=objsoup.find_all('div',{"class":"article-content__paragraph"})
+                contents_list=[]
+                print("文章內容: ")
+                for content in contents:
+                    contents_list.append(content)
+                    print(str(content.text.strip(' ')).replace('\n',' '))
+            except: #經濟日報
+                if res.status_code==requests.codes.ok:
+                    print('money udn ok')
+                objsoup=BeautifulSoup(res.text,'lxml')
+                title=objsoup.find('div',{"class":"article-layout-wrapper"}).find('h1')
+                print("新聞標題: ",title.text)
+                print("文章內容: ")
+                contents=objsoup.find('section',{"class":"article-body__editor"}).find_all('p')
+                for content in contents:
+                    print(content.text.strip())
         case 'yahoo.com':
             res=requests.get(news_url)
             res.encoding='utf-8'
@@ -190,6 +204,8 @@ def domain_check(domain,news_url):
             for content in contents:
                 if  content.text in ban_set:
                     pass
+                elif content.text in break_set:
+                    break
                 else:
                     print(content.text)
         case 'rfi.fr':
@@ -232,6 +248,8 @@ def domain_check(domain,news_url):
             for content in contents:
                 if content.text in ban_set:
                     pass
+                elif '更多風傳媒報導' in content.text:
+                    break
                 else:
                     print(content.text)
         case _:
