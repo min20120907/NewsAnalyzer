@@ -197,7 +197,6 @@ def domain_check(domain,news_url):
                 print("rfi.fr ok")
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('article').find('h1')
-            ban_set={'下載法廣應用程序跟蹤國際時事'}
             print("新聞標題: ",title.text)
             print("文章內容: ")
             contents=objsoup.find('article').find('div',{"class":"t-content__body u-clearfix"}).find_all('p')
