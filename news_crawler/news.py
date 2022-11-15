@@ -26,6 +26,8 @@ def domain_check(domain,news_url):
     ,'圖／TVBS'
     ,'[啟動LINE推播] 每日重大新聞通知'
     ,'下載法廣應用程序跟蹤國際時事'}
+    break_set={'點我看更多華視新聞＞＞＞','更多風傳媒報導',}
+
     match domain:
         case 'bbc.com':
             res=requests.get(news_url)
@@ -185,6 +187,8 @@ def domain_check(domain,news_url):
             for content in contents:
                 if  content.text in ban_set:
                     pass
+                elif content.text in break_set:
+                    break
                 else:
                     print(content.text)
         case 'rfi.fr':

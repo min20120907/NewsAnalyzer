@@ -33,14 +33,11 @@ def domain_check(domain,news_url):
     ,"Photo Credit:","每月一杯咖啡的金額，支持優質觀點的誕生，享有更好的閱讀體驗。","本文經《BBC News 中文》授權轉載，原文發表於此"
     ,"更多 TVBS 報導","更多相關新聞,'相關新聞影音"
     ,'圖／TVBS'
-<<<<<<< HEAD
     ,'圖像來源，NCA'
     ,'原始連結'
     ,'點我看更多華視新聞＞＞＞'
-=======
     ,'圖像來源，Getty Images'
     ,'相關新聞影音'
->>>>>>> refs/remotes/origin/master
     ,'[啟動LINE推播] 每日重大新聞通知'
     ,'下載法廣應用程序跟蹤國際時事'}
     break_set={'點我看更多華視新聞＞＞＞','更多風傳媒報導',}
@@ -210,13 +207,10 @@ def domain_check(domain,news_url):
             for content in contents:
                 if  content.text in ban_set:
                     pass
-<<<<<<< HEAD
                 elif '相關新聞影音' in content.text:
                     pass
-=======
                 elif content.text in break_set:
                     break
->>>>>>> refs/remotes/origin/master
                 else:
                     print(content.text)
         case 'rfi.fr':
