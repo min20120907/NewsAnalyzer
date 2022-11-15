@@ -188,7 +188,7 @@ def domain_check(domain,news_url):
                 else:
                     print(content.text)
         case 'rfi.fr':
-            res=requests.get(news_url)
+            res=requests.get(news_url,headers==headers)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
                 print("rfi.fr ok")

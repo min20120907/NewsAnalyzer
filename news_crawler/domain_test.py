@@ -16,7 +16,8 @@ thirteen='https://news.google.com/search?q=%E7%83%8F%E5%85%8B%E8%98%AD%20%E6%88%
 forteen='https://www.rfi.fr/tw/國際/20221110-英國對烏追加提供約1千枚地空導彈-英防相-俄羅斯正在慢慢輸掉戰爭' # 法國國際廣播電台
 fifthteen='https://www.rti.org.tw/news/view/id/2150127' # Rti 中央廣播電臺
 sixteen='https://www.storm.mg/article/4575743' # 風傳媒
-list1=[one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,forteen,fifthteen,sixteen]
+seventeen='https://money.udn.com/money/story/5607/6763523?from=edn_maintab_index'
+list1=[one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,forteen,fifthteen,sixteen,seventeen]
 for url in list1:
     te_result = tldextract.extract(url)
     domain = '{}.{}'.format(te_result.domain, te_result.suffix)
