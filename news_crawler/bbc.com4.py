@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-url2='https://www.bbc.com/zhongwen/trad/world-61021569'
-res=requests.get(url2)
+url='https://www.bbc.com/zhongwen/trad/world-63385970'
+res=requests.get(url)
 if res.status_code==requests.codes.ok:
     print('bbc.com ok')
 objsoup=BeautifulSoup(res.text,'lxml')
@@ -15,4 +15,3 @@ for content in contents:
         pass
     else:
         print(content.text)
-  

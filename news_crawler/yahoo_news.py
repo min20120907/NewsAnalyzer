@@ -15,4 +15,4 @@ for content in contents:
         pass
     else:
         print(content.text)
-
+   
