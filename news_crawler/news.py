@@ -267,7 +267,6 @@ for link in url_link_list_remove_dot:
     if res.status_code==requests.codes.ok:
         print('ok')
     
-
     #判斷連到的是哪個domain,以抓去特定媒體的內文tag
     news_url=res.request.url #特定新聞媒體的url
     #解析domain    
