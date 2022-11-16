@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
-import re
+import csv
 from tldextract import tldextract
 from urllib import request
 from requests import get
@@ -335,3 +335,5 @@ for link in url_link_list_remove_dot:
     tld_result = tldextract.extract(news_url)
     domain = '{}.{}'.format(tld_result.domain, tld_result.suffix)
     domain_check(domain,news_url)
+if __name__ == '__main__':
+    domain_check()
