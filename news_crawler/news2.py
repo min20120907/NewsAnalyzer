@@ -108,7 +108,6 @@ def domain_check(domain,news_url):
                 print('news.pts ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-title"})
-            #印出title的文字
             print("新聞標題: ",title.text)
             print("文章內容: ")
             contents=objsoup.find_all('p')
@@ -304,7 +303,7 @@ h3_all_links=objsoup.find_all('h3',{"class":"ipQwMb ekueJc RD0gLb"})
 for h3_all_link in h3_all_links:
     #print(h3_all_link.text)
     url_link_list.append(h3_all_link.find('a')['href'])
-#    print(h3_all_link.find('a')['href'])
+
 #把link拿出來看看
 #print(url_link_list)
 url_link_list_remove_dot=[]
@@ -325,7 +324,6 @@ for link in url_link_list_remove_dot:
     #if res.status_code==requests.codes.ok:
     #    print('ok')
     
-
     #判斷連到的是哪個domain,以抓去特定媒體的內文tag
     news_url=res.request.url #特定新聞媒體的url
     #解析domain    
