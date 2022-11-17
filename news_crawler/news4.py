@@ -329,9 +329,8 @@ url_link_list=[]
 h3_all_links=objsoup.find_all('h3',{"class":"ipQwMb ekueJc RD0gLb"})
 for counter,h3_all_link in enumerate(h3_all_links):
     #print(h3_all_link.text)
-    if counter<10:
-        url_link_list.append(h3_all_link.find('a')['href'])
-    else:
+    url_link_list.append(h3_all_link.find('a')['href'])
+    if counter>=10:
         break
 
 #把link拿出來看看
