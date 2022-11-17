@@ -19,6 +19,7 @@ With server side, we have the features as following below, and all the scripts a
  - beautifulsoup4 4.11.1
  - tldextract 3.4.0
  - lxml
+ - pandas
 #### Keyword Extractor Backend
  - Flask
  - Jieba
