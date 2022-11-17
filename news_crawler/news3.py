@@ -335,5 +335,3 @@ for link in url_link_list_remove_dot:
     tld_result = tldextract.extract(news_url)
     domain = '{}.{}'.format(tld_result.domain, tld_result.suffix)
     domain_check(domain,news_url)
-if __name__ == '__main__':
-    domain_check()
