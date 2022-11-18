@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 import csv
 from tldextract import tldextract
-import time
 #設定fake-useragent
 #假的user-agent,產生 headers
 ua=UserAgent()
@@ -240,6 +239,8 @@ with open('output_test2.csv', 'w', newline='') as csvfile:
                         print("文章內容: ")
                         for content in contents:
                             print(content.text)
+                            content_str+=content.text
+                        csvfile_handler(title,content_str)
                     except:
                         print(news_url)
                         try:
@@ -249,6 +250,8 @@ with open('output_test2.csv', 'w', newline='') as csvfile:
                             contents=objsoup.find('div',{"class":"Mt(12px) Fz(16px) Lh(1.5) C(#464e56) Whs(pl)"})
                             print("文章內容: ")
                             print(contents.text)
+                            content_str+=content.text
+                            csvfile_handler(title,content_str)
                         except:
                             print(news_url)
             case 'rfi.fr':
