@@ -18,7 +18,11 @@ fifthteen='https://www.rti.org.tw/news/view/id/2150127' # Rti 中央廣播電臺
 sixteen='https://www.storm.mg/article/4575743' # 風傳媒
 seventeen='https://money.udn.com/money/story/5607/6763523?from=edn_maintab_index'
 eighteen='https://www.mirrormedia.mg/story/20221118edi032/' #鏡週刊
-list1=[one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,forteen,fifthteen,sixteen,seventeen,eighteen]
+nighteen='https://www.cw.com.tw/article/5123601'
+twenty='https://cn.wsj.com/articles/俄羅斯稱可能攻擊在烏克蘭戰爭中投入使用的美國商業衛星-121666916107'
+twenty_one='https://cn.nytimes.com/china/20221117/china-affirms-ties-with-russia-but-signals-it-is-becoming-more-guarded-about-the-war/zh-hant/'
+twenty_two=''
+list1=[one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,forteen,fifthteen,sixteen,seventeen,eighteen,nighteen,twenty,twenty_one]
 for url in list1:
     te_result = tldextract.extract(url)
     domain = '{}.{}'.format(te_result.domain, te_result.suffix)
