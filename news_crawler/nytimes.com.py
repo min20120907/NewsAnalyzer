@@ -5,7 +5,7 @@ ua=UserAgent()
 usar=ua.random 
 headers={'user-agent':usar}
 url='https://cn.nytimes.com/china/20221117/china-affirms-ties-with-russia-but-signals-it-is-becoming-more-guarded-about-the-war/zh-hant/'
-res=requests.get(url,headers=headers)
+res=requests.get(url)
 if res.status_code==requests.codes.ok:
     print('nytimes.com ok')
 objsoup=BeautifulSoup(res.text,'lxml')
