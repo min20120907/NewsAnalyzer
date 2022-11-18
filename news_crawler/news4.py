@@ -3,9 +3,7 @@ from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 import csv
 from tldextract import tldextract
-from urllib import request
-from requests import get
-import pandas as pd
+import time
 #設定fake-useragent
 #假的user-agent,產生 headers
 ua=UserAgent()
@@ -38,21 +36,19 @@ ban_set={"© 2022 BBC. BBC對外部網站內容不負責任。 閱讀了解我�
 ,'[啟動LINE推播] 每日重大新聞通知'
 ,'下載法廣應用程序跟蹤國際時事'}
 #break string
-break_set={'點我看更多華視新聞＞＞＞','更多風傳媒報導'}
+break_set={'點我看更多華視新聞＞＞＞','更多風傳媒報導','更多 TVBS 報導'}
 
 #title and content csv file handler
-
-title=[]
-news_content=[]
-
-def csv_file_handler():
-    dict={'title':title,'news_content':news_content}
-    df=pd.DataFrame(dict)
-    df.to_csv('crawler_results.cvs') 
+def csvfile_handler(title,content_str):
+    with open('output_test2.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['news_title', 'news_content'])    
+        writer.writerow([title.text,content_str])
 
 def domain_check(domain,news_url):
     match domain:
         case 'chinatimes.com':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -60,7 +56,6 @@ def domain_check(domain,news_url):
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-title"})
             print('新聞標題: ',title.text)
-            title.append(title.text)
             print("文章內容: ")
             contents=objsoup.find_all('p')
             for content in contents:
@@ -68,8 +63,10 @@ def domain_check(domain,news_url):
                     pass
                 else:
                     print(content.text)
-                    news_content.append(content.text)
+                    content_str+=content.text
+            csvfile_handler(title,content_str)
         case 'cna.com.tw':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -77,7 +74,6 @@ def domain_check(domain,news_url):
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1')
             print("新聞標題: ",title.text)
-            title.append(title.text)
             contents=objsoup.find_all('p')
             print("文章內容: ")
             for content in contents:
@@ -85,8 +81,10 @@ def domain_check(domain,news_url):
                     pass
                 else:
                     print(content.text)
-                    news_content.append(content.text)
+                    content_str+=content.text
+            csvfile_handler(title,content_str)
         case 'ettoday.net':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -94,7 +92,6 @@ def domain_check(domain,news_url):
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"title"})
             print("新聞標題: ",title.text)
-            title.append(title.text)
             print("文章內容: ")
             contents=objsoup.find('div',attrs={"class":"story"}).find_all('p')
             for content in contents:
@@ -102,8 +99,10 @@ def domain_check(domain,news_url):
                     break
                 else:
                     print(content.text)
-                    news_content.append(content.text)
+                    content_str+=content.text    
+            csvfile_handler(title,content_str)                 
         case 'ltn.com.tw':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -111,7 +110,6 @@ def domain_check(domain,news_url):
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1')
             print("新聞標題: ",title.text)
-            title.append(title.text)
             contents=objsoup.find('div',{"class":"text boxTitle boxText"}).find_all('p')
             print("文章內容: ")
             for content in contents:
@@ -119,8 +117,10 @@ def domain_check(domain,news_url):
                     break
                 else:
                     print(content.text)
-                    news_content.append(content.text)
+                    content_str+=content.text
+            csvfile_handler(title,content_str)
         case 'news.pts':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -128,12 +128,13 @@ def domain_check(domain,news_url):
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-title"})
             print("新聞標題: ",title.text)
-            title.append(title.text)
             print("文章內容: ")
             contents=objsoup.find_all('p')
             for content in contents:
                 print(content.text)
+                content_str+=content.text
         case 'newtalk.tw':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -141,13 +142,14 @@ def domain_check(domain,news_url):
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"content_title"})
             print("新聞標題: ",title.text)
-            title.append(title.text)
             print("文章內容: ")
             contents=objsoup.find('div',{"id":"news_content"}).find_all('p')
             for content in contents:
                 print(content.text)
-                news_content.append(content.text)
+                content_str+=content.text
+            csvfile_handler(title,content_str)
         case 'setn.tw':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -155,13 +157,14 @@ def domain_check(domain,news_url):
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"news-title-3"})
             print("新聞標題: ",title.text)
-            title.append(title.text)
             print("文章內容: ")
             contents=objsoup.find_all('p')
             for content in contents:
                 print(content.text)
-            news_content.append(content.text)               
+                content_str+=content.text
+            csvfile_handler(title,content_str)
         case 'thenewslens.com':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -169,7 +172,6 @@ def domain_check(domain,news_url):
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-title"})
             print("新聞標題: ",title.text)
-            title.append(title.text)
             contents=objsoup.find('div',{"class":"article-content AdAsia"}).find_all('p')
             print("文章內容: ")
             for content in contents:
@@ -177,8 +179,10 @@ def domain_check(domain,news_url):
                     pass
                 else:
                     print(content.text)
-                    news_content.append(content.text)
+                    content_str+=content.text
+            csvfile_handler(title,content_str)
         case 'udn.com':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -187,7 +191,6 @@ def domain_check(domain,news_url):
             try:
                 title=objsoup.find('h1',{"class":"article-content__title"})
                 print("新聞標題: ",title.text)
-                title.append(title.text)
                 contents=objsoup.find_all('div',{"class":"article-content__paragraph"})
                 contents_list=[]
                 print("文章內容: ")
@@ -205,13 +208,13 @@ def domain_check(domain,news_url):
                 for content in contents:
                     print(content.text.strip())
         case 'yahoo.com':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
                 print('yahoo.com ok')
             try:
                 objsoup=BeautifulSoup(res.text,'lxml')
-
                 title=objsoup.find('header',{"class":"caas-header"}).find('h1')
                 print("新聞標題: ",title.text)
                 contents=objsoup.find('div',{"class":"caas-body"}).find_all('p')
@@ -219,7 +222,9 @@ def domain_check(domain,news_url):
                 for content in contents:
                     if  content.text in ban_set:
                         pass
-                    elif content.text in break_set:
+                    elif content.text in break_set: 
+                        break
+                    elif content.text in '更多 TVBS 報導':
                         break
                     else:
                         print(content.text)
@@ -241,10 +246,10 @@ def domain_check(domain,news_url):
                         contents=objsoup.find('div',{"class":"Mt(12px) Fz(16px) Lh(1.5) C(#464e56) Whs(pl)"})
                         print("文章內容: ")
                         print(contents.text)
-                        
                     except:
                         print(news_url)
         case 'rfi.fr':
+            content_str=''
             res=requests.get(news_url,headers=headers)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -259,7 +264,10 @@ def domain_check(domain,news_url):
                     pass
                 else:
                     print(content.text)
+                    content_str+=content.text
+            csvfile_handler(title,content_str)
         case 'rti.org.tw':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -271,7 +279,10 @@ def domain_check(domain,news_url):
             contents=objsoup.find('article').find_all('p')
             for content in contents:
                 print(content.text)
+                content_str+=content.text
+            csvfile_handler(title,content_str)
         case 'storm.mg':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -288,7 +299,10 @@ def domain_check(domain,news_url):
                     break
                 else:
                     print(content.text)
+                    content_str+=content.text
+            csvfile_handler(title,content_str)
         case 'bbc.com':
+            content_str=''
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
@@ -304,6 +318,7 @@ def domain_check(domain,news_url):
                         pass
                     else:
                         print(content.text)
+                csvfile_handler(title,content_str)
             except:
                 print("error link at: ",news_url)
                 title=objsoup.find('strong',{"class":"ewk8wmc0 bbc-uky4hn eglt09e1"})
@@ -338,7 +353,6 @@ for counter,h3_all_link in enumerate(h3_all_links):
 url_link_list_remove_dot=[]
 for link in url_link_list:
     url_link_list_remove_dot.append(link.replace('./','',1))
-#print(url_link_list_remove_dot)
 
 #解決短網址問題
 def shortlink_converter(url):
