@@ -382,6 +382,21 @@ with open('output_test2.csv', 'w', newline='') as csvfile:
                     print(content.text) 
                     content_str+=content.text
                 csvfile_handler(title,content_str)
+            case'cw.com.tw':
+                content_str=''
+                res=requests.get(news_url,headers=headers)
+                res.encoding='utf-8'
+                if res.status_code==requests.codes.ok:
+                    print('cw.com.tw ok')
+                objsoup=BeautifulSoup(res.text,'lxml')
+                title=objsoup.find('div',{"class":"article__head"}).find('h1')
+                print("新聞標題: ",title.text)
+                print("文章內容: ")
+                contents=objsoup.find('div',{"class":"article__content py20"}).find_all('p')
+                for content in contents:
+                    print(content.text)
+                    content_str+=content.text
+                csvfile_handler(title,content_str)
             case _:
                 return "url missing!"
 
