@@ -333,5 +333,6 @@ for link in url_link_list_remove_dot:
     news_url=res.request.url #特定新聞媒體的url
     #解析domain    
     tld_result = tldextract.extract(news_url)
+    print(tld_result)
     domain = '{}.{}'.format(tld_result.domain, tld_result.suffix)
     domain_check(domain,news_url)

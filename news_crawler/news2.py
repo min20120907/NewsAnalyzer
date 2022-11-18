@@ -320,7 +320,7 @@ def shortlink_converter(url):
 for link in url_link_list_remove_dot:
     url='https://news.google.com/'+str(link)
     original_url=shortlink_converter(url)
-    res=requests.get(original_url,headers=headers,timeout=2) 
+    res=requests.get(original_url,headers=headers,timeout=10) 
     #if res.status_code==requests.codes.ok:
     #    print('ok')
     
