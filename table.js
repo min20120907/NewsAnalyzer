@@ -5,7 +5,7 @@ delay = function (s) {
 };
 let table = class {
     constructor(ID, rows, lpost) {
-        this.rows = rows
+        this.rows = rows;
         this.ID = ID;
         this.dom = document.createElement("table");
         this.dom.id = "table_" + ID;
