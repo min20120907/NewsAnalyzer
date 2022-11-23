@@ -334,7 +334,7 @@ with open('output_test2.csv', 'w', newline='') as csvfile:
                             print(content.text)
                             content_str+=content.text
                     csvfile_handler(title,content_str)
-            case 'mirrormedia.mg':
+            case 'mirrormedia.mg': # 鏡週刊
                 content_str=''
                 res=requests.get(news_url,headers=headers)
                 res.encoding='utf-8'
@@ -367,7 +367,7 @@ with open('output_test2.csv', 'w', newline='') as csvfile:
                     print(content.text)
                     content_str+=content.text
                 csvfile_handler(title,content_str)
-            case 'wsj.com':
+            case 'wsj.com': # 華爾街日報
                 content_str=''
                 res=requests.get(news_url,headers=headers)
                 res.encoding='utf-8'
@@ -397,7 +397,7 @@ with open('output_test2.csv', 'w', newline='') as csvfile:
                     print(content.text)
                     content_str+=content.text
                 csvfile_handler(title,content_str)
-            case 'epochtimes.com':
+            case 'epochtimes.com': # 大紀元
                 content_str=''
                 res=requests.get(news_url,headers=headers)
                 res.encoding='utf-8'
