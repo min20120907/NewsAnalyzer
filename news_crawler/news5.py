@@ -45,7 +45,7 @@ db_settings = {
     "host":"127.0.0.1",
     "port":3306,
     "user":"phpmyadmin",
-    "password":"jefflin123",
+    "password":"1234",
     "db":"result",
     "charset":"utf8"
 }
@@ -55,7 +55,7 @@ def insert_data(title,content_str):
     #建立操作游標
     cursor = db.cursor()
     #SQL語法
-    sql = "INSERT INTO csvfileresult(ID,news_title,news_content,createdDate) VALUES ('0','"+ str(title) +"','"+ str(content_str) +"','"+ str(Now) +"')"
+    sql = "INSERT INTO news_titles_contents(ID,news_title,news_content,createdDate) VALUES ('0','"+ str(title) +"','"+ str(content_str) +"','"+ str(Now) +"')"
  
     #執行語法
     try:
@@ -63,10 +63,11 @@ def insert_data(title,content_str):
         #提交修改
         db.commit()
         print('success')
-    except:
+    except Exception as ex:
         #發生錯誤時停止執行SQL
         db.rollback()
         print('error')
+        print(ex)
     #關閉連線
     db.close()
 
