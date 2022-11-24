@@ -40,7 +40,7 @@ break_set={'點我看更多華視新聞＞＞＞','更多風傳媒報導','更�
 
 #insert data into db
 Now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-# 資料庫參數設定
+# 資料庫參數設定,注意這邊的設定要依據使用者而定
 db_settings = {
     "host":"127.0.0.1",
     "port":3306,
@@ -62,7 +62,7 @@ def insert_data(title,content_str):
         cursor.execute(sql)
         #提交修改
         db.commit()
-        print('success')
+        #print('success')
     except Exception as ex:
         #發生錯誤時停止執行SQL
         db.rollback()
