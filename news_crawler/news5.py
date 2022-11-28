@@ -50,12 +50,12 @@ db_settings = {
     "charset":"utf8"
 }
 #建立函數來進行資料的插入
-def insert_data(title,content_str):
+def insert_data(title,content_str,news_link):
     db = pymysql.connect(**db_settings)
     #建立操作游標
     cursor = db.cursor()
-    #SQL語法
-    sql = "INSERT INTO news_titles_contents(ID,news_title,news_content,createdDate) VALUES ('0','"+ str(title) +"','"+ str(content_str) +"','"+ str(Now) +"')"
+    #SQL語法      news_title_kw,news_content_kw,
+    sql = "INSERT INTO news_titles_contents(ID,news_title,news_content,news_link,createdDate) VALUES ('0','"+ str(title) +"','"+ str(content_str) +"','"+ str(news_link) +"','"+ str(Now) +"')"
  
     #執行語法
     try:
@@ -90,7 +90,7 @@ def domain_check(domain,news_url):
                 else:
                     print(content.text)
                     content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url) 
         case 'cna.com.tw':
             content_str=''
             res=requests.get(news_url)
@@ -108,7 +108,7 @@ def domain_check(domain,news_url):
                 else:
                     print(content.text)
                     content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case 'ettoday.net':
             content_str=''
             res=requests.get(news_url)
@@ -126,7 +126,7 @@ def domain_check(domain,news_url):
                 else:
                     print(content.text)
                     content_str+=content.text    
-            insert_data(title.text,content_str)                 
+            insert_data(title.text,content_str,news_url)                 
         case 'ltn.com.tw':
             content_str=''
             res=requests.get(news_url)
@@ -144,7 +144,7 @@ def domain_check(domain,news_url):
                 else:
                     print(content.text)
                     content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case 'news.pts':
             content_str=''
             res=requests.get(news_url)
@@ -159,7 +159,7 @@ def domain_check(domain,news_url):
             for content in contents:
                 print(content.text)
                 content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case 'newtalk.tw':
             content_str=''
             res=requests.get(news_url)
@@ -174,7 +174,7 @@ def domain_check(domain,news_url):
             for content in contents:
                 print(content.text)
                 content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case 'setn.tw':
             content_str=''
             res=requests.get(news_url)
@@ -189,7 +189,7 @@ def domain_check(domain,news_url):
             for content in contents:
                 print(content.text)
                 content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case 'thenewslens.com':
             content_str=''
             res=requests.get(news_url)
@@ -207,7 +207,7 @@ def domain_check(domain,news_url):
                 else:
                     print(content.text)
                     content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case 'udn.com':
             content_str=''
             res=requests.get(news_url)
@@ -224,7 +224,7 @@ def domain_check(domain,news_url):
                 for content in contents:
                     print(content.text.strip())
                     content_str+=content.text
-                insert_data(title.text,content_str)
+                insert_data(title.text,content_str,news_url)
             except: #經濟日報
                 if res.status_code==requests.codes.ok:
                     print('money udn ok')
@@ -236,7 +236,7 @@ def domain_check(domain,news_url):
                 for content in contents:
                     print(content.text.strip())
                     content_str+=content.text
-                insert_data(title.text,content_str)
+                insert_data(title.text,content_str,news_url)
         case 'yahoo.com':
             content_str=''
             res=requests.get(news_url)
@@ -257,7 +257,7 @@ def domain_check(domain,news_url):
                     else:
                         print(content.text)
                         content_str+=content.text
-                insert_data(title.text,content_str)
+                insert_data(title.text,content_str,news_url)
             except:
                 print(news_url)
                 try:
@@ -268,7 +268,7 @@ def domain_check(domain,news_url):
                     for content in contents:
                         print(content.text)
                         content_str+=content.text
-                    insert_data(title.text,content_str)
+                    insert_data(title.text,content_str,news_url)
                 except:
                     print(news_url)
                     try:
@@ -279,7 +279,7 @@ def domain_check(domain,news_url):
                         print("文章內容: ")
                         print(contents.text)
                         content_str+=content.text
-                        insert_data(title.text,content_str)
+                        insert_data(title.text,content_str,news_url)
                     except:
                         print(news_url)
         case 'rfi.fr':
@@ -299,7 +299,7 @@ def domain_check(domain,news_url):
                 else:
                     print(content.text)
                     content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case 'rti.org.tw':
             content_str=''
             res=requests.get(news_url)
@@ -314,7 +314,7 @@ def domain_check(domain,news_url):
             for content in contents:
                 print(content.text)
                 content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case 'storm.mg':
             content_str=''
             res=requests.get(news_url)
@@ -334,7 +334,7 @@ def domain_check(domain,news_url):
                 else:
                     print(content.text)
                     content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case 'bbc.com':
             content_str=''
             res=requests.get(news_url)
@@ -353,7 +353,7 @@ def domain_check(domain,news_url):
                     else:
                         print(content.text)
                         content_str+=content.text
-                insert_data(title.text,content_str)
+                insert_data(title.text,content_str,news_url)
             except:
                 print("error link at: ",news_url)
                 title=objsoup.find('strong',{"class":"ewk8wmc0 bbc-uky4hn eglt09e1"})
@@ -366,7 +366,7 @@ def domain_check(domain,news_url):
                     else:
                         print(content.text)
                         content_str+=content.text
-                insert_data(title.text,content_str)
+                insert_data(title.text,content_str,news_url)
         case 'mirrormedia.mg': # 鏡週刊
             content_str=''
             res=requests.get(news_url,headers=headers)
@@ -384,7 +384,7 @@ def domain_check(domain,news_url):
                 else:
                     print(content.text)
                     content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case 'nytime.com':
             content_str=''
             res=requests.get(news_url,headers=headers)
@@ -399,8 +399,7 @@ def domain_check(domain,news_url):
             for content in contents:
                 print(content.text)
                 content_str+=content.text
-            insert_data(title.text,content_str)
-        case 'wsj.com': # 華爾街日報
+            insert_data(title.text,content_str,news_url)
             content_str=''
             res=requests.get(news_url,headers=headers)
             res.encoding='utf-8'
@@ -414,7 +413,7 @@ def domain_check(domain,news_url):
             for content in contents:
                 print(content.text) 
                 content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case'cw.com.tw':
             content_str=''
             res=requests.get(news_url,headers=headers)
@@ -429,7 +428,7 @@ def domain_check(domain,news_url):
             for content in contents:
                 print(content.text)
                 content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case 'epochtimes.com': # 大紀元
             content_str=''
             res=requests.get(news_url,headers=headers)
@@ -444,7 +443,7 @@ def domain_check(domain,news_url):
             for content in contents:
                 print(content.text)
                 content_str+=content.text
-            insert_data(title.text,content_str)
+            insert_data(title.text,content_str,news_url)
         case _:
             return "url missing!"
 
