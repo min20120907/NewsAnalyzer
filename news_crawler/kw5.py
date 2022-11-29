@@ -21,40 +21,36 @@ doc = """
 普里格津說：「巴赫姆特是一座大型、工事良好的據點，有道路、郊區和攔水壩，烏軍早做足充分準備並能頑抗。」「我們的任務並非巴赫姆特這座城本身，更非進城，而是摧毀烏軍有生力量、減少烏軍作戰潛能，這會對戰場其他地區帶來積極影響，這也是為何這裡的作戰稱為『巴赫姆特絞肉機』。」  
       """
 
-
-# 斷詞
-seg_list = jieba.cut(doc, cut_all=False) # cut_all 參數為 True ->全模式，預設為 False ->精確模式
-seg_list="/ ".join(seg_list)
-#print(seg_list)
-#print(type(seg_list))
-
-
 # 關鍵字榨取
+
+list1=[]
+str1 = ','
+list2=[]
 tags=jieba.analyse.extract_tags(doc,topK=3,withWeight=True,allowPOS=False) #topK=x,抓出3個最相關
 for tag in tags:
     print('word:',tag[0],'tf-idf:',tag[1])
+    list2.append(tag[0])
         # 情感分析
     s=SnowNLP(tag[0])
-    #print(s.words)
-    #print(s.sentiments)
-    if s.sentiments>=0.9:
-        print("abs positive")
-    elif 0.7 <= s.sentiments < 0.9: 
-        print("strong positive")
-    elif 0.5 < s.sentiments < 0.7:
-        print("quite positive")
-    elif s.sentiments==0.5:
-        print("neutrality")
-    elif 0.3 <= s.sentiments <0.5:
-        print("quite negative")
-    elif 0.1<=s.sentiments<0.3:
-        print("strong negative")
-    elif s.sentiments<=0.1:
-        print("abs negative")
-average=0
-list1=[]
-for tag in tags:
-    list1.append(tag[1])
-    average+=tag[1]
-print(average/len(list1))
-print(list1)
+    list1.append(s.sentiments)
+str2 = str1.join(list2)
+print(str2)
+total=0
+for r in list1:
+    total+=r
+average=total/len(list1)
+if average>=0.9:
+    print("abs positive")
+elif 0.7 <= average < 0.9: 
+    print("strong positive")
+elif 0.5 < average < 0.7:
+    print("quite positive")
+elif average==0.5:
+    print("neutrality")
+elif 0.3 <= average <0.5:
+    print("quite negative")
+elif 0.1<=average<0.3:
+    print("strong negative")
+elif average<=0.1:
+    print("abs negative")
+
