@@ -45,24 +45,27 @@ break_set={'點我看更多華視新聞＞＞＞','更多風傳媒報導','更�
 # 關鍵字榨取與情感分析
 def kw(title,content_str):
     # 關鍵字榨取
-    list1=[]
-    list2=[]
-    str1=','
+    list_title_kw=[]
+    list_content_kw=[]
+    list_sentiment=[]
+    interval=','
     tags1=jieba.analyse.extract_tags(title,topK=3,withWeight=True,allowPOS=False)
+    
     for tag in tags1:
-        list2.append(tag[0])
-    str2 = str1.join(list2)
+        list_title_kw.append(tag[0]) # 抓出標題關鍵字
+    str1=interval.join(list_title_kw) # 標題關鍵字逗號隔開
     tags2=jieba.analyse.extract_tags(content_str,topK=3,withWeight=True,allowPOS=False) #topK=x,抓出3個最相關
+    
     for tag in tags2:
-        #print('word:',tag[0],'tf-idf:',tag[1])
-            # 情感分析
-        s=SnowNLP(tag[0])
-        list1.append(s.sentiments)
-    str3=str1.join(list1)
+        list_content_kw.append(tag[0]) # 抓出內文關鍵字
+        s=SnowNLP(tag[0]) # 把內文關鍵字丟入情感分析
+        list_sentiment.append(s.sentiments) # 把結果串接起來
+    str2=interval.join(list_content_kw) # 把內文關鍵字用逗號隔開
+    # 判斷新聞內文關鍵字是正面還是負面
     total=0
-    for r in list1:
+    for r in list_sentiment:
         total+=r
-        average=total/len(list1)
+        average=total/len(list_sentiment)
         if average>=0.9:
             sentiment_result='abs positive'
             print("abs positive")
@@ -87,7 +90,7 @@ def kw(title,content_str):
         else:
             sentiment_result='error occur'
             print("error occur")
-    return str2,str3,sentiment_result
+    return str1,str2,sentiment_result
 # insert data into db
 Now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 # 資料庫參數設定,注意這邊的設定要依據使用者而定

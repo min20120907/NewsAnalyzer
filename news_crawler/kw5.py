@@ -54,3 +54,4 @@ elif 0.1<=average<0.3:
 elif average<=0.1:
     print("abs negative")
 
+print(list1)
