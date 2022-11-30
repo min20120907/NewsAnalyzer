@@ -127,28 +127,28 @@ def kw(title,content_str):
         average=total/len(list_sentiment)
         if average>=0.9:
             sentiment_result='abs positive'
-            print("abs positive")
+            #print("abs positive")
         elif 0.7 <= average < 0.9: 
             sentiment_result='strong positive'
-            print("strong positive")
+            #print("strong positive")
         elif 0.5 < average < 0.7:
             sentiment_result='quite positive'
-            print("quite positive")
+            #print("quite positive")
         elif average==0.5:
             sentiment_result=='neutrality'
-            print("neutrality")
+            #print("neutrality")
         elif 0.3 <= average <0.5:
             sentiment_result='quite negative'
-            print("quite negative")
+            #print("quite negative")
         elif 0.1<average<0.3:
             sentiment_result='strong negative'
-            print("strong negative")
+            #print("strong negative")
         elif average<=0.1:
             sentiment_result='abs negative'
-            print("abs negative")
+            #print("abs negative")
         else:
             sentiment_result='error occur'
-            print("error occur")
+            #print("error occur")
     return str1,str2,sentiment_result
 # insert data into db
 Now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -578,6 +578,36 @@ def domain_check(domain,news_url):
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+        case 'nytimes.com': # 紐約時報
+            content_str=''
+            res=requests.get(news_url,headers=headers)
+            res.encoding='utf-8'
+            if res.status_code==requests.codes.ok:
+                print('nytimes.com ok')
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('div',{"class":"article-header"}).find('h1')
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find_all('div',{"class":"article-paragraph"})
+            for content in contents:
+                print(content.text)
+                news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)
+        case 'wsj.com': # 半島電視台
+            content_str=''
+            res=requests.get(url,headers=headers)
+            if res.status_code==requests.codes.ok:
+                print('wsj.com ok')
+            res.encoding='utf-8'
+            objsoup=BeautifulSoup(res.text,'lxml')
+            title=objsoup.find('h1',{"class":"wsj-article-headline"})
+            print("新聞標題: ",title.text)
+            print("文章內容: ")
+            contents=objsoup.find('div',{"class":"wsj-snippet-body"}).find_all('p')
+            for content in contents:
+                print(content.text)
+                news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)
         case _:
             return "url missing!"
 if __name__ == '__main__':
