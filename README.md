@@ -14,13 +14,15 @@ With server side, we have the features as following below, and all the scripts a
 ### Prequirements
 #### News Crawler
  - Python 3.10 or later
- - requests 2.28.1
- - fake-useragent 0.1.14
- - beautifulsoup4 4.11.1
- - tldextract 3.4.0
+ - requests 
+ - fake-useragent 
+ - beautifulsoup4 
+ - tldextract 
  - lxml
  - datetime
  - pymysql
+ - jieba
+ - snownlp
 #### Keyword Extractor Backend
  - Flask
  - Jieba
