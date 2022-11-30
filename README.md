@@ -21,7 +21,7 @@ With server side, we have the features as following below, and all the scripts a
  - lxml
  - datetime
  - pymysql
- - jieba
+ - jieba-zh_TW
  - snownlp
 #### Keyword Extractor Backend
  - Flask
