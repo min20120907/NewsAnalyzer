@@ -68,28 +68,28 @@ def kw(title,content_str):
         average=total/len(list_sentiment)
         if average>=0.9:
             sentiment_result='abs positive'
-            print("abs positive")
+            #print("abs positive")
         elif 0.7 <= average < 0.9: 
             sentiment_result='strong positive'
-            print("strong positive")
+            #print("strong positive")
         elif 0.5 < average < 0.7:
             sentiment_result='quite positive'
-            print("quite positive")
+            #print("quite positive")
         elif average==0.5:
             sentiment_result=='neutrality'
-            print("neutrality")
+            #print("neutrality")
         elif 0.3 <= average <0.5:
             sentiment_result='quite negative'
-            print("quite negative")
+            #print("quite negative")
         elif 0.1<average<0.3:
             sentiment_result='strong negative'
-            print("strong negative")
+            #print("strong negative")
         elif average<=0.1:
             sentiment_result='abs negative'
-            print("abs negative")
+            #print("abs negative")
         else:
             sentiment_result='error occur'
-            print("error occur")
+            #print("error occur")
     return str1,str2,sentiment_result
 # insert data into db
 Now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
