@@ -8,7 +8,6 @@ import jieba
 import jieba.analyse
 from snownlp import SnowNLP
 from keybert import KeyBERT
-import jieba
 from textblob import TextBlob
 from flask import Flask, redirect, url_for, request
 # 設定fake-useragent
@@ -23,7 +22,7 @@ app = Flask(__name__)
 @app.route('/extract', methods = ['GET'])
 def extract():
     model = KeyBERT('LaBSE')
-    title = request.args.get('title')
+    title = request.args.get(u'俄羅斯猛攻烏克蘭基礎設施 布林肯痛批「野蠻」')
     splitted_title = " ".join(jieba.cut(title))
     keywords = model.extract_keywords(splitted_title,stop_words=[',' , '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］', '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你','妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推']) 
     # if key words are 烏克蘭 戰爭 俄羅斯
