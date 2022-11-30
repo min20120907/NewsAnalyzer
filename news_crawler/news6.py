@@ -81,7 +81,7 @@ def kw(title,content_str):
         elif 0.3 <= average <0.5:
             sentiment_result='quite negative'
             print("quite negative")
-        elif 0.1<=average<0.3:
+        elif 0.1<average<0.3:
             sentiment_result='strong negative'
             print("strong negative")
         elif average<=0.1:
