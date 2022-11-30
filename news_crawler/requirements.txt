@@ -9,6 +9,7 @@ beautifulsoup4==4.11.1
 bleach==5.0.1
 certifi
 snownlp
+git+https://github.com/APCLab/jieba-tw.git
 cffi==1.15.1
 charset-normalizer==2.1.1
 contourpy==1.0.6
