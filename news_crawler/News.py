@@ -17,10 +17,12 @@ usar=ua.random #產生header 字串
 
 headers={'user-agent':usar}
 
+# Get the current datetime
 
 class News:
     # The constructor of the object News
     def __init__(self, title):
+        self.Now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         model = KeyBERT('LaBSE')
         splitted_title = " ".join(jieba.cut(title))
         # initialize the keyword extraction model
@@ -28,6 +30,7 @@ class News:
         keywords_str=" ".join([i[0] for i in keywords])
         # send the query into Google News
         same_url='https://news.google.com/search?q='+keywords_str+'&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        print("sending query to google news...", keywords_str)
         self.htmlfile=requests.get(same_url,headers=headers,timeout=5)
         
         # The source title, keywords which is from the extension in Facebook link posts.
@@ -58,9 +61,9 @@ class News:
             self.url_link_list.append(h3_all_link.find('a')['href'])
             if counter>=11:
                 break
-
+        
         # 把link拿出來看看
-        # print(url_link_list)
+        print("The length of list: ", len(self.url_link_list))
         self.url_link_list_remove_dot=[]
         for link in self.url_link_list:
             self.url_link_list_remove_dot.append(link.replace('./','',1))
@@ -80,6 +83,7 @@ class News:
             tld_result = tldextract.extract(news_url)
             domain = '{}.{}'.format(tld_result.domain, tld_result.suffix)
             self.domain_check(domain, news_url)
+            print("Checking", news_url, " at ", domain)
 
     # 解決短網址問題
     def shortlink_converter(self, url):
@@ -90,12 +94,11 @@ class News:
     def toHTML(self):
         tmp = ""
         for i in range(len(self.news_title)):
-            tmp.append("('"+ str(self.news_title[i]) +"','"+ str(self.news_content[i]) +"','"+ str(self.news_link[i]) +"','"+ str(self.news_title_kw[i]) +"','"+ str(self.news_content_kw[i]) +"','"+ str(self.sentiment_analysis[i]) +"','"+ str(self.Now) +"')<br>")
+            tmp.join("('"+ str(self.news_title[i]) +"','"+ str(self.news_content[i]) +"','"+ str(self.news_link[i]) +"','"+ str(self.news_title_kw[i]) +"','"+ str(self.news_content_kw[i]) +"','"+ str(self.sentiment_analysis[i]) +"','"+ str(self.Now) +"')<br>")
         return tmp
     # The function to submit the results
     def submitSQL(self, db_settings):
-        # Get the current datetime
-        Now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
         # establish the connection by the argument "db_settings"
         db = pymysql.connect(**db_settings)
         # 建立操作游標
