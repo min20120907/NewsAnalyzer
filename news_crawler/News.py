@@ -14,18 +14,61 @@ class News:
         self.src_title = title
         self.src_keywords = keywords_str
         # The result of the news that fetched from Google News.
-        self.news_title = None
-        self.news_content = None
-        self.news_link = None
+        self.news_title = []
+        self.news_content = []
+        self.news_link = []
         # The results of Keyword Extraction
-        self.news_title_kw = None
-        self.news_content_kw = None
+        self.news_title_kw = []
+        self.news_content_kw = []
         # The results of sentiment analysis
-        self.sentiment_analysis = None
+        self.sentiment_analysis = []
         # The domain of the news
-        self.domain = None
+        self.domain = []
+        # 開始使用bs4解析
+        objsoup=BeautifulSoup(htmlfile.text,"lxml")
 
-        self.domain_check(self.domain, self.news_link)
+        #取得objsoup所有的文字
+        # print(objsoup.get_text())
+
+        # 找到所有google新聞的link
+        self.url_link_list=[]
+        h3_all_links=objsoup.find_all('h3',{"class":"ipQwMb ekueJc RD0gLb"})
+        for counter,h3_all_link in enumerate(h3_all_links):
+            #print(h3_all_link.text)
+            url_link_list.append(h3_all_link.find('a')['href'])
+            if counter>=11:
+                break
+
+        # 把link拿出來看看
+        # print(url_link_list)
+        self.url_link_list_remove_dot=[]
+        for link in url_link_list:
+            url_link_list_remove_dot.append(link.replace('./','',1))
+
+
+        # 連到多家新聞媒體
+        for link in url_link_list_remove_dot:
+            url='https://news.google.com/'+str(link)
+            original_url=shortlink_converter(url)
+            res=requests.get(original_url,headers=headers,timeout=10) 
+            # if res.status_code==requests.codes.ok:
+            #    print('ok')
+            
+            # 判斷連到的是哪個domain,以抓去特定媒體的內文tag
+            news_url=res.request.url #特定新聞媒體的url
+            # 解析domain    
+            tld_result = tldextract.extract(news_url)
+            domain = '{}.{}'.format(tld_result.domain, tld_result.suffix)
+            self.domain_check(domain, news_url)
+
+    # 解決短網址問題
+    def shortlink_converter(url):
+        resp = requests.get(url)
+        return resp.url
+    # Print function
+    def print():
+        print("('0','"+ str(title) +"','"+ str(content_str) +"','"+ str(news_url) +"','"+ str(news_title_kw) +"','"+ str(news_content_kw) +"','"+ str(sentiments_analysis) +"','"+ str(Now) +"')")
+
 
     # The function to submit the results
     def submitSQL(self, db_setting):
