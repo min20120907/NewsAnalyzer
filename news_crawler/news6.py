@@ -35,28 +35,6 @@ def extract():
         print("成功連線到google news with string")
     htmlfile.encoding='utf-8'
 
-    # ban strings
-    ban_set={"© 2022 BBC. BBC對外部網站內容不負責任。 閱讀了解我們對待外部鏈接的做法。","圖像來源，Reuters"
-    ,"中時新聞網對留言系統使用者發布的文字、圖片或檔案保有片面修改或移除的權利。當使用者使用本網站留言服務時，表示已詳細閱讀並完全了解，且同意配合下述規定：","違反上述規定者，中時新聞網有權刪除留言，或者直接封鎖帳號！請使用者在發言前，務必先閱讀留言板規則，謝謝配合。"
-    ,"本網站之文字","本網站之文字、圖片及影音，非經授權，不得轉載、公開播送或公開傳輸及利用。"
-    ,"省錢大作戰！超夯優惠等你GO"
-    ,"請繼續往下閱讀...","不用抽 不用搶 現在用APP看新聞 保證天天中獎"
-    ,"Photo Credit:","每月一杯咖啡的金額，支持優質觀點的誕生，享有更好的閱讀體驗。","本文經《BBC News 中文》授權轉載，原文發表於此"
-    ,"更多 TVBS 報導","更多相關新聞,'相關新聞影音"
-    ,'圖／TVBS'
-    ,'圖像來源，NCA'
-    ,'原始連結'
-    ,'點我看更多華視新聞＞＞＞'
-    ,'圖像來源，Getty Images'
-    ,'相關新聞影音'
-    ,'[啟動LINE推播] 每日重大新聞通知'
-    ,'下載法廣應用程序跟蹤國際時事'}
-    # break string
-    break_set={'點我看更多華視新聞＞＞＞','更多風傳媒報導','更多 TVBS 報導'}
-
-    # 新聞標題以及內文斷詞,並回傳positive還是negative
-    
-
     # 開始使用bs4解析
     objsoup=BeautifulSoup(htmlfile.text,"lxml")
 
@@ -101,6 +79,7 @@ def extract():
  
  
 
+# 新聞標題以及內文斷詞,並回傳positive還是negative
 # 關鍵字榨取與情感分析
 def kw(title,content_str):
     # 關鍵字榨取
@@ -184,6 +163,25 @@ def insert_data(title,content_str,news_url,news_title_kw,news_content_kw,sentime
     db.close()
 
 def domain_check(domain,news_url):
+    # ban strings
+    ban_set={"© 2022 BBC. BBC對外部網站內容不負責任。 閱讀了解我們對待外部鏈接的做法。","圖像來源，Reuters"
+    ,"中時新聞網對留言系統使用者發布的文字、圖片或檔案保有片面修改或移除的權利。當使用者使用本網站留言服務時，表示已詳細閱讀並完全了解，且同意配合下述規定：","違反上述規定者，中時新聞網有權刪除留言，或者直接封鎖帳號！請使用者在發言前，務必先閱讀留言板規則，謝謝配合。"
+    ,"本網站之文字","本網站之文字、圖片及影音，非經授權，不得轉載、公開播送或公開傳輸及利用。"
+    ,"省錢大作戰！超夯優惠等你GO"
+    ,"請繼續往下閱讀...","不用抽 不用搶 現在用APP看新聞 保證天天中獎"
+    ,"Photo Credit:","每月一杯咖啡的金額，支持優質觀點的誕生，享有更好的閱讀體驗。","本文經《BBC News 中文》授權轉載，原文發表於此"
+    ,"更多 TVBS 報導","更多相關新聞,'相關新聞影音"
+    ,'圖／TVBS'
+    ,'圖像來源，NCA'
+    ,'原始連結'
+    ,'點我看更多華視新聞＞＞＞'
+    ,'圖像來源，Getty Images'
+    ,'相關新聞影音'
+    ,'[啟動LINE推播] 每日重大新聞通知'
+    ,'下載法廣應用程序跟蹤國際時事'}
+    # break string
+    break_set={'點我看更多華視新聞＞＞＞','更多風傳媒報導','更多 TVBS 報導'}
+
     match domain:
         case 'chinatimes.com':
             content_str=''
@@ -401,9 +399,10 @@ def domain_check(domain,news_url):
                         print("新聞標題: ",title.text)
                         contents=objsoup.find('div',{"class":"Mt(12px) Fz(16px) Lh(1.5) C(#464e56) Whs(pl)"})
                         print("文章內容: ")
-                        print(contents.text)
-                        content_str+=content.text
-                        news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
+                        for content in contents:
+                            print(contents.text)
+                            content_str+=content.text
+                            news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
                         insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
                     except:
                         print(news_url)
