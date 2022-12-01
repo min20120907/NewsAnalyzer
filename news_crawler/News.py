@@ -1,7 +1,27 @@
-class News:
+import requests
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
+from tldextract import tldextract
+import datetime
+import pymysql
+import jieba
+import jieba.analyse
+from snownlp import SnowNLP
+from keybert import KeyBERT
+from textblob import TextBlob
 
+# 設定fake-useragent
+# 假的user-agent,產生 headers
+ua=UserAgent()
+usar=ua.random #產生header 字串
+
+headers={'user-agent':usar}
+
+
+class News:
     # The constructor of the object News
     def __init__(self, title):
+        model = KeyBERT('LaBSE')
         splitted_title = " ".join(jieba.cut(title))
         # initialize the keyword extraction model
         keywords = model.extract_keywords(splitted_title,stop_words=[',' , '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］', '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你','妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推']) 
@@ -25,7 +45,7 @@ class News:
         # The domain of the news
         self.domain = []
         # 開始使用bs4解析
-        objsoup=BeautifulSoup(htmlfile.text,"lxml")
+        objsoup=BeautifulSoup(self.htmlfile.text,"lxml")
 
         #取得objsoup所有的文字
         # print(objsoup.get_text())
@@ -35,21 +55,21 @@ class News:
         h3_all_links=objsoup.find_all('h3',{"class":"ipQwMb ekueJc RD0gLb"})
         for counter,h3_all_link in enumerate(h3_all_links):
             #print(h3_all_link.text)
-            url_link_list.append(h3_all_link.find('a')['href'])
+            self.url_link_list.append(h3_all_link.find('a')['href'])
             if counter>=11:
                 break
 
         # 把link拿出來看看
         # print(url_link_list)
         self.url_link_list_remove_dot=[]
-        for link in url_link_list:
-            url_link_list_remove_dot.append(link.replace('./','',1))
+        for link in self.url_link_list:
+            self.url_link_list_remove_dot.append(link.replace('./','',1))
 
 
         # 連到多家新聞媒體
-        for link in url_link_list_remove_dot:
+        for link in self.url_link_list_remove_dot:
             url='https://news.google.com/'+str(link)
-            original_url=shortlink_converter(url)
+            original_url=self.shortlink_converter(url)
             res=requests.get(original_url,headers=headers,timeout=10) 
             # if res.status_code==requests.codes.ok:
             #    print('ok')
@@ -62,42 +82,44 @@ class News:
             self.domain_check(domain, news_url)
 
     # 解決短網址問題
-    def shortlink_converter(url):
+    def shortlink_converter(self, url):
         resp = requests.get(url)
         return resp.url
-    # Print function
-    def print():
-        print("('0','"+ str(title) +"','"+ str(content_str) +"','"+ str(news_url) +"','"+ str(news_title_kw) +"','"+ str(news_content_kw) +"','"+ str(sentiments_analysis) +"','"+ str(Now) +"')")
-
-
+    
+    # toHTML function
+    def toHTML(self):
+        tmp = ""
+        for i in range(len(self.news_title)):
+            tmp.append("('"+ str(self.news_title[i]) +"','"+ str(self.news_content[i]) +"','"+ str(self.news_link[i]) +"','"+ str(self.news_title_kw[i]) +"','"+ str(self.news_content_kw[i]) +"','"+ str(self.sentiment_analysis[i]) +"','"+ str(self.Now) +"')<br>")
+        return tmp
     # The function to submit the results
-    def submitSQL(self, db_setting):
+    def submitSQL(self, db_settings):
         # Get the current datetime
         Now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         # establish the connection by the argument "db_settings"
         db = pymysql.connect(**db_settings)
         # 建立操作游標
         cursor = db.cursor()
-        # SQL語法      news_title_kw,news_content_kw,
-        sql = "INSERT INTO news_titles_contents(ID,news_title,news_content,news_link,news_title_kw,news_content_kw,sentiment_analysis,createdDate) VALUES ('0','"+ str(title) +"','"+ str(content_str) +"','"+ str(news_url) +"','"+ str(news_title_kw) +"','"+ str(news_content_kw) +"','"+ str(sentiments_analysis) +"','"+ str(Now) +"')"
-
-        # 執行語法
-        try:
-            cursor.execute(sql)
-            # 提交修改
-            db.commit()
-            # print('success')
-        except Exception as ex:
-            # 發生錯誤時停止執行SQL
-            db.rollback()
-            print('error')
-            print(ex)
+        for i in range(len(self.news_title)):
+            # SQL語法      news_title_kw,news_content_kw,
+            sql = "INSERT INTO news_titles_contents(ID,news_title,news_content,news_link,news_title_kw,news_content_kw,sentiment_analysis,createdDate) VALUES ('0','"+ str(self.news_title[i]) +"','"+ str(self.news_content[i]) +"','"+ str(self.news_link[i]) +"','"+ str(self.news_title_kw[i]) +"','"+ str(self.news_content_kw[i]) +"','"+ str(self.sentiment_analysis[i]) +"','"+ str(self.Now) +"')"
+            # 執行語法
+            try:
+                cursor.execute(sql)
+                # 提交修改
+                db.commit()
+                # print('success')
+            except Exception as ex:
+                # 發生錯誤時停止執行SQL
+                db.rollback()
+                print('error')
+                print(ex)
         # 關閉連線
         db.close()
 
     # 新聞標題以及內文斷詞,並回傳positive還是negative
     # 關鍵字榨取與情感分析
-    def kw(title,content_str):
+    def kw(self, title,content_str):
         # 關鍵字榨取
         list_title_kw=[]
         list_content_kw=[]
@@ -148,7 +170,7 @@ class News:
     # The funciton to fetch the URL and the domain
     
     # Main function to fetch the news
-    def domain_check(domain,news_url):
+    def domain_check(self, domain,news_url):
         # ban strings
         ban_set={"© 2022 BBC. BBC對外部網站內容不負責任。 閱讀了解我們對待外部鏈接的做法。","圖像來源，Reuters"
         ,"中時新聞網對留言系統使用者發布的文字、圖片或檔案保有片面修改或移除的權利。當使用者使用本網站留言服務時，表示已詳細閱讀並完全了解，且同意配合下述規定：","違反上述規定者，中時新聞網有權刪除留言，或者直接封鎖帳號！請使用者在發言前，務必先閱讀留言板規則，謝謝配合。"
@@ -186,8 +208,13 @@ class News:
                     else:
                         print(content.text)
                         content_str+=content.text
-                news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'cna.com.tw':
                 content_str=''
                 res=requests.get(news_url)
@@ -205,8 +232,13 @@ class News:
                     else:
                         print(content.text)
                         content_str+=content.text
-                        news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                        news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'ettoday.net':
                 content_str=''
                 res=requests.get(news_url)
@@ -224,8 +256,13 @@ class News:
                     else:
                         print(content.text)
                         content_str+=content.text
-                        news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)      
+                        news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis      )
             case 'ltn.com.tw':
                 content_str=''
                 res=requests.get(news_url)
@@ -243,8 +280,13 @@ class News:
                     else:
                         print(content.text)
                         content_str+=content.text
-                        news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                        news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'news.pts':
                 content_str=''
                 res=requests.get(news_url)
@@ -259,8 +301,13 @@ class News:
                 for content in contents:
                     print(content.text)
                     content_str+=content.text
-                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                    news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'newtalk.tw':
                 content_str=''
                 res=requests.get(news_url)
@@ -275,8 +322,13 @@ class News:
                 for content in contents:
                     print(content.text)
                     content_str+=content.text
-                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                    news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'setn.tw':
                 content_str=''
                 res=requests.get(news_url)
@@ -291,8 +343,13 @@ class News:
                 for content in contents:
                     print(content.text)
                     content_str+=content.text
-                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                    news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'thenewslens.com':
                 content_str=''
                 res=requests.get(news_url)
@@ -310,8 +367,13 @@ class News:
                     else:
                         print(content.text)
                         content_str+=content.text
-                        news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                        news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'udn.com':
                 content_str=''
                 res=requests.get(news_url)
@@ -328,8 +390,13 @@ class News:
                     for content in contents:
                         print(content.text.strip())
                         content_str+=content.text
-                        news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                    insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                        news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                    self.news_title.append(title.text)
+                    self.news_content.append(content_str)
+                    self.news_link.append(news_url)
+                    self.news_title_kw.append(news_title_kw)
+                    self.news_content_kw.append(news_content_kw)
+                    self.sentiment_analysis.append(sentiments_analysis )
                 except: #經濟日報
                     if res.status_code==requests.codes.ok:
                         print('money udn ok')
@@ -341,8 +408,13 @@ class News:
                     for content in contents:
                         print(content.text.strip())
                         content_str+=content.text
-                        news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                    insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                        news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                    self.news_title.append(title.text)
+                    self.news_content.append(content_str)
+                    self.news_link.append(news_url)
+                    self.news_title_kw.append(news_title_kw)
+                    self.news_content_kw.append(news_content_kw)
+                    self.sentiment_analysis.append(sentiments_analysis )
             case 'yahoo.com':
                 content_str=''
                 res=requests.get(news_url)
@@ -363,8 +435,13 @@ class News:
                         else:
                             print(content.text)
                             content_str+=content.text
-                            news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                    insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                            news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                    self.news_title.append(title.text)
+                    self.news_content.append(content_str)
+                    self.news_link.append(news_url)
+                    self.news_title_kw.append(news_title_kw)
+                    self.news_content_kw.append(news_content_kw)
+                    self.sentiment_analysis.append(sentiments_analysis )
                 except:
                     print(news_url)
                     try:
@@ -375,8 +452,13 @@ class News:
                         for content in contents:
                             print(content.text)
                             content_str+=content.text
-                            news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                        insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                            news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                        self.news_title.append(title.text)
+                        self.news_content.append(content_str)
+                        self.news_link.append(news_url)
+                        self.news_title_kw.append(news_title_kw)
+                        self.news_content_kw.append(news_content_kw)
+                        self.sentiment_analysis.append(sentiments_analysis )
                     except:
                         print(news_url)
                         try:
@@ -388,8 +470,13 @@ class News:
                             for content in contents:
                                 print(contents.text)
                                 content_str+=content.text
-                                news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                                news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                            self.news_title.append(title.text)
+                            self.news_content.append(content_str)
+                            self.news_link.append(news_url)
+                            self.news_title_kw.append(news_title_kw)
+                            self.news_content_kw.append(news_content_kw)
+                            self.sentiment_analysis.append(sentiments_analysis )
                         except:
                             print(news_url)
             case 'rfi.fr':
@@ -409,8 +496,13 @@ class News:
                     else:
                         print(content.text)
                         content_str+=content.text
-                        news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                        news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'rti.org.tw':
                 content_str=''
                 res=requests.get(news_url)
@@ -425,8 +517,13 @@ class News:
                 for content in contents:
                     print(content.text)
                     content_str+=content.text
-                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                    news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'storm.mg':
                 content_str=''
                 res=requests.get(news_url)
@@ -446,8 +543,13 @@ class News:
                     else:
                         print(content.text)
                         content_str+=content.text
-                        news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                        news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'bbc.com':
                 content_str=''
                 res=requests.get(news_url)
@@ -466,8 +568,13 @@ class News:
                         else:
                             print(content.text)
                             content_str+=content.text
-                            news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                    insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                            news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                    self.news_title.append(title.text)
+                    self.news_content.append(content_str)
+                    self.news_link.append(news_url)
+                    self.news_title_kw.append(news_title_kw)
+                    self.news_content_kw.append(news_content_kw)
+                    self.sentiment_analysis.append(sentiments_analysis )
                 except:
                     print("error link at: ",news_url)
                     title=objsoup.find('strong',{"class":"ewk8wmc0 bbc-uky4hn eglt09e1"})
@@ -480,8 +587,13 @@ class News:
                         else:
                             print(content.text)
                             content_str+=content.text
-                            news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                    insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                            news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                    self.news_title.append(title.text)
+                    self.news_content.append(content_str)
+                    self.news_link.append(news_url)
+                    self.news_title_kw.append(news_title_kw)
+                    self.news_content_kw.append(news_content_kw)
+                    self.sentiment_analysis.append(sentiments_analysis )
             case 'mirrormedia.mg': # 鏡週刊
                 content_str=''
                 res=requests.get(news_url,headers=headers)
@@ -499,8 +611,13 @@ class News:
                     else:
                         print(content.text)
                         content_str+=content.text
-                        news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                        news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
                 content_str=''
                 res=requests.get(news_url,headers=headers)
                 res.encoding='utf-8'
@@ -514,8 +631,13 @@ class News:
                 for content in contents:
                     print(content.text)
                     content_str+=content.text
-                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                    news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
                 content_str=''
                 res=requests.get(news_url,headers=headers)
                 res.encoding='utf-8'
@@ -529,8 +651,13 @@ class News:
                 for content in contents:
                     print(content.text) 
                     content_str+=content.text
-                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                    news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case'cw.com.tw':
                 content_str=''
                 res=requests.get(news_url,headers=headers)
@@ -545,8 +672,13 @@ class News:
                 for content in contents:
                     print(content.text)
                     content_str+=content.text
-                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                    news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'epochtimes.com': # 大紀元
                 content_str=''
                 res=requests.get(news_url,headers=headers)
@@ -561,8 +693,13 @@ class News:
                 for content in contents:
                     print(content.text)
                     content_str+=content.text
-                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                    news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis )
             case 'nytimes.com': # 紐約時報
                 content_str=''
                 res=requests.get(news_url,headers=headers)
@@ -576,8 +713,13 @@ class News:
                 contents=objsoup.find_all('div',{"class":"article-paragraph"})
                 for content in contents:
                     print(content.text)
-                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)
+                    news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis)
             case 'wsj.com': # 半島電視台
                 content_str=''
                 res=requests.get(news_url,headers=headers)
@@ -591,7 +733,12 @@ class News:
                 contents=objsoup.find('div',{"class":"wsj-snippet-body"}).find_all('p')
                 for content in contents:
                     print(content.text)
-                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)
+                    news_title_kw,news_content_kw,sentiments_analysis=self.kw(title.text,content_str)
+                self.news_title.append(title.text)
+                self.news_content.append(content_str)
+                self.news_link.append(news_url)
+                self.news_title_kw.append(news_title_kw)
+                self.news_content_kw.append(news_content_kw)
+                self.sentiment_analysis.append(sentiments_analysis)
             case _:
                 return "url missing!"
