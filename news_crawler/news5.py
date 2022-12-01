@@ -89,7 +89,7 @@ def kw(title,content_str):
             #print("abs negative")
         else:
             sentiment_result='error occur'
-            #print("error occur")
+            print("error occur")
     return str1,str2,sentiment_result
 # insert data into db
 Now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -98,7 +98,7 @@ db_settings = {
     "host":"127.0.0.1",
     "port":3306,
     "user":"phpmyadmin",
-    "password":"jefflin123",
+    "password":"1234",
     "db":"result",
     "charset":"utf8"
 }
@@ -134,14 +134,11 @@ def domain_check(domain,news_url):
                 print('chinatimes ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-title"})
-            print('新聞標題: ',title.text)
-            print("文章內容: ")
             contents=objsoup.find_all('p')
             for content in contents:
                 if content.text in ban_set:
                     pass
                 else:
-                    print(content.text)
                     content_str+=content.text
             news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -150,17 +147,14 @@ def domain_check(domain,news_url):
             res=requests.get(news_url)
             res.encoding='utf-8'
             if res.status_code==requests.codes.ok:
-                print('cna ok')
+                print('cna.com ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1')
-            print("新聞標題: ",title.text)
             contents=objsoup.find_all('p')
-            print("文章內容: ")
             for content in contents:
                 if  content.text in ban_set:
                     pass
                 else:
-                    print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -172,14 +166,11 @@ def domain_check(domain,news_url):
                 print('ettoday ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"title"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find('div',attrs={"class":"story"}).find_all('p')
             for content in contents:
                 if content.text in ban_set: 
                     break
                 else:
-                    print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)      
@@ -191,14 +182,11 @@ def domain_check(domain,news_url):
                 print('ltn ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1')
-            print("新聞標題: ",title.text)
             contents=objsoup.find('div',{"class":"text boxTitle boxText"}).find_all('p')
-            print("文章內容: ")
             for content in contents:
                 if content.text in ban_set:
                     break
                 else:
-                    print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -210,11 +198,8 @@ def domain_check(domain,news_url):
                 print('news.pts ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-title"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find_all('p')
             for content in contents:
-                print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -226,11 +211,8 @@ def domain_check(domain,news_url):
                 print('newtalk ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"content_title"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find('div',{"id":"news_content"}).find_all('p')
             for content in contents:
-                print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -242,11 +224,8 @@ def domain_check(domain,news_url):
                 print('setn ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"news-title-3"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find_all('p')
             for content in contents:
-                print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -258,14 +237,11 @@ def domain_check(domain,news_url):
                 print('thenewslens ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"article-title"})
-            print("新聞標題: ",title.text)
             contents=objsoup.find('div',{"class":"article-content AdAsia"}).find_all('p')
-            print("文章內容: ")
             for content in contents:
                 if content.text in ban_set:
                     pass
                 else:
-                    print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -278,12 +254,8 @@ def domain_check(domain,news_url):
             objsoup=BeautifulSoup(res.text,'lxml')
             try:
                 title=objsoup.find('h1',{"class":"article-content__title"})
-                #印出title的文字
-                print("新聞標題: ",title.text)
                 contents=objsoup.find('div',{"class":"article-content__paragraph"}).find_all('p')
-                print("文章內容: ")
                 for content in contents:
-                    print(content.text.strip())
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
                 insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -292,11 +264,8 @@ def domain_check(domain,news_url):
                     print('money udn ok')
                 objsoup=BeautifulSoup(res.text,'lxml')
                 title=objsoup.find('div',{"class":"article-layout-wrapper"}).find('h1')
-                print("新聞標題: ",title.text)
-                print("文章內容: ")
                 contents=objsoup.find('section',{"class":"article-body__editor"}).find_all('p')
                 for content in contents:
-                    print(content.text.strip())
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
                 insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -309,16 +278,13 @@ def domain_check(domain,news_url):
             try:
                 objsoup=BeautifulSoup(res.text,'lxml')
                 title=objsoup.find('header',{"class":"caas-header"}).find('h1')
-                print("新聞標題: ",title.text)
                 contents=objsoup.find('div',{"class":"caas-body"}).find_all('p')
-                print("文章內容: ")
                 for content in contents:
                     if  content.text in ban_set:
                         pass
                     elif content.text in break_set: 
                         break
                     else:
-                        print(content.text)
                         content_str+=content.text
                         news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
                 insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -326,11 +292,8 @@ def domain_check(domain,news_url):
                 print(news_url)
                 try:
                     title=objsoup.find('h1',{"data-test-locator":"headline"})
-                    print("新聞標題: ",title.text)
                     contents=objsoup.find('div',{"class":"caas-body"}).find_all('p')
-                    print("文章內容: ")
                     for content in contents:
-                        print(content.text)
                         content_str+=content.text
                         news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
                     insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -339,12 +302,10 @@ def domain_check(domain,news_url):
                     try:
                         objsoup=BeautifulSoup(res.text,'lxml')
                         title=objsoup.find('h1',{"class":"Fz(24px) Fw(b)"})
-                        print("新聞標題: ",title.text)
                         contents=objsoup.find('div',{"class":"Mt(12px) Fz(16px) Lh(1.5) C(#464e56) Whs(pl)"})
-                        print("文章內容: ")
-                        print(contents.text)
-                        content_str+=content.text
-                        news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
+                        for content in contents:
+                            content_str+=content.text
+                            news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
                         insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
                     except:
                         print(news_url)
@@ -356,14 +317,11 @@ def domain_check(domain,news_url):
                 print("rfi.fr ok")
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('article').find('h1')
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find('article').find('div',{"class":"t-content__body u-clearfix"}).find_all('p')
             for content in contents:
                 if content.text in ban_set:
                     pass
                 else:
-                    print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -375,11 +333,8 @@ def domain_check(domain,news_url):
                 print('rti.org.tw ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('section',{"class":"news-detail-box"}).find('h1')
-            print("新聞標題: ",title.text.replace(' 用Podcast訂閱本節目 ','').strip())
-            print("文章內容: ")
             contents=objsoup.find('article').find_all('p')
             for content in contents:
-                print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -391,8 +346,6 @@ def domain_check(domain,news_url):
                 print('storm.mg ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"id":"article_title"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find('div',{"id":"CMS_wrapper"}).find_all('p')
             for content in contents:
                 if content.text in ban_set:
@@ -400,7 +353,6 @@ def domain_check(domain,news_url):
                 elif '更多風傳媒報導' in content.text:
                     break
                 else:
-                    print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -413,28 +365,22 @@ def domain_check(domain,news_url):
             try:
                 objsoup=BeautifulSoup(res.text,'lxml')
                 title=objsoup.find('h1',{"class":"bbc-1tk77pb e1p3vdyi0"})
-                print("新聞標題: ",title.text)
-                print("文章內容: ")
                 contents=objsoup.find_all('p')
                 for content in contents:
                     if  content.text in ban_set:
                         pass
                     else:
-                        print(content.text)
                         content_str+=content.text
                         news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
                 insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
             except:
                 print("error link at: ",news_url)
                 title=objsoup.find('strong',{"class":"ewk8wmc0 bbc-uky4hn eglt09e1"})
-                print("新聞標題: ",title.text)
-                print("文章內容: ")
                 contents=objsoup.find_all('p')
                 for content in contents:
                     if  content.text in ban_set:
                         pass
                     else:
-                        print(content.text)
                         content_str+=content.text
                         news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
                 insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -446,14 +392,11 @@ def domain_check(domain,news_url):
                 print("mirrormedia.mg ok")
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"story__title"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find_all('p',attrs={"class":"g-story-paragraph"})
             for content in contents:
                 if '更多內容，歡迎鏡週刊紙本雜誌、鏡週刊數位訂閱、了解內容授權資訊。' in content.text: 
                     break
                 else:
-                    print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -464,11 +407,8 @@ def domain_check(domain,news_url):
                 print('nytimes.com ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('div',{"class":"article-header"}).find('h1')
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find_all('div',{"class":"article-paragraph"})
             for content in contents:
-                print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -479,11 +419,8 @@ def domain_check(domain,news_url):
                 print('wsj.com ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"wsj-article-headline"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find('div',{"class":"wsj-snippet-body"}).find_all('p')
             for content in contents:
-                print(content.text) 
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -495,11 +432,8 @@ def domain_check(domain,news_url):
                 print('cw.com.tw ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('div',{"class":"article__head"}).find('h1')
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find('div',{"class":"article__content py20"}).find_all('p')
             for content in contents:
-                print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -511,11 +445,8 @@ def domain_check(domain,news_url):
                 print('epochtimes.com ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"title"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find('div',{"id":"artbody"}).find_all('p')
             for content in contents:
-                print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
@@ -527,11 +458,8 @@ def domain_check(domain,news_url):
                 print('nytimes.com ok')
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('div',{"class":"article-header"}).find('h1')
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find_all('div',{"class":"article-paragraph"})
             for content in contents:
-                print(content.text)
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)
         case 'wsj.com': # 半島電視台
@@ -542,11 +470,8 @@ def domain_check(domain,news_url):
             res.encoding='utf-8'
             objsoup=BeautifulSoup(res.text,'lxml')
             title=objsoup.find('h1',{"class":"wsj-article-headline"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
             contents=objsoup.find('div',{"class":"wsj-snippet-body"}).find_all('p')
             for content in contents:
-                print(content.text)
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)
         case _:
