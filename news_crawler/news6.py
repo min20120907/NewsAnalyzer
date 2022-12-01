@@ -594,7 +594,7 @@ def domain_check(domain,news_url):
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)
         case 'wsj.com': # 半島電視台
             content_str=''
-            res=requests.get(url,headers=headers)
+            res=requests.get(news_url,headers=headers)
             if res.status_code==requests.codes.ok:
                 print('wsj.com ok')
             res.encoding='utf-8'
