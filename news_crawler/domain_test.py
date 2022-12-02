@@ -21,8 +21,10 @@ eighteen='https://www.mirrormedia.mg/story/20221118edi032/' # 鏡週刊
 nighteen='https://www.cw.com.tw/article/5123601' # 天下雜誌
 twenty='https://cn.wsj.com/articles/俄羅斯稱可能攻擊在烏克蘭戰爭中投入使用的美國商業衛星-121666916107' # 華爾街日報
 twenty_one='https://cn.nytimes.com/china/20221117/china-affirms-ties-with-russia-but-signals-it-is-becoming-more-guarded-about-the-war/zh-hant/' # 紐約時報中文網
-twenty_two='https://www.epochtimes.com/b5/22/11/20/n13869734.htm'
-list1=[one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,forteen,fifthteen,sixteen,seventeen,eighteen,nighteen,twenty,twenty_one,twenty_two]
+twenty_two='https://www.epochtimes.com/b5/22/11/20/n13869734.htm' # 紐約時報
+twenty_three='https://www.worldjournal.com/wj/story/121186/6807237' # 世界新聞網
+twenty_four='https://www.yzzk.com/article/details/%E4%B8%AD%E8%8F%AF%E5%A4%A9%E5%9C%B0/2022-49/1669865384087/%E6%B1%9F%E6%BE%A4%E6%B0%91%E9%80%9D%E4%B8%96%E5%8A%9F%E9%81%8E%E8%AA%B0%E8%A9%95%E8%AA%AA%E3%80%80%E3%80%8C%E4%B8%89%E5%80%8B%E4%BB%A3%E8%A1%A8%E3%80%8D%E6%94%B9%E8%AE%8A%E5%85%B1%E7%94%A2%E9%BB%A8' # 亞洲週刊
+list1=[one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,forteen,fifthteen,sixteen,seventeen,eighteen,nighteen,twenty,twenty_one,twenty_two,twenty_three,twenty_four]
 for url in list1:
     te_result = tldextract.extract(url)
     domain = '{}.{}'.format(te_result.domain, te_result.suffix)
