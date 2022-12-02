@@ -17,8 +17,9 @@ db_settings = {
 def extract():
     # create news objects
     a = News(request.args.get('title'))
-    print(a.toHTML())
+    # submit the News object to the mysql server
     a.submitSQL(db_settings)
+    # return the results to the Flask server
     return a.toHTML()
     
 if __name__ == '__main__':

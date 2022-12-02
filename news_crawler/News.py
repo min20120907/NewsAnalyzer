@@ -95,10 +95,10 @@ class News:
 
     # toHTML function
     def toHTML(self):
+        print("generating html results")
         tmp = ""
         for i in range(len(self.news_title)):
-            tmp.join("('" + str(self.news_title[i]) + "','" + str(self.news_content[i]) + "','" + str(self.news_link[i]) + "','" + str(
-                self.news_title_kw[i]) + "','" + str(self.news_content_kw[i]) + "','" + str(self.sentiment_analysis[i]) + "','" + str(self.Now) + "')<br>")
+            tmp += "(" + str(self.news_title[i]) + "','" + str(self.news_content[i]) + "','" + str(self.news_link[i]) + "','" + str(self.news_title_kw[i]) + "','" + str(self.news_content_kw[i]) + "','" + str(self.sentiment_analysis[i]) + "','" + str(self.Now) + ")<br>"
         return tmp
     # The function to submit the results
 
@@ -209,12 +209,20 @@ class News:
                         content_str += content.text
                 news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                     title.text, content_str)
+                
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'cna.com.tw':
                 content_str = ''
                 res = requests.get(news_url)
@@ -235,11 +243,18 @@ class News:
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'ettoday.net':
                 content_str = ''
                 res = requests.get(news_url)
@@ -261,11 +276,18 @@ class News:
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'ltn.com.tw':
                 content_str = ''
                 res = requests.get(news_url)
@@ -287,11 +309,18 @@ class News:
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'news.pts':
                 content_str = ''
                 res = requests.get(news_url)
@@ -309,11 +338,18 @@ class News:
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'newtalk.tw':
                 content_str = ''
                 res = requests.get(news_url)
@@ -332,12 +368,19 @@ class News:
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
-            case 'setn.tw':
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
+            case 'setn.com':
                 content_str = ''
                 res = requests.get(news_url)
                 res.encoding = 'utf-8'
@@ -354,11 +397,18 @@ class News:
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", self.news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'thenewslens.com':
                 content_str = ''
                 res = requests.get(news_url)
@@ -380,11 +430,18 @@ class News:
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'udn.com':
                 content_str = ''
                 res = requests.get(news_url)
@@ -405,12 +462,20 @@ class News:
                         content_str += content.text
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
+
                     self.news_title.append(title.text)
+                    print("THE RESULT: ", title.text)
                     self.news_content.append(content_str)
+                    print("THE RESULT: ", content_str)
                     self.news_link.append(news_url)
+                    print("THE RESULT: ", news_url)
                     self.news_title_kw.append(news_title_kw)
+                    print("THE RESULT: ", news_title_kw)
                     self.news_content_kw.append(news_content_kw)
+                    print("THE RESULT: ", news_content_kw)
                     self.sentiment_analysis.append(sentiments_analysis)
+                    print("THE RESULT: ", sentiments_analysis)
+                    print(news_title_kw, news_content_kw, sentiments_analysis)
                 except:  # 經濟日報
                     if res.status_code == requests.codes.ok:
                         print('money udn ok')
@@ -427,11 +492,18 @@ class News:
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
                     self.news_title.append(title.text)
+                    print("THE RESULT: ", title.text)
                     self.news_content.append(content_str)
+                    print("THE RESULT: ", content_str)
                     self.news_link.append(news_url)
+                    print("THE RESULT: ", news_url)
                     self.news_title_kw.append(news_title_kw)
+                    print("THE RESULT: ", news_title_kw)
                     self.news_content_kw.append(news_content_kw)
+                    print("THE RESULT: ", news_content_kw)
                     self.sentiment_analysis.append(sentiments_analysis)
+                    print("THE RESULT: ", sentiments_analysis)
+                    print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'yahoo.com':
                 content_str = ''
                 res = requests.get(news_url)
@@ -457,11 +529,18 @@ class News:
                             news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                                 title.text, content_str)
                     self.news_title.append(title.text)
+                    print("THE RESULT: ", title.text)
                     self.news_content.append(content_str)
+                    print("THE RESULT: ", content_str)
                     self.news_link.append(news_url)
+                    print("THE RESULT: ", news_url)
                     self.news_title_kw.append(news_title_kw)
+                    print("THE RESULT: ", news_title_kw)
                     self.news_content_kw.append(news_content_kw)
+                    print("THE RESULT: ", news_content_kw)
                     self.sentiment_analysis.append(sentiments_analysis)
+                    print("THE RESULT: ", sentiments_analysis)
+                    print(news_title_kw, news_content_kw, sentiments_analysis)
                 except:
                     print(news_url)
                     try:
@@ -477,11 +556,18 @@ class News:
                             news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                                 title.text, content_str)
                         self.news_title.append(title.text)
+                        print("THE RESULT: ", title.text)
                         self.news_content.append(content_str)
+                        print("THE RESULT: ", content_str)
                         self.news_link.append(news_url)
+                        print("THE RESULT: ", news_url)
                         self.news_title_kw.append(news_title_kw)
+                        print("THE RESULT: ", news_title_kw)
                         self.news_content_kw.append(news_content_kw)
+                        print("THE RESULT: ", news_content_kw)
                         self.sentiment_analysis.append(sentiments_analysis)
+                        print("THE RESULT: ", sentiments_analysis)
+                        print(news_title_kw, news_content_kw, sentiments_analysis)
                     except:
                         print(news_url)
                         try:
@@ -498,11 +584,18 @@ class News:
                                 news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                                     title.text, content_str)
                             self.news_title.append(title.text)
+                            print("THE RESULT: ", title.text)
                             self.news_content.append(content_str)
+                            print("THE RESULT: ", content_str)
                             self.news_link.append(news_url)
+                            print("THE RESULT: ", news_url)
                             self.news_title_kw.append(news_title_kw)
+                            print("THE RESULT: ", news_title_kw)
                             self.news_content_kw.append(news_content_kw)
+                            print("THE RESULT: ", news_content_kw)
                             self.sentiment_analysis.append(sentiments_analysis)
+                            print("THE RESULT: ", sentiments_analysis)
+                            print(news_title_kw, news_content_kw, sentiments_analysis)
                         except:
                             print(news_url)
             case 'rfi.fr':
@@ -526,11 +619,18 @@ class News:
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'rti.org.tw':
                 content_str = ''
                 res = requests.get(news_url)
@@ -550,11 +650,18 @@ class News:
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'storm.mg':
                 content_str = ''
                 res = requests.get(news_url)
@@ -578,11 +685,18 @@ class News:
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'bbc.com':
                 content_str = ''
                 res = requests.get(news_url)
@@ -605,11 +719,18 @@ class News:
                             news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                                 title.text, content_str)
                     self.news_title.append(title.text)
+                    print("THE RESULT: ", title.text)
                     self.news_content.append(content_str)
+                    print("THE RESULT: ", content_str)
                     self.news_link.append(news_url)
+                    print("THE RESULT: ", news_url)
                     self.news_title_kw.append(news_title_kw)
+                    print("THE RESULT: ", news_title_kw)
                     self.news_content_kw.append(news_content_kw)
+                    print("THE RESULT: ", news_content_kw)
                     self.sentiment_analysis.append(sentiments_analysis)
+                    print("THE RESULT: ", sentiments_analysis)
+                    print(news_title_kw, news_content_kw, sentiments_analysis)
                 except:
                     print("error link at: ", news_url)
                     title = objsoup.find(
@@ -626,11 +747,18 @@ class News:
                             news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                                 title.text, content_str)
                     self.news_title.append(title.text)
+                    print("THE RESULT: ", title.text)
                     self.news_content.append(content_str)
+                    print("THE RESULT: ", content_str)
                     self.news_link.append(news_url)
+                    print("THE RESULT: ", news_url)
                     self.news_title_kw.append(news_title_kw)
+                    print("THE RESULT: ", news_title_kw)
                     self.news_content_kw.append(news_content_kw)
+                    print("THE RESULT: ", news_content_kw)
                     self.sentiment_analysis.append(sentiments_analysis)
+                    print("THE RESULT: ", sentiments_analysis)
+                    print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'mirrormedia.mg':  # 鏡週刊
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
@@ -652,11 +780,18 @@ class News:
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
                 res.encoding = 'utf-8'
@@ -675,11 +810,18 @@ class News:
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
                 res.encoding = 'utf-8'
@@ -697,11 +839,18 @@ class News:
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case'cw.com.tw':
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
@@ -721,11 +870,18 @@ class News:
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'epochtimes.com':  # 大紀元
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
@@ -743,11 +899,18 @@ class News:
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'nytimes.com':  # 紐約時報
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
@@ -766,11 +929,18 @@ class News:
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'wsj.com':  # 半島電視台
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
@@ -788,10 +958,17 @@ class News:
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
                 self.news_title.append(title.text)
+                print("THE RESULT: ", title.text)
                 self.news_content.append(content_str)
+                print("THE RESULT: ", content_str)
                 self.news_link.append(news_url)
+                print("THE RESULT: ", news_url)
                 self.news_title_kw.append(news_title_kw)
+                print("THE RESULT: ", news_title_kw)
                 self.news_content_kw.append(news_content_kw)
+                print("THE RESULT: ", news_content_kw)
                 self.sentiment_analysis.append(sentiments_analysis)
+                print("THE RESULT: ", sentiments_analysis)
+                print(news_title_kw, news_content_kw, sentiments_analysis)
             case _:
                 return "url missing!"
