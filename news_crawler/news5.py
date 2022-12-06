@@ -5,7 +5,7 @@ from tldextract import tldextract
 import datetime
 import pymysql
 import jieba
-import jieba.analyse
+from keybert import KeyBERT
 from snownlp import SnowNLP
 # 設定fake-useragent
 # 假的user-agent,產生 headers
@@ -48,19 +48,22 @@ def kw(title,content_str):
     list_title_kw=[]
     list_content_kw=[]
     list_sentiment=[]
-    interval=','
-    tags1=jieba.analyse.extract_tags(title,topK=3,withWeight=True,allowPOS=False)
-    
-    for tag in tags1:
-        list_title_kw.append(tag[0]) # 抓出標題關鍵字
-    str1=interval.join(list_title_kw) # 標題關鍵字逗號隔開
-    tags2=jieba.analyse.extract_tags(content_str,topK=3,withWeight=True,allowPOS=False) #topK=x,抓出3個最相關
-    
-    for tag in tags2:
-        list_content_kw.append(tag[0]) # 抓出內文關鍵字
-        s=SnowNLP(tag[0]) # 把內文關鍵字丟入情感分析
+
+    # 抓出標題關鍵字
+    tags1=" ".join(jieba.cut(title))
+    kw_model = KeyBERT(model='paraphrase-multilingual-MiniLM-L12-v2')
+    title_kw = kw_model.extract_keywords(tags1,keyphrase_ngram_range=(1, 1),highlight=True,stop_words=[',' , '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］', '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你','妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推','podcast']) 
+    for kw in title_kw:
+        list_title_kw.append(kw[0])
+    str1 = ','.join(str(x) for x in list_title_kw)
+    # 抓出內文關鍵字
+    tags2=" ".join(jieba.cut(content_str))
+    content_kw = kw_model.extract_keywords(tags2,keyphrase_ngram_range=(1, 1),highlight=True,stop_words=[',' , '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］', '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你','妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推','podcast']) 
+    for kw in content_kw:
+        list_content_kw.append(kw[0]) 
+        s=SnowNLP(kw[0]) # 把內文關鍵字丟入情感分析
         list_sentiment.append(s.sentiments) # 把結果串接起來
-    str2=interval.join(list_content_kw) # 把內文關鍵字用逗號隔開
+    str2 = ','.join(str(x) for x in list_content_kw)
     # 判斷新聞內文關鍵字是正面還是負面
     total=0
     for r in list_sentiment:
