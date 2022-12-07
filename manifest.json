@@ -3,13 +3,12 @@
     "name": "News Analyzer",
     "description": "Quick analyzing the accuracy of social media news",
     "version": "3.3",
-    "browser_action": {
+    "action": {
         "default_popup": "html/popup.html"
     },
     "permissions": [
-        "activeTab",
-        "*://*.google.com/*",
-        "http://*/"
+        "activeTab"
+        
         
     ],
     "background": {
@@ -30,5 +29,6 @@
     ],
     "icons": { 
           "128": "src/icon128.png" },
-    "permissions": ["https://facebook.com/*"]
+    "host_permissions": ["https://facebook.com/*","*://*.google.com/*",
+        "http://*/"]
 }
