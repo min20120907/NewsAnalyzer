@@ -23,7 +23,10 @@
         "css":["css/style.css"]
     }]
     , "web_accessible_resources": [
-        "css/bootstrap.css"
+        {
+            "resources": [ "css/bootstrap.css" ],
+            "matches": []
+          }
     ],
     "icons": { 
           "128": "src/icon128.png" },
