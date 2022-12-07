@@ -1,5 +1,5 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
     "name": "News Analyzer",
     "description": "Quick analyzing the accuracy of social media news",
     "version": "3.2",
@@ -20,7 +20,7 @@
         "matches":[
             "<all_urls>"
         ],
-        "js":["exceptions.js","resultFrame.js", "icon.js","button.js","checkFacebook.js","linkpost.js","UI_Elements.js","table.js", "src/jquery-3.4.1.min.js", "src/loader.js","insert.js"],
+        "js":["exceptions.js","resultFrame.js","button.js","checkFacebook.js","linkpost.js","UI_Elements.js","table.js", "src/jquery-3.4.1.min.js", "src/loader.js","insert.js"],
         "css":["css/style.css"]
     }]
     , "web_accessible_resources": [
