@@ -1,7 +1,9 @@
 from flask import Flask, redirect, url_for, request
 from News import News
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # 資料庫參數設定,注意這邊的設定要依據使用者而定
 db_settings = {
