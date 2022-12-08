@@ -18,13 +18,12 @@ let UI_Elements = class {
         // Construct the document object
         this.normal_posts = document.getElementsByClassName(class_post);
         this.linkposts = new Array();
-        // filter the posts that 
-        for(let i=0;i<this.normal_posts.length;i++)
-            if(this.normal_posts[i].querySelectorAll("span.x1lliihq.x6ikm8r.x10wlt62.x1n2onr6").length>0 && this.normal_posts[i].querySelectorAll("a.x1i10hfl.xjbqb8w.x6umtig.x1b1mbwd.xaqea5y.xav7gou.x9f619.x1ypdohk.xe8uvvx.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x16tdsg8.x1hl2dhg.xggy1nq.x1a2a7pz.x1heor9g.x1lliihq.x1lku1pv").length>0 && this.normal_posts[i].getElementsByClassName("x9f619 x1n2onr6 x1ja2u2z x78zum5 x2lah0s x1qughib x6s0dn4 xozqiw3 x1q0g3np xykv574 xbmpl8g xsag5q8 x1pi30zi x1swvt13 xz9dl7a").length>0)
-                this.linkposts.push(this.normal_posts[i])
-        // console.log(this.linkposts)
         this.headers = new Array();
         this.links = new Array();
+        // filter the posts that 
+        for (let i = 0; i < this.normal_posts.length; i++)
+            if (this.normal_posts[i].querySelectorAll("a.x1i10hfl.xjbqb8w.x6umtig.x1b1mbwd.xaqea5y.xav7gou.x9f619.x1ypdohk.xe8uvvx.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x16tdsg8.x1hl2dhg.xggy1nq.x1a2a7pz.x1heor9g.x1lliihq.x1lku1pv").length>0 )
+                this.linkposts.push(this.normal_posts[i])
         this.append_button();
     }
 
@@ -39,22 +38,22 @@ let UI_Elements = class {
                     .querySelector("div.x1iorvi4.x1pi30zi.x1l90r2v.x1swvt13")
                     .appendChild(new button(i, "More", "btn btn-warning", this.links[i]).dom);
 
-            } catch (TargetExistedException){
+            } catch (TargetExistedException) {
             }
-            try{
-            this.linkposts[i]
-            .querySelector("div.x1iorvi4.x1pi30zi.x1l90r2v.x1swvt13")
-            .appendChild(new resultFrame(i,10, this.links[i]).frame);
-            }catch(TargetExistedException){
+            try {
+                this.linkposts[i]
+                    .querySelector("div.x1iorvi4.x1pi30zi.x1l90r2v.x1swvt13")
+                    .appendChild(new resultFrame(i, 10, this.links[i]).frame);
+            } catch (TargetExistedException) {
             }
         }
 
     }
     // The function to export the link
     getLink(i) {
-        this.links[i] = (new linkpost(
- this.linkposts[i].querySelector("a.x1i10hfl.xjbqb8w.x6umtig.x1b1mbwd.xaqea5y.xav7gou.x9f619.x1ypdohk.xe8uvvx.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x16tdsg8.x1hl2dhg.xggy1nq.x1a2a7pz.x1heor9g.x1lliihq.x1lku1pv").href,
-            this.linkposts[i].querySelectorAll("span.x1lliihq.x6ikm8r.x10wlt62.x1n2onr6")[1].innerText))
+        this.links[i] = new linkpost(
+            "https://google.com",
+            this.linkposts[i].querySelectorAll("span.x1lliihq.x6ikm8r.x10wlt62.x1n2onr6")[1].innerText)
     }
 
     // The function creating the element div from pure HTML

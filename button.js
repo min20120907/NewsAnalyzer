@@ -22,8 +22,8 @@ let button = class {
       btn.dom.onclick = function () {
         // console.log(ID);
         try{
-        // new resultFrame(ID, 10, btn.lpost,true);
-        console.log(this.lpost);
+        new resultFrame(ID, 10, btn.lpost,true);
+        console.log(btn.lpost);
         }catch(TargetExistedException){}
         // createIFrame(i);
       };
