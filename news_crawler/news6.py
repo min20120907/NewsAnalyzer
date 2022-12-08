@@ -23,5 +23,5 @@ def extract():
     return a.toHTML()
     
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug = True)
+    app.run(host="0.0.0.0", ssl_context=('/etc/letsencrypt/live/min20120907.asuscomm.com/fullchain.pem', '/etc/letsencrypt/live/min20120907.asuscomm.com/privkey.pem'), debug = True)
 
