@@ -121,7 +121,7 @@ def fcc_search(news_title_kw):
         url_link_list_remove_dot=[]
         for link in url_link_list:
             url_link_list_remove_dot.append(link.replace('./','',1))
-        print(url_link_list_remove_dot)
+        #print(url_link_list_remove_dot)
 
         # 解決短網址問題
         def shortlink_converter(url):
@@ -132,6 +132,7 @@ def fcc_search(news_title_kw):
         partial_url = ''.join(url_link_list_remove_dot)
         url='https://news.google.com/'+str(partial_url)
         original_url=shortlink_converter(url)
+        print("original"+original_url)
         htmlfile=requests.get(original_url,headers=headers,timeout=5)
         if htmlfile.status_code==requests.codes.ok:
             print("成功連線到fcc")
@@ -400,7 +401,7 @@ def domain_check(domain,news_url):
                 fcc_result=fcc_search(news_title_kw)
                 insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
             except:
-                print(news_url)
+                print("error at: "+news_url)
                 try:
                     title=objsoup.find('h1',{"data-test-locator":"headline"})
                     print("新聞標題: ",title.text)
@@ -427,7 +428,7 @@ def domain_check(domain,news_url):
                         fcc_result=fcc_search(news_title_kw)
                         insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
                     except:
-                        print(news_url)
+                        print("error at: "+news_url)
         case 'rfi.fr':
             content_str=''
             res=requests.get(news_url,headers=headers)
