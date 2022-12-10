@@ -11,6 +11,7 @@ The goal is to demonstrate technologies that can be used to improve prevention o
 With server side, we have the features as following below, and all the scripts are storing inside python folder:  
  1. CSV keywords analyzing tool (local): kw_analyzing_[algo].py
  2. Flask keyword extracting server (HTTPS): news_extract.py  
+ 3. After Release 3.3, we use HTTPS server on `news_crawler/news6.py`
 ### Prequirements
 #### News Crawler
  - Python 3.10 or later
