@@ -462,36 +462,6 @@ def domain_check(domain,news_url):
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
             insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
-            content_str=''
-            res=requests.get(news_url,headers=headers)
-            res.encoding='utf-8'
-            if res.status_code==requests.codes.ok:
-                print('nytimes.com ok')
-            objsoup=BeautifulSoup(res.text,'lxml')
-            title=objsoup.find('div',{"class":"article-header"}).find('h1')
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
-            contents=objsoup.find_all('div',{"class":"article-paragraph"})
-            for content in contents:
-                print(content.text)
-                content_str+=content.text
-                news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
-            content_str=''
-            res=requests.get(news_url,headers=headers)
-            res.encoding='utf-8'
-            if res.status_code==requests.codes.ok:
-                print('wsj.com ok')
-            objsoup=BeautifulSoup(res.text,'lxml')
-            title=objsoup.find('h1',{"class":"wsj-article-headline"})
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
-            contents=objsoup.find('div',{"class":"wsj-snippet-body"}).find_all('p')
-            for content in contents:
-                print(content.text) 
-                content_str+=content.text
-                news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
         case'cw.com.tw':
             content_str=''
             res=requests.get(news_url,headers=headers)
