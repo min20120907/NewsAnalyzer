@@ -69,10 +69,10 @@ def kw(title,content_str):
     for r in list_sentiment:
         total+=r
         average=total/len(list_sentiment)
-        if average>=0.9:
+        if average>=0.8:
             sentiment_result='abs positive'
             #print("abs positive")
-        elif 0.7 <= average < 0.9: 
+        elif 0.7 <= average < 0.8: 
             sentiment_result='strong positive'
             #print("strong positive")
         elif 0.5 < average < 0.7:
@@ -94,6 +94,69 @@ def kw(title,content_str):
             sentiment_result='error occur'
             #print("error occur")
     return str1,str2,sentiment_result
+def fcc_search(news_title_kw):
+    # 以下開始必須進行fcc的查詢
+    # 藉由google news來輔助事實查核
+    # url='https://tfc-taiwan.org.tw/articles/8530'
+    # 制約網站域名確保搜尋結果乾淨
+    fcc_result=''
+    site_restrict=' site:https://tfc-taiwan.org.tw/'
+    query_url='https://news.google.com/search?q='+news_title_kw+site_restrict+'&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+    #print(query_url)
+    htmlfile=requests.get(query_url,headers=headers,timeout=5)
+    if htmlfile.status_code==requests.codes.ok:
+        print("成功連線到google news! 帶著欲查詢字串")
+    htmlfile.encoding='utf-8'
+
+    # 對唯一的目標網站進行連接
+    try:
+        #開始使用bs4 解析
+        url_link_list=[]
+        objsoup=BeautifulSoup(htmlfile.text,"lxml")
+        link=objsoup.find_all('div',{"class":"xrnccd"})
+        for lk in link:
+            url_link_list.append(lk.find('a')['href'])
+        #print(url_link_list)
+
+        url_link_list_remove_dot=[]
+        for link in url_link_list:
+            url_link_list_remove_dot.append(link.replace('./','',1))
+        print(url_link_list_remove_dot)
+
+        # 解決短網址問題
+        def shortlink_converter(url):
+            resp = requests.get(url)
+            return resp.url
+
+        # 連到fcc事實查核中心
+        partial_url = ''.join(url_link_list_remove_dot)
+        url='https://news.google.com/'+str(partial_url)
+        original_url=shortlink_converter(url)
+        htmlfile=requests.get(original_url,headers=headers,timeout=5)
+        if htmlfile.status_code==requests.codes.ok:
+            print("成功連線到fcc")
+        htmlfile.encoding='utf-8'
+
+        #開始使用bs4 解析
+        objsoup=BeautifulSoup(htmlfile.text,"lxml")
+        title=objsoup.find('h2',{"class":"node-title"})
+        print(title.text)
+        error_str='錯誤'
+        partial_error_str='部份錯誤'
+        real_str='事實釐清'
+        if error_str in title.text:
+            fcc_result="錯誤"
+            #print("錯誤!")
+        elif partial_error_str in title.text:
+            fcc_result="部份錯誤"
+            #print("部分錯誤")
+        elif real_str in title.text:
+            fcc_result="事實釐清"
+            #print("事實釐清")
+    except:
+        fcc_result="目前查無資料"
+    return fcc_result
+
 # insert data into db
 Now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 # 資料庫參數設定,注意這邊的設定要依據使用者而定
@@ -106,12 +169,12 @@ db_settings = {
     "charset":"utf8"
 }
 # 建立函數來進行資料的插入
-def insert_data(title,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis):
+def insert_data(title,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result):
     db = pymysql.connect(**db_settings)
     # 建立操作游標
     cursor = db.cursor()
     # SQL語法      news_title_kw,news_content_kw,
-    sql = "INSERT INTO news_titles_contents(ID,news_title,news_content,news_link,news_title_kw,news_content_kw,sentiment_analysis,createdDate) VALUES ('0','"+ str(title) +"','"+ str(content_str) +"','"+ str(news_url) +"','"+ str(news_title_kw) +"','"+ str(news_content_kw) +"','"+ str(sentiments_analysis) +"','"+ str(Now) +"')"
+    sql = "INSERT INTO news_titles_contents(ID,news_title,news_content,news_link,news_title_kw,news_content_kw,sentiment_analysis,fcc_result,createdDate) VALUES ('0','"+ str(title) +"','"+ str(content_str) +"','"+ str(news_url) +"','"+ str(news_title_kw) +"','"+ str(news_content_kw) +"','"+ str(sentiments_analysis) +"','"+ str(fcc_result) +"','"+ str(Now) +"')"
 
     # 執行語法
     try:
@@ -146,8 +209,9 @@ def domain_check(domain,news_url):
                 else:
                     print(content.text)
                     content_str+=content.text
-            news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'cna.com.tw':
             content_str=''
             res=requests.get(news_url)
@@ -166,7 +230,8 @@ def domain_check(domain,news_url):
                     print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'ettoday.net':
             content_str=''
             res=requests.get(news_url)
@@ -185,7 +250,8 @@ def domain_check(domain,news_url):
                     print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)      
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result)      
         case 'ltn.com.tw':
             content_str=''
             res=requests.get(news_url)
@@ -204,7 +270,8 @@ def domain_check(domain,news_url):
                     print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'news.pts':
             content_str=''
             res=requests.get(news_url)
@@ -220,7 +287,8 @@ def domain_check(domain,news_url):
                 print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'newtalk.tw':
             content_str=''
             res=requests.get(news_url)
@@ -236,7 +304,8 @@ def domain_check(domain,news_url):
                 print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'setn.tw':
             content_str=''
             res=requests.get(news_url)
@@ -252,7 +321,8 @@ def domain_check(domain,news_url):
                 print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'thenewslens.com':
             content_str=''
             res=requests.get(news_url)
@@ -271,7 +341,8 @@ def domain_check(domain,news_url):
                     print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'udn.com':
             content_str=''
             res=requests.get(news_url)
@@ -289,7 +360,8 @@ def domain_check(domain,news_url):
                     print(content.text.strip())
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                fcc_result=fcc_search(news_title_kw)
+                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
             except: #經濟日報
                 if res.status_code==requests.codes.ok:
                     print('money udn ok')
@@ -302,7 +374,8 @@ def domain_check(domain,news_url):
                     print(content.text.strip())
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                fcc_result=fcc_search(news_title_kw)
+                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'yahoo.com':
             content_str=''
             res=requests.get(news_url)
@@ -324,7 +397,8 @@ def domain_check(domain,news_url):
                         print(content.text)
                         content_str+=content.text
                         news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                fcc_result=fcc_search(news_title_kw)
+                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
             except:
                 print(news_url)
                 try:
@@ -336,7 +410,8 @@ def domain_check(domain,news_url):
                         print(content.text)
                         content_str+=content.text
                         news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                    insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                    fcc_result=fcc_search(news_title_kw)
+                    insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
                 except:
                     print(news_url)
                     try:
@@ -349,7 +424,8 @@ def domain_check(domain,news_url):
                         for content in contents:
                             content_str+=content.text
                             news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                        insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                        fcc_result=fcc_search(news_title_kw)
+                        insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
                     except:
                         print(news_url)
         case 'rfi.fr':
@@ -370,7 +446,8 @@ def domain_check(domain,news_url):
                     print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'rti.org.tw':
             content_str=''
             res=requests.get(news_url)
@@ -387,7 +464,8 @@ def domain_check(domain,news_url):
                 print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title,content_str)
-            insert_data(title,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'storm.mg':
             content_str=''
             res=requests.get(news_url)
@@ -408,7 +486,8 @@ def domain_check(domain,news_url):
                     print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'bbc.com':
             content_str=''
             res=requests.get(news_url)
@@ -428,7 +507,8 @@ def domain_check(domain,news_url):
                         print(content.text)
                         content_str+=content.text
                         news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                fcc_result="目前查無資料"
+                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
             except:
                 print("error link at: ",news_url)
                 title=objsoup.find('strong',{"class":"ewk8wmc0 bbc-uky4hn eglt09e1"})
@@ -442,7 +522,8 @@ def domain_check(domain,news_url):
                         print(content.text)
                         content_str+=content.text
                         news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+                fcc_result="目前查無資料"
+                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'mirrormedia.mg': # 鏡週刊
             content_str=''
             res=requests.get(news_url,headers=headers)
@@ -461,23 +542,28 @@ def domain_check(domain,news_url):
                     print(content.text)
                     content_str+=content.text
                     news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case'cw.com.tw':
-            content_str=''
-            res=requests.get(news_url,headers=headers)
-            res.encoding='utf-8'
-            if res.status_code==requests.codes.ok:
-                print('cw.com.tw ok')
-            objsoup=BeautifulSoup(res.text,'lxml')
-            title=objsoup.find('div',{"class":"article__head"}).find('h1')
-            print("新聞標題: ",title.text)
-            print("文章內容: ")
-            contents=objsoup.find('div',{"class":"article__content py20"}).find_all('p')
-            for content in contents:
-                print(content.text)
-                content_str+=content.text
-                news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            try:
+                content_str=''
+                res=requests.get(news_url,headers=headers)
+                res.encoding='utf-8'
+                if res.status_code==requests.codes.ok:
+                    print('cw.com.tw ok')
+                objsoup=BeautifulSoup(res.text,'lxml')
+                title=objsoup.find('div',{"class":"article__head"}).find('h1')
+                print("新聞標題: ",title.text)
+                print("文章內容: ")
+                contents=objsoup.find('div',{"class":"article__content py20"}).find_all('p')
+                for content in contents:
+                    print(content.text)
+                    content_str+=content.text
+                    news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
+                fcc_result=fcc_search(news_title_kw)
+                insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
+            except:
+                print("error at:"+news_url)
         case 'epochtimes.com': # 大紀元
             content_str=''
             res=requests.get(news_url,headers=headers)
@@ -493,7 +579,8 @@ def domain_check(domain,news_url):
                 print(content.text)
                 content_str+=content.text
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis) 
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result) 
         case 'nytimes.com': # 紐約時報
             content_str=''
             res=requests.get(news_url,headers=headers)
@@ -508,7 +595,8 @@ def domain_check(domain,news_url):
             for content in contents:
                 print(content.text)
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result)
         case 'wsj.com': # 半島電視台
             content_str=''
             res=requests.get(url,headers=headers)
@@ -523,7 +611,8 @@ def domain_check(domain,news_url):
             for content in contents:
                 print(content.text)
                 news_title_kw,news_content_kw,sentiments_analysis=kw(title.text,content_str)
-            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis)
+            fcc_result=fcc_search(news_title_kw)
+            insert_data(title.text,content_str,news_url,news_title_kw,news_content_kw,sentiments_analysis,fcc_result)
         case _:
             return "url missing!"
 
