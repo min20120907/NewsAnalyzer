@@ -110,8 +110,8 @@ class News:
         cursor = db.cursor()
         for i in range(len(self.news_title)):
             # SQL語法      news_title_kw,news_content_kw,
-            sql = "INSERT INTO news_titles_contents(ID,news_title,news_content,news_link,news_title_kw,news_content_kw,sentiment_analysis,createdDate) VALUES ('0','" + str(self.news_title[i]) + "','" + str(
-                self.news_content[i]) + "','" + str(self.news_link[i]) + "','" + str(self.news_title_kw[i]) + "','" + str(self.news_content_kw[i]) + "','" + str(self.sentiment_analysis[i]) + "','" + str(self.Now) + "')"
+            sql = "INSERT INTO news_titles_contents(ID,news_title,news_content,news_link,news_title_kw,news_content_kw,sentiment_analysis,createdDate, post_title, post_kw) VALUES ('0','" + str(self.news_title[i]) + "','" + str(
+                    self.news_content[i]) + "','" + str(self.news_link[i]) + "','" + str(self.news_title_kw[i]) + "','" + str(self.news_content_kw[i]) + "','" + str(self.sentiment_analysis[i]) + "','" + str(self.Now) + "', '"+str(self.src_title)+"', '"+str(self.src_keywords)+"')"
             # 執行語法
             try:
                 cursor.execute(sql)
