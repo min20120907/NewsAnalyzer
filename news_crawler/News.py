@@ -96,10 +96,21 @@ class News:
     # toHTML function
     def toHTML(self):
         # print("generating html results")
-        tmp = ""
+        tmp = "<table>"
+        # Add table headers
+        tmp += "<tr><th>新聞標題</th><th>新聞標題關鍵字</th><th>新聞內文關鍵字</th><th>情感分析</th></tr>"
         for i in range(len(self.news_title)):
-            tmp += "(" + str(self.news_title[i]) + "','" + str(self.news_content[i]) + "','" + str(self.news_link[i]) + "','" + str(self.news_title_kw[i]) + "','" + str(self.news_content_kw[i]) + "','" + str(self.sentiment_analysis[i]) + "','" + str(self.Now) + ")<br>"
+            tmp += "<tr>"
+            # Add table cells for each news item
+            tmp += "<td><a href='" + str(self.news_link[i]) + "'>" + str(self.news_title[i]) + "</a></td>"
+            tmp += "<td>" + str(self.news_title_kw[i]) + "</td>"
+            tmp += "<td>" + str(self.news_content_kw[i]) + "</td>"
+            tmp += "<td>" + str(self.sentiment_analysis[i]) + "</td>"
+            tmp += "</tr>"
+        tmp += "</table>"
         return tmp
+
+
     # The function to submit the results
 
     def submitSQL(self, db_settings):
