@@ -101,14 +101,13 @@ class News:
         for i in range(len(self.news_title)):
             tmp += "<tr>"
             # Add table cells for each news item
-            tmp += "<td><a href='" + str(self.news_link[i]) + "'>" + str(self.news_title[i]) + "</a></td>"
+            tmp += "<td><img src='" + str(self.news_link[i]) + "/favicon.ico' />" + "<a href='" + str(self.news_link[i]) + "'>" + str(self.news_title[i]) + "</a></td>"
             tmp += "<td>" + str(self.news_title_kw[i]) + "</td>"
             tmp += "<td>" + str(self.news_content_kw[i]) + "</td>"
             tmp += "<td>" + str(self.sentiment_analysis[i]) + "</td>"
             tmp += "</tr>"
         tmp += "</table>"
         return tmp
-
 
     # The function to submit the results
 
