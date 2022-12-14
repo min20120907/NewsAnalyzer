@@ -133,7 +133,7 @@ class News:
         list_title_kw=[]
         list_content_kw=[]
         list_sentiment=[]
-
+        sentiment_result="undefined"
         # 抓出標題關鍵字
         tags1=" ".join(jieba.cut(title))
         kw_model = KeyBERT(model='paraphrase-multilingual-MiniLM-L12-v2')
