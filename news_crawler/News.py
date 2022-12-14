@@ -8,7 +8,6 @@ import jieba
 import jieba.analyse
 from snownlp import SnowNLP
 from keybert import KeyBERT
-from textblob import TextBlob
 
 # 設定fake-useragent
 # 假的user-agent,產生 headers
@@ -148,13 +147,13 @@ class News:
         # 抓出標題關鍵字
         tags1=" ".join(jieba.cut(title))
         kw_model = KeyBERT(model='paraphrase-multilingual-MiniLM-L12-v2')
-        title_kw = kw_model.extract_keywords(tags1,keyphrase_ngram_range=(1, 1),highlight=True,stop_words=[',' , '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］', '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你','妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推','podcast']) 
+        title_kw = kw_model.extract_keywords(tags1,keyphrase_ngram_range=(1, 1),highlight=True,stop_words=[',' , '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］', '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你','妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推','podcast','啊啊']) 
         for kw in title_kw:
             list_title_kw.append(kw[0])
         str1 = ','.join(str(x) for x in list_title_kw)
         # 抓出內文關鍵字
         tags2=" ".join(jieba.cut(content_str))
-        content_kw = kw_model.extract_keywords(tags2,keyphrase_ngram_range=(1, 1),highlight=True,stop_words=[',' , '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］', '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你','妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推','podcast']) 
+        content_kw = kw_model.extract_keywords(tags2,keyphrase_ngram_range=(1, 1),highlight=True,stop_words=[',' , '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］', '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你','妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推','podcast','啊啊']) 
         for kw in content_kw:
             list_content_kw.append(kw[0]) 
             s=SnowNLP(kw[0]) # 把內文關鍵字丟入情感分析
@@ -166,28 +165,28 @@ class News:
             total += r
             average = total/len(list_sentiment)
             if average >= 0.9:
-                sentiment_result = 'abs positive'
+                sentiment_result = '絕對正面'
                 ## print("abs positive")
             elif 0.7 <= average < 0.9:
-                sentiment_result = 'strong positive'
+                sentiment_result = '極度正面'
                 ## print("strong positive")
             elif 0.5 < average < 0.7:
-                sentiment_result = 'quite positive'
+                sentiment_result = '相對正面'
                 ## print("quite positive")
             elif average == 0.5:
-                sentiment_result == 'neutrality'
+                sentiment_result == '中立'
                 # # print("neutrality")
             elif 0.3 <= average < 0.5:
-                sentiment_result = 'quite negative'
+                sentiment_result = '相對負面'
                 ## print("quite negative")
             elif 0.1 < average < 0.3:
-                sentiment_result = 'strong negative'
+                sentiment_result = '極度負面'
                 ## print("strong negative")
             elif average <= 0.1:
-                sentiment_result = 'abs negative'
+                sentiment_result = '絕對負面'
                 ## print("abs negative")
             else:
-                sentiment_result = 'error occur'
+                sentiment_result = '錯誤發生'
                 ## print("error occur")
         return str1, str2, sentiment_result
     # The funciton to fetch the URL and the domain
