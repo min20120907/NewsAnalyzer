@@ -8,6 +8,7 @@ import jieba
 import jieba.analyse
 from snownlp import SnowNLP
 from keybert import KeyBERT
+import threading
 
 # 設定fake-useragent
 # 假的user-agent,產生 headers
@@ -70,7 +71,7 @@ class News:
         self.url_link_list_remove_dot = []
         for link in self.url_link_list:
             self.url_link_list_remove_dot.append(link.replace('./', '', 1))
-
+        t = []
         # 連到多家新聞媒體
         for link in self.url_link_list_remove_dot:
             url = 'https://news.google.com/'+str(link)
@@ -84,8 +85,17 @@ class News:
             # 解析domain
             tld_result = tldextract.extract(news_url)
             domain = '{}.{}'.format(tld_result.domain, tld_result.suffix)
-            self.domain_check(domain, news_url)
+            # Single thread
+            # self.domain_check(domain, news_url)
+            # Multi-threading
+            t.append(threading.Thread(target=self.domain_check, args=(domain, news_url)))
             # print("Checking", news_url, " at ", domain)
+        
+        for thread in t:
+            thread.start()
+        for thread in t:
+            thread.join()
+        
 
     # 解決短網址問題
     def shortlink_converter(self, url):
