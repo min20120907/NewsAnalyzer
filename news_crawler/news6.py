@@ -21,8 +21,10 @@ def extract():
     a = News(request.args.get('title'))
     # submit the News object to the mysql server
     a.submitSQL(db_settings)
+    response = a.toHTML()
+    response.headers['Access-Control-Allow-Origin'] = '*'
     # return the results to the Flask server
-    return a.toHTML()
+    return response
     
 if __name__ == '__main__':
     app.run(host="0.0.0.0", ssl_context=('/etc/letsencrypt/live/min20120907.asuscomm.com/fullchain.pem', '/etc/letsencrypt/live/min20120907.asuscomm.com/privkey.pem'), debug = True)

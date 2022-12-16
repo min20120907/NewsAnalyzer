@@ -20,7 +20,7 @@ let UI_Elements = class {
         this.linkposts = new Array();
         this.headers = new Array();
         this.links = new Array();
-        // filter the posts that 
+        // filter the posts that  
         for (let i = 0; i < this.normal_posts.length; i++)
             if (this.isLinkPost(this.normal_posts[i]))
                 this.linkposts.push(this.normal_posts[i])
