@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request
+from flask import Flask, redirect, url_for, request, make_response
 from News import News
 from flask_cors import CORS
 
@@ -21,7 +21,7 @@ def extract():
     a = News(request.args.get('title'))
     # submit the News object to the mysql server
     a.submitSQL(db_settings)
-    response = a.toHTML()
+    response = make_response(a.toHTML())
     response.headers['Access-Control-Allow-Origin'] = '*'
     # return the results to the Flask server
     return response
