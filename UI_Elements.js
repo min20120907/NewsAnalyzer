@@ -26,36 +26,31 @@ let UI_Elements = class {
                 this.linkposts.push(this.normal_posts[i])
         this.append_button();
     }
-    isLinkPost(post){
-       return post.querySelectorAll("a.x1i10hfl.xjbqb8w.x6umtig.x1b1mbwd.xaqea5y.xav7gou.x9f619.x1ypdohk.xe8uvvx.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x16tdsg8.x1hl2dhg.xggy1nq.x1a2a7pz.x1heor9g.x1lliihq.x1lku1pv").length>0 && post.querySelectorAll("a.x1i10hfl.xjbqb8w.x6umtig.x1b1mbwd.xaqea5y.xav7gou.x9f619.x1ypdohk.xe8uvvx.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x16tdsg8.x1hl2dhg.xggy1nq.x1a2a7pz.x1heor9g.x1lliihq.x1lku1pv")[0].href != "https://www.facebook.com/#";
+    isLinkPost(post) {
+        return post.querySelectorAll("a.x1i10hfl.xjbqb8w.x6umtig.x1b1mbwd.xaqea5y.xav7gou.x9f619.x1ypdohk.xe8uvvx.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x16tdsg8.x1hl2dhg.xggy1nq.x1a2a7pz.x1heor9g.x1lliihq.x1lku1pv").length > 0 && post.querySelectorAll("a.x1i10hfl.xjbqb8w.x6umtig.x1b1mbwd.xaqea5y.xav7gou.x9f619.x1ypdohk.xe8uvvx.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x16tdsg8.x1hl2dhg.xggy1nq.x1a2a7pz.x1heor9g.x1lliihq.x1lku1pv")[0].href != "https://www.facebook.com/#";
     }
 
-	append_button() {
+    append_button() {
         for (let i = 0; i < this.linkposts.length; i++) {
-            // Check if the current post is a link post
-            if (this.isLinkPost(this.linkposts[i])) {
-                this.getLink(i);
-                try {
+            // check if the button already exists
+            if (document.getElementById("btn_" + i) == null) {
+                // Check if the current post is a link post
+                if (this.isLinkPost(this.linkposts[i])) {
+                    this.getLink(i);
                     // Select the correct parent element for the button
                     let parentElement = this.linkposts[i].querySelector("div.x1iorvi4.x1pi30zi.x1l90r2v.x1swvt13");
-    
+
                     // Append the button to the selected parent element
                     parentElement.appendChild(new button(i, "More", "btn btn-warning", this.links[i]).dom);
-    
-                } catch (TargetExistedException) {
-                } 
-                try {
-                    // Select the correct parent element for the result frame
-                    let parentElement = this.linkposts[i].querySelector("div.x1iorvi4.x1pi30zi.x1l90r2v.x1swvt13");
-    
+
                     // Append the result frame to the selected parent element
                     parentElement.appendChild(new resultFrame(i, 10, this.links[i]).frame);
-                } catch (TargetExistedException) {
+
                 }
             }
         }
     }
-    
+
 
     // The function to export the link
     getLink(i) {
