@@ -1,3 +1,4 @@
+import asyncio
 import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
@@ -90,7 +91,7 @@ class News:
             # Multi-threading
             t.append(threading.Thread(target=self.domain_check, args=(domain, news_url)))
             # print("Checking", news_url, " at ", domain)
-        
+            #self.fetch_news(domain, news_url)
         for thread in t:
             thread.start()
         for thread in t:
@@ -198,7 +199,13 @@ class News:
                 sentiment_result = '錯誤發生'
                 ## print("error occur")
         return str1, str2, sentiment_result
-    # The funciton to fetch the URL and the domain
+    def update_instances(self, title, content_str, news_url, news_title_kw, news_content_kw, sentiments_analysis):
+        self.news_title.append(title.text)
+        self.news_content.append(content_str)
+        self.news_link.append(news_url)
+        self.news_title_kw.append(news_title_kw)
+        self.news_content_kw.append(news_content_kw)
+        self.sentiment_analysis.append(sentiments_analysis)
 
     # Main function to fetch the news
     def domain_check(self, domain, news_url):
@@ -229,20 +236,8 @@ class News:
                         content_str += content.text
                 news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                     title.text, content_str)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
                 
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
             case 'cna.com.tw':
                 content_str = ''
                 res = requests.get(news_url)
@@ -263,19 +258,7 @@ class News:
                         content_str += content.text
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'ettoday.net':
                 content_str = ''
                 res = requests.get(news_url)
@@ -297,19 +280,7 @@ class News:
                         content_str += content.text
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'ltn.com.tw':
                 content_str = ''
                 res = requests.get(news_url)
@@ -331,19 +302,7 @@ class News:
                         content_str += content.text
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'news.pts':
                 content_str = ''
                 res = requests.get(news_url)
@@ -361,19 +320,7 @@ class News:
                     content_str += content.text
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'newtalk.tw':
                 content_str = ''
                 res = requests.get(news_url)
@@ -392,19 +339,7 @@ class News:
                     content_str += content.text
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'setn.com':
                 content_str = ''
                 res = requests.get(news_url)
@@ -422,19 +357,7 @@ class News:
                     content_str += content.text
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", self.news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'thenewslens.com':
                 content_str = ''
                 res = requests.get(news_url)
@@ -456,19 +379,7 @@ class News:
                         content_str += content.text
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'udn.com':
                 content_str = ''
                 res = requests.get(news_url)
@@ -491,19 +402,7 @@ class News:
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
 
-                    self.news_title.append(title.text)
-                    # print("THE RESULT: ", title.text)
-                    self.news_content.append(content_str)
-                    # print("THE RESULT: ", content_str)
-                    self.news_link.append(news_url)
-                    # print("THE RESULT: ", news_url)
-                    self.news_title_kw.append(news_title_kw)
-                    # print("THE RESULT: ", news_title_kw)
-                    self.news_content_kw.append(news_content_kw)
-                    # print("THE RESULT: ", news_content_kw)
-                    self.sentiment_analysis.append(sentiments_analysis)
-                    # print("THE RESULT: ", sentiments_analysis)
-                    # print(news_title_kw, news_content_kw, sentiments_analysis)
+                    self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
                 except:  # 經濟日報
                     if res.status_code == requests.codes.ok:
                         pass
@@ -520,19 +419,7 @@ class News:
                         content_str += content.text
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
-                    self.news_title.append(title.text)
-                    # print("THE RESULT: ", title.text)
-                    self.news_content.append(content_str)
-                    # print("THE RESULT: ", content_str)
-                    self.news_link.append(news_url)
-                    # print("THE RESULT: ", news_url)
-                    self.news_title_kw.append(news_title_kw)
-                    # print("THE RESULT: ", news_title_kw)
-                    self.news_content_kw.append(news_content_kw)
-                    # print("THE RESULT: ", news_content_kw)
-                    self.sentiment_analysis.append(sentiments_analysis)
-                    # print("THE RESULT: ", sentiments_analysis)
-                    # print(news_title_kw, news_content_kw, sentiments_analysis)
+                    self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'yahoo.com':
                 content_str = ''
                 res = requests.get(news_url)
@@ -558,19 +445,7 @@ class News:
                             content_str += content.text
                             news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                                 title.text, content_str)
-                    self.news_title.append(title.text)
-                    # print("THE RESULT: ", title.text)
-                    self.news_content.append(content_str)
-                    # print("THE RESULT: ", content_str)
-                    self.news_link.append(news_url)
-                    # print("THE RESULT: ", news_url)
-                    self.news_title_kw.append(news_title_kw)
-                    # print("THE RESULT: ", news_title_kw)
-                    self.news_content_kw.append(news_content_kw)
-                    # print("THE RESULT: ", news_content_kw)
-                    self.sentiment_analysis.append(sentiments_analysis)
-                    # print("THE RESULT: ", sentiments_analysis)
-                    # print(news_title_kw, news_content_kw, sentiments_analysis)
+                    self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
                 except:
                     # print(news_url)
                     try:
@@ -585,19 +460,7 @@ class News:
                             content_str += content.text
                             news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                                 title.text, content_str)
-                        self.news_title.append(title.text)
-                        # print("THE RESULT: ", title.text)
-                        self.news_content.append(content_str)
-                        # print("THE RESULT: ", content_str)
-                        self.news_link.append(news_url)
-                        # print("THE RESULT: ", news_url)
-                        self.news_title_kw.append(news_title_kw)
-                        # print("THE RESULT: ", news_title_kw)
-                        self.news_content_kw.append(news_content_kw)
-                        # print("THE RESULT: ", news_content_kw)
-                        self.sentiment_analysis.append(sentiments_analysis)
-                        # print("THE RESULT: ", sentiments_analysis)
-                        # print(news_title_kw, news_content_kw, sentiments_analysis)
+                        self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
                     except:
                         # print(news_url)
                         try:
@@ -613,19 +476,7 @@ class News:
                                 content_str += content.text
                                 news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                                     title.text, content_str)
-                            self.news_title.append(title.text)
-                            # print("THE RESULT: ", title.text)
-                            self.news_content.append(content_str)
-                            # print("THE RESULT: ", content_str)
-                            self.news_link.append(news_url)
-                            # print("THE RESULT: ", news_url)
-                            self.news_title_kw.append(news_title_kw)
-                            # print("THE RESULT: ", news_title_kw)
-                            self.news_content_kw.append(news_content_kw)
-                            # print("THE RESULT: ", news_content_kw)
-                            self.sentiment_analysis.append(sentiments_analysis)
-                            # print("THE RESULT: ", sentiments_analysis)
-                            # print(news_title_kw, news_content_kw, sentiments_analysis)
+                            self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
                         except:
                             pass
                             # print(news_url)
@@ -650,19 +501,7 @@ class News:
                         content_str += content.text
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'rti.org.tw':
                 content_str = ''
                 res = requests.get(news_url)
@@ -682,19 +521,7 @@ class News:
                     content_str += content.text
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title, content_str)
-                self.news_title.append(title)
-                # print("THE RESULT: ", title)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'storm.mg':
                 content_str = ''
                 res = requests.get(news_url)
@@ -718,19 +545,7 @@ class News:
                         content_str += content.text
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'bbc.com':
                 content_str = ''
                 res = requests.get(news_url)
@@ -753,19 +568,7 @@ class News:
                             content_str += content.text
                             news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                                 title.text, content_str)
-                    self.news_title.append(title.text)
-                    # print("THE RESULT: ", title.text)
-                    self.news_content.append(content_str)
-                    # print("THE RESULT: ", content_str)
-                    self.news_link.append(news_url)
-                    # print("THE RESULT: ", news_url)
-                    self.news_title_kw.append(news_title_kw)
-                    # print("THE RESULT: ", news_title_kw)
-                    self.news_content_kw.append(news_content_kw)
-                    # print("THE RESULT: ", news_content_kw)
-                    self.sentiment_analysis.append(sentiments_analysis)
-                    # print("THE RESULT: ", sentiments_analysis)
-                    # print(news_title_kw, news_content_kw, sentiments_analysis)
+                    self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
                 except:
                     # print("error link at: ", news_url)
                     title = objsoup.find(
@@ -781,19 +584,7 @@ class News:
                             content_str += content.text
                             news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                                 title.text, content_str)
-                    self.news_title.append(title.text)
-                    # print("THE RESULT: ", title.text)
-                    self.news_content.append(content_str)
-                    # print("THE RESULT: ", content_str)
-                    self.news_link.append(news_url)
-                    # print("THE RESULT: ", news_url)
-                    self.news_title_kw.append(news_title_kw)
-                    # print("THE RESULT: ", news_title_kw)
-                    self.news_content_kw.append(news_content_kw)
-                    # print("THE RESULT: ", news_content_kw)
-                    self.sentiment_analysis.append(sentiments_analysis)
-                    # print("THE RESULT: ", sentiments_analysis)
-                    # print(news_title_kw, news_content_kw, sentiments_analysis)
+                    self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'mirrormedia.mg':  # 鏡週刊
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
@@ -815,19 +606,7 @@ class News:
                         content_str += content.text
                         news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                             title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
                 res.encoding = 'utf-8'
@@ -846,19 +625,7 @@ class News:
                     content_str += content.text
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
                 res.encoding = 'utf-8'
@@ -876,19 +643,7 @@ class News:
                     content_str += content.text
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case'cw.com.tw':
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
@@ -908,19 +663,7 @@ class News:
                     content_str += content.text
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'epochtimes.com':  # 大紀元
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
@@ -938,19 +681,7 @@ class News:
                     content_str += content.text
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'nytimes.com':  # 紐約時報
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
@@ -969,19 +700,7 @@ class News:
                     # print(content.text)
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case 'wsj.com':  # 半島電視台
                 content_str = ''
                 res = requests.get(news_url, headers=headers)
@@ -999,18 +718,6 @@ class News:
                     # print(content.text)
                     news_title_kw, news_content_kw, sentiments_analysis = self.kw(
                         title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
+                self.update_instances(news_content_kw, content_str, news_url, news_content_kw, sentiments_analysis)
             case _:
                 return "url missing!"
