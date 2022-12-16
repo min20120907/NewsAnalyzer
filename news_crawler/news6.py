@@ -21,8 +21,8 @@ def extract():
     a = News(request.args.get('title'))
     # submit the News object to the mysql server
     a.submitSQL(db_settings)
-    response = make_response(a.toHTML())
-    response.headers['Access-Control-Allow-Origin'] = '*'
+    response = a.toHTML()
+
     # return the results to the Flask server
     return response
     

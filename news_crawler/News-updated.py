@@ -8,6 +8,7 @@ import jieba
 import jieba.analyse
 from snownlp import SnowNLP
 from keybert import KeyBERT
+import threading
 
 # 設定fake-useragent
 # 假的user-agent,產生 headers
@@ -70,7 +71,7 @@ class News:
         self.url_link_list_remove_dot = []
         for link in self.url_link_list:
             self.url_link_list_remove_dot.append(link.replace('./', '', 1))
-
+        t = []
         # 連到多家新聞媒體
         for link in self.url_link_list_remove_dot:
             url = 'https://news.google.com/'+str(link)
@@ -84,8 +85,17 @@ class News:
             # 解析domain
             tld_result = tldextract.extract(news_url)
             domain = '{}.{}'.format(tld_result.domain, tld_result.suffix)
-            self.domain_check(domain, news_url)
+            # Single thread
+            # self.domain_check(domain, news_url)
+            # Multi-threading
+            t.append(threading.Thread(target=self.domain_check, args=(domain, news_url)))
             # print("Checking", news_url, " at ", domain)
+        
+        for thread in t:
+            thread.start()
+        for thread in t:
+            thread.join()
+        
 
     # 解決短網址問題
     def shortlink_converter(self, url):
@@ -101,9 +111,7 @@ class News:
         for i in range(len(self.news_title)):
             tmp += "<tr>"
             # Add table cells for each news item
-            tmp += "<td><img src='http://www.google.com/s2/favicons?domain=" + \
-                str(self.news_link[i]) + "' />" + "<a href='" + str(
-                    self.news_link[i]) + "'>" + str(self.news_title[i]) + "</a></td>"
+            tmp += "<td><img src='http://www.google.com/s2/favicons?domain=" + str(self.news_link[i]) + "' />" + "<a href='" + str(self.news_link[i]) + "'>" + str(self.news_title[i]) + "</a></td>"
             tmp += "<td>" + str(self.news_title_kw[i]) + "</td>"
             tmp += "<td>" + str(self.news_content_kw[i]) + "</td>"
             tmp += "<td>" + str(self.sentiment_analysis[i]) + "</td>"
@@ -122,7 +130,7 @@ class News:
         for i in range(len(self.news_title)):
             # SQL語法      news_title_kw,news_content_kw,
             sql = "INSERT INTO news_titles_contents(ID,news_title,news_content,news_link,news_title_kw,news_content_kw,sentiment_analysis,createdDate, post_title, post_kw) VALUES ('0','" + str(self.news_title[i]) + "','" + str(
-                self.news_content[i]) + "','" + str(self.news_link[i]) + "','" + str(self.news_title_kw[i]) + "','" + str(self.news_content_kw[i]) + "','" + str(self.sentiment_analysis[i]) + "','" + str(self.Now) + "', '"+str(self.src_title)+"', '"+str(self.src_keywords)+"')"
+                    self.news_content[i]) + "','" + str(self.news_link[i]) + "','" + str(self.news_title_kw[i]) + "','" + str(self.news_content_kw[i]) + "','" + str(self.sentiment_analysis[i]) + "','" + str(self.Now) + "', '"+str(self.src_title)+"', '"+str(self.src_keywords)+"')"
             # 執行語法
             try:
                 cursor.execute(sql)
@@ -141,26 +149,24 @@ class News:
     # 關鍵字榨取與情感分析
     def kw(self, title, content_str):
         # 關鍵字榨取
-        list_title_kw = []
-        list_content_kw = []
-        list_sentiment = []
-        sentiment_result = "undefined"
+        list_title_kw=[]
+        list_content_kw=[]
+        list_sentiment=[]
+        sentiment_result="undefined"
         # 抓出標題關鍵字
-        tags1 = " ".join(jieba.cut(title))
+        tags1=" ".join(jieba.cut(title))
         kw_model = KeyBERT(model='paraphrase-multilingual-MiniLM-L12-v2')
-        title_kw = kw_model.extract_keywords(tags1, keyphrase_ngram_range=(1, 1), highlight=True, stop_words=[',', '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］',
-                                             '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你', '妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推', 'podcast', '啊啊'])
+        title_kw = kw_model.extract_keywords(tags1,keyphrase_ngram_range=(1, 1),highlight=True,stop_words=[',' , '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］', '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你','妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推','podcast','啊啊']) 
         for kw in title_kw:
             list_title_kw.append(kw[0])
         str1 = ','.join(str(x) for x in list_title_kw)
         # 抓出內文關鍵字
-        tags2 = " ".join(jieba.cut(content_str))
-        content_kw = kw_model.extract_keywords(tags2, keyphrase_ngram_range=(1, 1), highlight=True, stop_words=[',', '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］',
-                                               '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你', '妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推', 'podcast', '啊啊'])
+        tags2=" ".join(jieba.cut(content_str))
+        content_kw = kw_model.extract_keywords(tags2,keyphrase_ngram_range=(1, 1),highlight=True,stop_words=[',' , '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］', '[', ']', '-', '_', '＿', '——', '－', '-', '−', '我', '你','妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推','podcast','啊啊']) 
         for kw in content_kw:
-            list_content_kw.append(kw[0])
-            s = SnowNLP(kw[0])  # 把內文關鍵字丟入情感分析
-            list_sentiment.append(s.sentiments)  # 把結果串接起來
+            list_content_kw.append(kw[0]) 
+            s=SnowNLP(kw[0]) # 把內文關鍵字丟入情感分析
+            list_sentiment.append(s.sentiments) # 把結果串接起來
         str2 = ','.join(str(x) for x in list_content_kw)
         # 判斷新聞內文關鍵字是正面還是負面
         total = 0
@@ -202,667 +208,49 @@ class News:
         # break string
         break_set = {'點我看更多華視新聞＞＞＞', '更多風傳媒報導', '更多 TVBS 報導'}
 
-        content_str = ''
-        res = requests.get(news_url)
-        res.encoding = 'utf-8'
-        if res.status_code == requests.codes.ok:
-            pass
-            # print('ok')
-        objsoup = BeautifulSoup(res.text, 'lxml')
-        
-        # Extract title
-        if 'chinatimes.com' in news_url:
-            title = objsoup.find('h1', {"class": "article-title"})
-        elif 'cna.com.tw' in news_url:
-            title = objsoup.find('h1')
-        elif 'ettoday.net' in news_url:
+        def process_news(news_url, ban_set):
+            content_str = ''
+            res = requests.get(news_url)
+            res.encoding = 'utf-8'
+            if res.status_code == requests.codes.ok:
+                objsoup = BeautifulSoup(res.text, 'lxml')
+                title = objsoup.find('h1')
+                contents = objsoup.find_all('p')
+                for content in contents:
+                    if content.text in ban_set:
+                        pass
+                    else:
+                        content_str += content.text
+            return self.kw(title.text, content_str)
+
+        if domain == 'chinatimes.com':
+            news_title_kw, news_content_kw, sentiments_analysis = process_news(news_url, ban_set)
+        elif domain == 'cna.com.tw':
+            news_title_kw, news_content_kw, sentiments_analysis = process_news(news_url, ban_set)
+        elif domain == 'ettoday.net':
+            res = requests.get(news_url)
+            res.encoding = 'utf-8'
+            if res.status_code != requests.codes.ok:
+                return
+            objsoup = BeautifulSoup(res.text, 'lxml')
             title = objsoup.find('h1', {"class": "title"})
-        elif 'news.pts.org.tw' in news_url:
-            title = objsoup.find('h1', {"class": "article-title"})
-        elif 'newtalk.tw' in news_url:
-            title = objsoup.find('h1')
-        else:
-            title = None
-        
-        # Extract content
-        if 'chinatimes.com' in news_url:
-            contents = objsoup.find_all('p')
-        elif 'cna.com.tw' in news_url:
-            contents = objsoup.find_all('p')
-        elif 'ettoday.net' in news_url:
-            contents = objsoup.find_all('p', {"class": "story"})
-        elif 'news.pts.org.tw' in news_url:
-            contents = objsoup.find_all('p')
-        elif 'newtalk.tw' in news_url:
-            contents = objsoup.find_all('p')
-        else:
-            contents = None
-        
-        # Build content string
-        for content in contents:
-            if content.text in ban_set:
-                pass
-            else:
+            contents = objsoup.find('div', attrs={"class": "story"}).find_all('p')
+            content_str = ''
+            for content in contents:
+                if content.text in ban_set:
+                    break
                 content_str += content.text
-        
-        # Extract keywords, sentiment analysis
-        news_title_kw, news_content_kw, sentiments_analysis = self.kw(title.text, content_str)
-        
-        self.news_title.append(title)
+            news_title_kw, news_content_kw, sentiments_analysis = self.kw(title.text, content_str)
+        elif domain == 'ltn.com.tw':
+            news_title_kw, news_content_kw, sentiments_analysis = process_news(news_url, ban_set)
+        elif domain == 'news.pts':
+            news_title_kw, news_content_kw, sentiments_analysis = process_news(news_url, ban_set)
+        elif domain == 'udn.com':
+            news_title_kw, news_content_kw, sentiments_analysis = process_news(news_url, ban_set)
+
+        self.news_title.append(title.text)
         self.news_content.append(content_str)
         self.news_link.append(news_url)
         self.news_title_kw.append(news_title_kw)
         self.news_content_kw.append(news_content_kw)
         self.sentiment_analysis.append(sentiments_analysis)
-        # print(news_title_kw, news_content_kw, sentiments_analysis)
-
-        match domain:
-            case 'setn.com':
-                content_str = ''
-                res = requests.get(news_url)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('setn ok')
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find('h1', {"class": "news-title-3"})
-                # print("新聞標題: ", title.text)
-                # print("文章內容: ")
-                contents = objsoup.find_all('p')
-                for content in contents:
-                    # print(content.text)
-                    content_str += content.text
-                    news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                        title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", self.news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case 'thenewslens.com':
-                content_str = ''
-                res = requests.get(news_url)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('thenewslens ok')
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find('h1', {"class": "article-title"})
-                # print("新聞標題: ", title.text)
-                contents = objsoup.find(
-                    'div', {"class": "article-content AdAsia"}).find_all('p')
-                # print("文章內容: ")
-                for content in contents:
-                    if content.text in ban_set:
-                        pass
-                    else:
-                        # print(content.text)
-                        content_str += content.text
-                        news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                            title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case 'udn.com':
-                content_str = ''
-                res = requests.get(news_url)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('udn.com ok')
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                try:
-                    title = objsoup.find(
-                        'h1', {"class": "article-content__title"})
-                    # 印出title的文字
-                    # print("新聞標題: ", title.text)
-                    contents = objsoup.find(
-                        'div', {"class": "article-content__paragraph"}).find_all('p')
-                    # print("文章內容: ")
-                    for content in contents:
-                        # print(content.text.strip())
-                        content_str += content.text
-                        news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                            title.text, content_str)
-
-                    self.news_title.append(title.text)
-                    # print("THE RESULT: ", title.text)
-                    self.news_content.append(content_str)
-                    # print("THE RESULT: ", content_str)
-                    self.news_link.append(news_url)
-                    # print("THE RESULT: ", news_url)
-                    self.news_title_kw.append(news_title_kw)
-                    # print("THE RESULT: ", news_title_kw)
-                    self.news_content_kw.append(news_content_kw)
-                    # print("THE RESULT: ", news_content_kw)
-                    self.sentiment_analysis.append(sentiments_analysis)
-                    # print("THE RESULT: ", sentiments_analysis)
-                    # print(news_title_kw, news_content_kw, sentiments_analysis)
-                except:  # 經濟日報
-                    if res.status_code == requests.codes.ok:
-                        pass
-                        # print('money udn ok')
-                    objsoup = BeautifulSoup(res.text, 'lxml')
-                    title = objsoup.find(
-                        'div', {"class": "article-layout-wrapper"}).find('h1')
-                    # print("新聞標題: ", title.text)
-                    # print("文章內容: ")
-                    contents = objsoup.find(
-                        'section', {"class": "article-body__editor"}).find_all('p')
-                    for content in contents:
-                        # print(content.text.strip())
-                        content_str += content.text
-                        news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                            title.text, content_str)
-                    self.news_title.append(title.text)
-                    # print("THE RESULT: ", title.text)
-                    self.news_content.append(content_str)
-                    # print("THE RESULT: ", content_str)
-                    self.news_link.append(news_url)
-                    # print("THE RESULT: ", news_url)
-                    self.news_title_kw.append(news_title_kw)
-                    # print("THE RESULT: ", news_title_kw)
-                    self.news_content_kw.append(news_content_kw)
-                    # print("THE RESULT: ", news_content_kw)
-                    self.sentiment_analysis.append(sentiments_analysis)
-                    # print("THE RESULT: ", sentiments_analysis)
-                    # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case 'yahoo.com':
-                content_str = ''
-                res = requests.get(news_url)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('yahoo.com ok')
-                try:
-                    objsoup = BeautifulSoup(res.text, 'lxml')
-                    title = objsoup.find(
-                        'header', {"class": "caas-header"}).find('h1')
-                    # print("新聞標題: ", title.text)
-                    contents = objsoup.find(
-                        'div', {"class": "caas-body"}).find_all('p')
-                    # print("文章內容: ")
-                    for content in contents:
-                        if content.text in ban_set:
-                            pass
-                        elif content.text in break_set:
-                            break
-                        else:
-                            # print(content.text)
-                            content_str += content.text
-                            news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                                title.text, content_str)
-                    self.news_title.append(title.text)
-                    # print("THE RESULT: ", title.text)
-                    self.news_content.append(content_str)
-                    # print("THE RESULT: ", content_str)
-                    self.news_link.append(news_url)
-                    # print("THE RESULT: ", news_url)
-                    self.news_title_kw.append(news_title_kw)
-                    # print("THE RESULT: ", news_title_kw)
-                    self.news_content_kw.append(news_content_kw)
-                    # print("THE RESULT: ", news_content_kw)
-                    self.sentiment_analysis.append(sentiments_analysis)
-                    # print("THE RESULT: ", sentiments_analysis)
-                    # print(news_title_kw, news_content_kw, sentiments_analysis)
-                except:
-                    # print(news_url)
-                    try:
-                        title = objsoup.find(
-                            'h1', {"data-test-locator": "headline"})
-                        # print("新聞標題: ", title.text)
-                        contents = objsoup.find(
-                            'div', {"class": "caas-body"}).find_all('p')
-                        # print("文章內容: ")
-                        for content in contents:
-                            # print(content.text)
-                            content_str += content.text
-                            news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                                title.text, content_str)
-                        self.news_title.append(title.text)
-                        # print("THE RESULT: ", title.text)
-                        self.news_content.append(content_str)
-                        # print("THE RESULT: ", content_str)
-                        self.news_link.append(news_url)
-                        # print("THE RESULT: ", news_url)
-                        self.news_title_kw.append(news_title_kw)
-                        # print("THE RESULT: ", news_title_kw)
-                        self.news_content_kw.append(news_content_kw)
-                        # print("THE RESULT: ", news_content_kw)
-                        self.sentiment_analysis.append(sentiments_analysis)
-                        # print("THE RESULT: ", sentiments_analysis)
-                        # print(news_title_kw, news_content_kw, sentiments_analysis)
-                    except:
-                        # print(news_url)
-                        try:
-                            objsoup = BeautifulSoup(res.text, 'lxml')
-                            title = objsoup.find(
-                                'h1', {"class": "Fz(24px) Fw(b)"})
-                            # print("新聞標題: ", title.text)
-                            contents = objsoup.find(
-                                'div', {"class": "Mt(12px) Fz(16px) Lh(1.5) C(#464e56) Whs(pl)"})
-                            # print("文章內容: ")
-                            for content in contents:
-                                # print(contents.text)
-                                content_str += content.text
-                                news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                                    title.text, content_str)
-                            self.news_title.append(title.text)
-                            # print("THE RESULT: ", title.text)
-                            self.news_content.append(content_str)
-                            # print("THE RESULT: ", content_str)
-                            self.news_link.append(news_url)
-                            # print("THE RESULT: ", news_url)
-                            self.news_title_kw.append(news_title_kw)
-                            # print("THE RESULT: ", news_title_kw)
-                            self.news_content_kw.append(news_content_kw)
-                            # print("THE RESULT: ", news_content_kw)
-                            self.sentiment_analysis.append(sentiments_analysis)
-                            # print("THE RESULT: ", sentiments_analysis)
-                            # print(news_title_kw, news_content_kw, sentiments_analysis)
-                        except:
-                            pass
-                            # print(news_url)
-            case 'rfi.fr':
-                content_str = ''
-                res = requests.get(news_url, headers=headers)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print("rfi.fr ok")
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find('article').find('h1')
-                # print("新聞標題: ", title.text)
-                # print("文章內容: ")
-                contents = objsoup.find('article').find(
-                    'div', {"class": "t-content__body u-clearfix"}).find_all('p')
-                for content in contents:
-                    if content.text in ban_set:
-                        pass
-                    else:
-                        # print(content.text)
-                        content_str += content.text
-                        news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                            title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case 'rti.org.tw':
-                content_str = ''
-                res = requests.get(news_url)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('rti.org.tw ok')
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find(
-                    'section', {"class": "news-detail-box"}).find('h1')
-                title = title.text.replace(' 用Podcast訂閱本節目 ', '').strip()
-                # print("新聞標題: ",title)
-                # print("文章內容: ")
-                contents = objsoup.find('article').find_all('p')
-                for content in contents:
-                    # print(content.text)
-                    content_str += content.text
-                    news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                        title, content_str)
-                self.news_title.append(title)
-                # print("THE RESULT: ", title)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case 'storm.mg':
-                content_str = ''
-                res = requests.get(news_url)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('storm.mg ok')
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find('h1', {"id": "article_title"})
-                # print("新聞標題: ", title.text)
-                # print("文章內容: ")
-                contents = objsoup.find(
-                    'div', {"id": "CMS_wrapper"}).find_all('p')
-                for content in contents:
-                    if content.text in ban_set:
-                        pass
-                    elif '更多風傳媒報導' in content.text:
-                        break
-                    else:
-                        # print(content.text)
-                        content_str += content.text
-                        news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                            title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case 'bbc.com':
-                content_str = ''
-                res = requests.get(news_url)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('bbc.com ok')
-                try:
-                    objsoup = BeautifulSoup(res.text, 'lxml')
-                    title = objsoup.find(
-                        'h1', {"class": "bbc-1tk77pb e1p3vdyi0"})
-                    # print("新聞標題: ", title.text)
-                    # print("文章內容: ")
-                    contents = objsoup.find_all('p')
-                    for content in contents:
-                        if content.text in ban_set:
-                            pass
-                        else:
-                            # print(content.text)
-                            content_str += content.text
-                            news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                                title.text, content_str)
-                    self.news_title.append(title.text)
-                    # print("THE RESULT: ", title.text)
-                    self.news_content.append(content_str)
-                    # print("THE RESULT: ", content_str)
-                    self.news_link.append(news_url)
-                    # print("THE RESULT: ", news_url)
-                    self.news_title_kw.append(news_title_kw)
-                    # print("THE RESULT: ", news_title_kw)
-                    self.news_content_kw.append(news_content_kw)
-                    # print("THE RESULT: ", news_content_kw)
-                    self.sentiment_analysis.append(sentiments_analysis)
-                    # print("THE RESULT: ", sentiments_analysis)
-                    # print(news_title_kw, news_content_kw, sentiments_analysis)
-                except:
-                    # print("error link at: ", news_url)
-                    title = objsoup.find(
-                        'strong', {"class": "ewk8wmc0 bbc-uky4hn eglt09e1"})
-                    # print("新聞標題: ", title.text)
-                    # print("文章內容: ")
-                    contents = objsoup.find_all('p')
-                    for content in contents:
-                        if content.text in ban_set:
-                            pass
-                        else:
-                            # print(content.text)
-                            content_str += content.text
-                            news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                                title.text, content_str)
-                    self.news_title.append(title.text)
-                    # print("THE RESULT: ", title.text)
-                    self.news_content.append(content_str)
-                    # print("THE RESULT: ", content_str)
-                    self.news_link.append(news_url)
-                    # print("THE RESULT: ", news_url)
-                    self.news_title_kw.append(news_title_kw)
-                    # print("THE RESULT: ", news_title_kw)
-                    self.news_content_kw.append(news_content_kw)
-                    # print("THE RESULT: ", news_content_kw)
-                    self.sentiment_analysis.append(sentiments_analysis)
-                    # print("THE RESULT: ", sentiments_analysis)
-                    # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case 'mirrormedia.mg':  # 鏡週刊
-                content_str = ''
-                res = requests.get(news_url, headers=headers)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print("mirrormedia.mg ok")
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find('h1', {"class": "story__title"})
-                # print("新聞標題: ", title.text)
-                # print("文章內容: ")
-                contents = objsoup.find_all(
-                    'p', attrs={"class": "g-story-paragraph"})
-                for content in contents:
-                    if '更多內容，歡迎鏡週刊紙本雜誌、鏡週刊數位訂閱、了解內容授權資訊。' in content.text:
-                        break
-                    else:
-                        # print(content.text)
-                        content_str += content.text
-                        news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                            title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-                content_str = ''
-                res = requests.get(news_url, headers=headers)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('nytimes.com ok')
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find(
-                    'div', {"class": "article-header"}).find('h1')
-                # print("新聞標題: ", title.text)
-                # print("文章內容: ")
-                contents = objsoup.find_all(
-                    'div', {"class": "article-paragraph"})
-                for content in contents:
-                    # print(content.text)
-                    content_str += content.text
-                    news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                        title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-                content_str = ''
-                res = requests.get(news_url, headers=headers)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('wsj.com ok')
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find('h1', {"class": "wsj-article-headline"})
-                # print("新聞標題: ", title.text)
-                # print("文章內容: ")
-                contents = objsoup.find(
-                    'div', {"class": "wsj-snippet-body"}).find_all('p')
-                for content in contents:
-                    # print(content.text)
-                    content_str += content.text
-                    news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                        title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case'cw.com.tw':
-                content_str = ''
-                res = requests.get(news_url, headers=headers)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('cw.com.tw ok')
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find(
-                    'div', {"class": "article__head"}).find('h1')
-                # print("新聞標題: ", title.text)
-                # print("文章內容: ")
-                contents = objsoup.find(
-                    'div', {"class": "article__content py20"}).find_all('p')
-                for content in contents:
-                    # print(content.text)
-                    content_str += content.text
-                    news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                        title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case 'epochtimes.com':  # 大紀元
-                content_str = ''
-                res = requests.get(news_url, headers=headers)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('epochtimes.com ok')
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find('h1', {"class": "title"})
-                # print("新聞標題: ", title.text)
-                # print("文章內容: ")
-                contents = objsoup.find('div', {"id": "artbody"}).find_all('p')
-                for content in contents:
-                    # print(content.text)
-                    content_str += content.text
-                    news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                        title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case 'nytimes.com':  # 紐約時報
-                content_str = ''
-                res = requests.get(news_url, headers=headers)
-                res.encoding = 'utf-8'
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('nytimes.com ok')
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find(
-                    'div', {"class": "article-header"}).find('h1')
-                # print("新聞標題: ", title.text)
-                # print("文章內容: ")
-                contents = objsoup.find_all(
-                    'div', {"class": "article-paragraph"})
-                for content in contents:
-                    # print(content.text)
-                    news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                        title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case 'wsj.com':  # 半島電視台
-                content_str = ''
-                res = requests.get(news_url, headers=headers)
-                if res.status_code == requests.codes.ok:
-                    pass
-                    # print('wsj.com ok')
-                res.encoding = 'utf-8'
-                objsoup = BeautifulSoup(res.text, 'lxml')
-                title = objsoup.find('h1', {"class": "wsj-article-headline"})
-                # print("新聞標題: ", title.text)
-                # print("文章內容: ")
-                contents = objsoup.find(
-                    'div', {"class": "wsj-snippet-body"}).find_all('p')
-                for content in contents:
-                    # print(content.text)
-                    news_title_kw, news_content_kw, sentiments_analysis = self.kw(
-                        title.text, content_str)
-                self.news_title.append(title.text)
-                # print("THE RESULT: ", title.text)
-                self.news_content.append(content_str)
-                # print("THE RESULT: ", content_str)
-                self.news_link.append(news_url)
-                # print("THE RESULT: ", news_url)
-                self.news_title_kw.append(news_title_kw)
-                # print("THE RESULT: ", news_title_kw)
-                self.news_content_kw.append(news_content_kw)
-                # print("THE RESULT: ", news_content_kw)
-                self.sentiment_analysis.append(sentiments_analysis)
-                # print("THE RESULT: ", sentiments_analysis)
-                # print(news_title_kw, news_content_kw, sentiments_analysis)
-            case _:
-                return "url missing!"
