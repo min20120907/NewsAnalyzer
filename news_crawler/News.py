@@ -107,7 +107,7 @@ class News:
         # 制約網站域名確保搜尋結果乾淨
         fcc_result=''
         site_restrict=' site:https://tfc-taiwan.org.tw/'
-        query_url='https://news.google.com/search?q='+news_title_kw+site_restrict+'&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
+        query_url='https://news.google.com/search?q='+str(news_title_kw)+site_restrict+'&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
         #print(query_url)
         htmlfile=requests.get(query_url,headers=headers,timeout=5)
         if htmlfile.status_code==requests.codes.ok:
