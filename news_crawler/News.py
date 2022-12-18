@@ -100,7 +100,7 @@ class News:
         for thread in t:
             thread.join()
         
-    def fcc_search(news_title_kw):
+    def fcc_search(self, news_title_kw):
         # 以下開始必須進行fcc的查詢
         # 藉由google news來輔助事實查核
         # url='https://tfc-taiwan.org.tw/articles/8530'
