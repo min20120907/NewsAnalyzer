@@ -1,4 +1,5 @@
 import asyncio
+from urllib.parse import urlencode
 import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
@@ -29,7 +30,7 @@ class News:
         splitted_title = " ".join(jieba.cut(title))
         # initialize the keyword extraction model
         keywords = model.extract_keywords(splitted_title, stop_words=[',', '，', '.', '。', '?', '？', '!', '！', '#', '＃', '/', '／', ':', '：', '(', '（', ')', '）', '『', '「', '【', '〖', '［', '』', '」', '】', '〗', '］', '[', ']', '-',
-                                          '_', '＿', '——', '－', '-', '−', '我', '你', '妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推','啊啊'])
+                                          '_', '＿', '——', '－', '-', '−', '我', '你', '妳', '他', '她', '它', '祂', '是', '的', '了', '呢', '嗎', '問', '問題', '問卷', '什麼', '新聞', '分享', '討論', '這個', '那個', '哪個', '最', '爆', '傳', '驚魂', '這項', '曝', '這招', '那招', '什麼', '驚', '推'])
         keywords_str = " ".join([i[0] for i in keywords])
         # send the query into Google News
         same_url = 'https://news.google.com/search?q=' + \
@@ -100,69 +101,52 @@ class News:
         for thread in t:
             thread.join()
         
-    def fcc_search(self, news_title_kw):
-        # 以下開始必須進行fcc的查詢
-        # 藉由google news來輔助事實查核
-        # url='https://tfc-taiwan.org.tw/articles/8530'
-        # 制約網站域名確保搜尋結果乾淨
-        fcc_result=''
-        site_restrict=' site:https://tfc-taiwan.org.tw/'
-        query_url='https://news.google.com/search?q='+str(news_title_kw)+site_restrict+'&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'
-        #print(query_url)
-        htmlfile=requests.get(query_url,headers=headers,timeout=5)
-        if htmlfile.status_code==requests.codes.ok:
-            print("成功連線到google news! 帶著欲查詢字串")
-        htmlfile.encoding='utf-8'
-
-        # 對唯一的目標網站進行連接
-        try:
-            #開始使用bs4 解析
-            url_link_list=[]
-            objsoup=BeautifulSoup(htmlfile.text,"lxml")
-            link=objsoup.find_all('div',{"class":"xrnccd"})
-            for lk in link:
-                url_link_list.append(lk.find('a')['href'])
-            #print(url_link_list)
-
-            url_link_list_remove_dot=[]
-            for link in url_link_list:
-                url_link_list_remove_dot.append(link.replace('./','',1))
-            #print(url_link_list_remove_dot)
-
-            # 解決短網址問題
-            def shortlink_converter(url):
-                resp = requests.get(url)
-                return resp.url
-
-            # 連到fcc事實查核中心
-            partial_url = ''.join(url_link_list_remove_dot)
-            url='https://news.google.com/'+str(partial_url)
-            original_url=shortlink_converter(url)
-            print("original"+original_url)
-            htmlfile=requests.get(original_url,headers=headers,timeout=5)
-            if htmlfile.status_code==requests.codes.ok:
-                print("成功連線到fcc")
-            htmlfile.encoding='utf-8'
-
-            #開始使用bs4 解析
-            objsoup=BeautifulSoup(htmlfile.text,"lxml")
-            title=objsoup.find('h2',{"class":"node-title"})
-            print(title.text)
-            error_str='錯誤'
-            partial_error_str='部份錯誤'
-            real_str='事實釐清'
-            if error_str in title.text:
-                fcc_result="錯誤"
-                #print("錯誤!")
-            elif partial_error_str in title.text:
-                fcc_result="部份錯誤"
-                #print("部分錯誤")
-            elif real_str in title.text:
-                fcc_result="事實釐清"
-                #print("事實釐清")
-        except:
-            fcc_result='目前查無資料'
-        return fcc_result
+    def fcc_search(news_title_kw):
+        # Construct the Google News search query
+        params = {
+            'q': news_title_kw,
+            'hl': 'zh-TW',
+            'gl': 'TW',
+            'ceid': 'TW:zh-Hant',
+            'site': 'https://tfc-taiwan.org.tw/',
+        }
+        query_url = 'https://news.google.com/search?' + urlencode(params)
+    
+        # Send an HTTP GET request to Google News
+        headers = {'user-agent': 'my-app/0.0.1'}
+        htmlfile = requests.get(query_url, headers=headers, timeout=5)
+        if htmlfile.status_code == requests.codes.ok:
+            print("Successfully connected to Google News!")
+        htmlfile.encoding = 'utf-8'
+    
+        # Parse the HTML response using lxml
+        objsoup = BeautifulSoup(htmlfile.text, 'lxml')
+    
+        # Extract the first URL to an FCC article from the response
+        link = objsoup.find('div', {'class': 'xrnccd'}).find('a')['href']
+        fcc_url = 'https://news.google.com/' + link.replace('./', '', 1)
+    
+        # Send an HTTP GET request to the FCC website
+        htmlfile = requests.get(fcc_url, headers=headers, timeout=5)
+        if htmlfile.status_code == requests.codes.ok:
+            print("Successfully connected to the FCC website!")
+        htmlfile.encoding = 'utf-8'
+    
+        # Parse the HTML response using lxml
+        objsoup = BeautifulSoup(htmlfile.text, 'lxml')
+    
+        # Extract the title of the FCC article
+        title = objsoup.find('h2', {'class': 'node-title'}).text
+    
+        # Determine whether the news is "錯誤", "部份錯誤", "事實釐清", or none of the above
+        if '錯誤' in title:
+            return "錯誤"
+        elif '部份錯誤' in title:
+            return "部份錯誤"
+        elif '事實釐清' in title:
+            return "事實釐清"
+        else:
+            return "目前查無資料"
 
     # 解決短網址問題
     def shortlink_converter(self, url):
