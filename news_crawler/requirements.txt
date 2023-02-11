@@ -4,7 +4,7 @@ snownlp
 git+https://github.com/APCLab/jieba-tw.git
 fake-useragent==0.1.14
 ipykernel==6.17.1
-ipython==8.6.0
+ipython==8.10.0
 ipython-genutils==0.2.0
 ipywidgets==8.0.2
 jedi==0.18.1
