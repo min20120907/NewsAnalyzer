@@ -21,6 +21,7 @@ fake-useragent
 keybert
 fastjsonschema
 filelock
+flask
 fonttools
 huggingface-hub
 idna
