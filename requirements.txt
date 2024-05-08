@@ -22,6 +22,7 @@ keybert
 fastjsonschema
 filelock
 flask
+flask_cors
 fonttools
 huggingface-hub
 idna
