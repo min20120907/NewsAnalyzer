@@ -33,7 +33,7 @@ let table = class {
                 return this.responseText;
             }
         };
-        xhttp.open("GET", "https://min20120907.asuscomm.com:5000/extract?title=" + title, false);
+        xhttp.open("GET", "https://na.shipaicraft.com:5005/extract?title=" + title, false);
         xhttp.send();
         return xhttp.responseText;
     }
