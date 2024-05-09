@@ -9,9 +9,9 @@ CORS(app)
 db_settings = {
     "host":"127.0.0.1",
     "port":3306,
-    "user":"phpmyadmin",
-    "password":"jefflin123",
-    "db":"result",
+    "user":"tengsnake",
+    "password":"1234",
+    "db":"NewsAnalyzer",
     "charset":"utf8"
 }
 
@@ -27,6 +27,6 @@ def extract():
     return response
     
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", ssl_context=('/etc/letsencrypt/live/min20120907.asuscomm.com/fullchain.pem', '/etc/letsencrypt/live/min20120907.asuscomm.com/privkey.pem'), debug = True)
+    app.run(host="0.0.0.0",port="5005",  ssl_context=('/etc/letsencrypt/archive/na.shipaicraft.com/fullchain1.pem', '/etc/letsencrypt/archive/na.shipaicraft.com/privkey1.pem'), debug = True)
 
 
