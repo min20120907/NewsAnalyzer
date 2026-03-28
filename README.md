@@ -1,5 +1,7 @@
 # News Analyzer
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/min20120907/NewsAnalyzer)
+
 ## Goal
 
 The goal is to demonstrate technologies that can be used to improve prevention of the spread of fake news on Facebook, these technologies including a simple interface to compare source news with other related articles, text recognize system such as JIEBA, and a transparent user report system that will also allow public and professionals of a variety of fields to help submit and examine reports for fake or biased news if they want to.
