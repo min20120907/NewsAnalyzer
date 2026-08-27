@@ -31,7 +31,7 @@ UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
 # Cofacts moreLikeThis 即使相似度極低也會回傳「最像」的一筆，造成錯連結。
 # 主路命中後用本地 SBERT 對「用戶輸入 vs 命中文章」算 cosine 相似度，
 # 低於此門檻視為 not_found，避免給出不相干文章的連結。
-COFACTS_MIN_SIM = float(os.environ.get("COFACTS_MIN_SIM", "0.55"))
+COFACTS_MIN_SIM = float(os.environ.get("COFACTS_MIN_SIM", "0.65"))
 
 CACHE_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                         "..", "data", "cofacts", "cofacts_cache.db")

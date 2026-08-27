@@ -127,7 +127,8 @@ if lib_errors:
 # ---------------------------------------------------------------
 # 2. GPU / Device Setup
 # ---------------------------------------------------------------
-DEVICE = "cuda" if TORCH_AVAILABLE and torch.cuda.is_available() else "cpu"
+DEVICE = "cpu"
+# DEVICE = "cuda" if TORCH_AVAILABLE and torch.cuda.is_available() else "cpu"
 if DEVICE == "cuda":
     torch.set_float32_matmul_precision("high")  # speedup on Ampere/ADA
     print("[Init] CUDA detected – using GPU acceleration.")
