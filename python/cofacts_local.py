@@ -28,6 +28,10 @@ from datetime import datetime, timezone
 COFACTS_API_URL = "https://api.cofacts.tw/graphql"
 UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
       "Chrome/120.0 Safari/537.36")
+# Cofacts moreLikeThis 即使相似度極低也會回傳「最像」的一筆，造成錯連結。
+# 主路命中後用本地 SBERT 對「用戶輸入 vs 命中文章」算 cosine 相似度，
+# 低於此門檻視為 not_found，避免給出不相干文章的連結。
+COFACTS_MIN_SIM = float(os.environ.get("COFACTS_MIN_SIM", "0.55"))
 
 CACHE_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                         "..", "data", "cofacts", "cofacts_cache.db")
@@ -113,6 +117,19 @@ def _cache_put(key, val):
         con.close()
     except Exception:
         pass
+
+
+def _sbert_sim(text_a: str, text_b: str):
+    """用 SBERT 算兩段文字 cosine 相似度（已歸一化 → 內積即 cos）。無模型回 None。"""
+    model = _SBERT_MODEL
+    if not model:
+        model = _get_sbert()
+    if not model:
+        return None
+    import numpy as np
+    a, b = model.encode([text_a, text_b], convert_to_numpy=True,
+                        normalize_embeddings=True)
+    return float(np.dot(a, b))
 
 
 def _classify(edges):
@@ -224,6 +241,14 @@ def get_fact_check(text: str, use_cache: bool = True,
                 "matched_text": None, "url": None, "reasons": []}
     edges = (data["data"].get("ListArticles") or {}).get("edges") or []
     result = _classify(edges)
+    # 閘門：Cofacts moreLikeThis 無相似度門檻會回傳不相關文章。
+    # 主路命中後再用 SBERT 驗證「用戶輸入 vs 命中文章」相似度，過低則視為 not_found。
+    if result["status"] != "not_found" and result.get("matched_text"):
+        sim = _sbert_sim(snippet, result["matched_text"])
+        if sim is not None and sim < COFACTS_MIN_SIM:
+            result = {"status": "not_found", "feedback_count": 0,
+                      "created_at": None, "article_id": None,
+                      "matched_text": None, "url": None, "reasons": []}
     if use_cache:
         _cache_put(key, result)
     # Cofacts moreLikeThis 檢索閾值較嚴 → 未命中時退化到本地 SBERT 近鄰
