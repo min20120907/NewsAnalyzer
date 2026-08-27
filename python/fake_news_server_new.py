@@ -261,6 +261,91 @@ def _similarity_batch(contents: List[str], refs: List[str]) -> List[float]:
             sims.extend(cos)
     return sims
 
+
+# ---------------------------------------------------------------
+# 4.5 Deep Analysis (local LLM via Ollama)
+#     把標題 + 網路搜尋結果摘要 + 三源查核結論餵入本機模型，
+#     產出結構化深入分析：質疑點 / 正反觀點 / 可信度分數(0-100) / 總結。
+#     失敗或超時則回傳空 dict，前端隱藏該區塊（不影響主評分）。
+# ---------------------------------------------------------------
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:18443/api/generate")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:7b")
+DEEP_ANALYZE_TIMEOUT = float(os.environ.get("DEEP_ANALYZE_TIMEOUT", "20"))
+
+_DEEP_PROMPT_TMPL = """你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字），格式：
+{{"key_points":["質疑點1","質疑點2"],"viewpoints":"正反觀點摘要(80字內)","credibility_score":0到100的整數,"analysis":"100字內總結"}}
+新聞標題：{title}
+網路搜尋結果摘要：
+{web_summary}
+事實查核源結論：
+{fc_summary}"""
+
+
+def _deep_analyze_build_prompt(title: str, web_results: list, sources: list) -> str:
+    # 網路搜尋摘要：最多取 5 筆，每筆 title + snippet 截短
+    lines = []
+    for i, r in enumerate(web_results[:5], 1):
+        t = (r.get("title") or "").strip()
+        s = (r.get("snippet") or r.get("body") or "").strip()
+        if len(s) > 120:
+            s = s[:120] + "…"
+        lines.append(f"{i}. {t} — {s}" if (t or s) else "")
+    web_summary = "\n".join(l for l in lines if l) or "（無網路搜尋結果）"
+    # 查核源摘要
+    fc_lines = []
+    label_map = {"cofacts": "Cofacts", "google": "Google查核", "mygopen": "MyGoPen"}
+    for s in sources:
+        st = s.get("status", "not_found")
+        nm = label_map.get(s.get("source", ""), s.get("source", ""))
+        mt = (s.get("matched_text") or "")[:60]
+        fc_lines.append(f"  - {nm}: {st}（{mt}）" if mt else f"  - {nm}: {st}")
+    fc_summary = "\n".join(fc_lines) or "（無查核源）"
+    return _DEEP_PROMPT_TMPL.format(title=title or "（無標題）",
+                                    web_summary=web_summary,
+                                    fc_summary=fc_summary)
+
+
+def deep_analyze(title: str, web_results: list, sources: list,
+                 timeout: float = None) -> dict:
+    """呼叫本機 Ollama 模型做深入分析。回傳 dict 或空 dict（失敗）。"""
+    if not REQUESTS_AVAILABLE:
+        return {}
+    prompt = _deep_analyze_build_prompt(title, web_results, sources)
+    payload = {
+        "model": OLLAMA_MODEL,
+        "prompt": prompt,
+        "stream": False,
+        "think": False,
+        "format": "json",
+        "options": {"temperature": 0.2, "num_predict": 400},
+    }
+    to = timeout or DEEP_ANALYZE_TIMEOUT
+    try:
+        r = requests.post(OLLAMA_URL, json=payload, timeout=to,
+                          headers={"Content-Type": "application/json"})
+        r.raise_for_status()
+        data = r.json()
+        resp = data.get("response", "")
+        # resp 可能本身就是 JSON 字串
+        parsed = json.loads(resp) if isinstance(resp, str) else resp
+        # 正規化
+        score = parsed.get("credibility_score", 0)
+        try:
+            score = int(score)
+        except (TypeError, ValueError):
+            score = 0
+        return {
+            "key_points": parsed.get("key_points", []),
+            "viewpoints": parsed.get("viewpoints", ""),
+            "credibility_score": max(0, min(100, score)),
+            "analysis": parsed.get("analysis", ""),
+            "model": OLLAMA_MODEL,
+        }
+    except Exception as _e:
+        print(f"[judge] deep_analyze failed: {_e}")
+        return {}
+
+
 # ---------------------------------------------------------------
 # 5. Core Scoring Logic (single article) – kept from original but
 #    streamlined for clarity.  Only minimal refactor to reuse helpers.
@@ -396,6 +481,14 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
 
     final = (total / avail) * 100 if avail > 0 else 0.0
     rating = "相對可靠" if final >= 70 else "可靠度中等" if final >= 40 else "可靠度較低"
+    # 深入分析：本機 LLM 把 web_results + 查核源結論轉為結構化分析
+    deep = {}
+    if web_results or sources:
+        try:
+            deep = deep_analyze(_title_clean or content[:60], web_results, sources)
+        except Exception as _e:
+            print(f"[judge] deep_analyze failed: {_e}", flush=True)
+            deep = {}
     return {
         **res,
         "total_raw_score": total,
@@ -405,6 +498,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         "sources": sources,
         "review_links": review_links,
         "web_results": web_results,
+        "deep_analysis": deep,
     }
 
 # ---------------------------------------------------------------
@@ -532,6 +626,7 @@ def judge_news():
         "sources": score.get("sources", []),
         "review_links": score.get("review_links", {}),
         "web_results": score.get("web_results", []),
+        "deep_analysis": score.get("deep_analysis", {}),
     }
 
 if __name__ == "__main__":
