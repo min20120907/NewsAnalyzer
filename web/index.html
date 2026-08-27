@@ -587,7 +587,9 @@ function renderResult(data) {
     });
     $('deepViewpoints').textContent = da.viewpoints || '—';
     $('deepAnalysisText').textContent = da.analysis || '—';
-    $('deepModel').textContent = '模型：' + (da.model || 'local-llm');
+    const modelLine = '模型：' + (da.model || 'local-llm');
+    const rs = data.rule_score;
+    $('deepModel').textContent = (rs != null ? `規則分 ${Math.round(rs)} ｜ ` : '') + modelLine;
   } else {
     deepWrap.style.display = 'none';
   }

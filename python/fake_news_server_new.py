@@ -480,7 +480,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
             web_results = []
 
     final = (total / avail) * 100 if avail > 0 else 0.0
-    rating = "相對可靠" if final >= 70 else "可靠度中等" if final >= 40 else "可靠度較低"
+    rule_score = final
     # 深入分析：本機 LLM 把 web_results + 查核源結論轉為結構化分析
     deep = {}
     if web_results or sources:
@@ -489,11 +489,24 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         except Exception as _e:
             print(f"[judge] deep_analyze failed: {_e}", flush=True)
             deep = {}
+    # 融合：LLM 可信度分動態加權進總評（避免與 fact_check 維度雙算查核源）
+    ai_cs = deep.get('credibility_score') if isinstance(deep, dict) else None
+    if ai_cs is not None:
+        try:
+            cs = float(ai_cs)
+            fc_hit = any((s.get('status') in ('hit', 'ok', 'inaccurate', 'partial'))
+                         for s in (sources or []))
+            w = 0.10 if fc_hit else 0.25
+            final = final * (1 - w) + cs * w
+        except (TypeError, ValueError):
+            pass
+    rating = "相對可靠" if final >= 70 else "可靠度中等" if final >= 40 else "可靠度較低"
     return {
         **res,
         "total_raw_score": total,
         "available_weight": avail,
         "final_score": final,
+        "rule_score": rule_score,
         "rating_text": rating,
         "sources": sources,
         "review_links": review_links,
@@ -627,6 +640,7 @@ def judge_news():
         "review_links": score.get("review_links", {}),
         "web_results": score.get("web_results", []),
         "deep_analysis": score.get("deep_analysis", {}),
+        "rule_score": score.get("rule_score"),
     }
 
 if __name__ == "__main__":
