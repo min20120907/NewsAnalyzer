@@ -198,6 +198,20 @@
   .review-btn:hover { background:rgba(255,255,255,0.16); transform:translateY(-1px); }
   .review-btn .ic { font-size:15px; }
 
+  /* ---------- Web results (real search) ---------- */
+  .web-results { list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:10px; }
+  .web-result {
+    background:rgba(255,255,255,0.04); border:1px solid var(--card-border);
+    border-radius:12px; padding:12px 14px; transition:background .2s, border-color .2s;
+  }
+  .web-result:hover { background:rgba(255,255,255,0.07); border-color:rgba(99,102,241,0.4); }
+  .web-title { display:block; font-size:14px; font-weight:600; color:#c4b5fd; text-decoration:none; line-height:1.5; }
+  .web-title:hover { text-decoration:underline; }
+  .web-meta { display:flex; gap:8px; align-items:center; margin-top:6px; flex-wrap:wrap; }
+  .web-src { font-size:11px; font-weight:700; color:#a5b4fc; background:rgba(99,102,241,0.15); padding:2px 8px; border-radius:20px; }
+  .web-url { font-size:11px; color:var(--text-dim); word-break:break-all; }
+  .web-snip { margin:6px 0 0; font-size:12.5px; color:var(--text-dim); line-height:1.6; }
+
   /* ---------- Error ---------- */
   .error {
     display:none; margin-top:16px; padding:14px 16px;
@@ -276,12 +290,20 @@
       <div class="sources-title">💬 網路評論搜尋</div>
       <div id="reviewLinksList" class="review-links"></div>
     </div>
+
+    <!-- 真實網路評論/討論搜尋結果 -->
+    <div class="sources" id="webResults" style="display:none;">
+      <div class="sources-title">🔍 網路評論實際搜尋結果</div>
+      <ul id="webResultsList" class="web-results"></ul>
+    </div>
   </div>
 
   <div class="footer">NewsAnalyzer · 基於多模態 AI 模型分析 · 結果僅供參考</div>
 
 <script>
 const $ = id => document.getElementById(id);
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const escapeAttr = s => escapeHtml(s).replace(/'/g, '&#39;');
 const input = $('input'), analyzeBtn = $('analyzeBtn'), clearBtn = $('clearBtn');
 const errorBox = $('error'), resultCard = $('resultCard');
 
@@ -482,6 +504,29 @@ function renderResult(data) {
     }
   } else {
     reviewWrap.style.display = 'none';
+  }
+
+  // 真實網路評論/討論搜尋結果（SerpApi / Serper / Google News RSS）
+  const webWrap = $('webResults');
+  const webList = $('webResultsList');
+  const webResults = data.web_results || [];
+  if (webResults.length) {
+    webWrap.style.display = 'block';
+    webList.innerHTML = '';
+    for (const r of webResults) {
+      const li = document.createElement('li');
+      li.className = 'web-result';
+      const srcLabel = { serpapi: '🔎 SerpApi', serper: '🔎 Serper', google_news: '📰 Google News', bing: '🌐 Bing' }[r.source] || r.source || '🔗';
+      const snip = (r.snippet || '').trim()
+        ? `<p class="web-snip">${escapeHtml(r.snippet)}</p>` : '';
+      li.innerHTML = `
+        <a href="${escapeAttr(r.url)}" target="_blank" rel="noopener" class="web-title">${escapeHtml(r.title)}</a>
+        <div class="web-meta"><span class="web-src">${srcLabel}</span><span class="web-url">${escapeHtml(r.url)}</span></div>
+        ${snip}`;
+      webList.appendChild(li);
+    }
+  } else {
+    webWrap.style.display = 'none';
   }
 
   resultCard.classList.add('show');

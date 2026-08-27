@@ -9,3 +9,9 @@ data/cofacts/cofacts_cache.db
 data/cofacts/multifc_cache.db
 data/cofacts/sbert_index.npz
 python/seed_stderr.log
+
+# 含 API key，勿入版控
+.env.searchkeys
+.env
+.env.*
+tools/free-search/.env

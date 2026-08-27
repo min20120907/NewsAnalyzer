@@ -48,6 +48,17 @@ import sys as _sys
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPT_DIR not in _sys.path:
     _sys.path.insert(0, _SCRIPT_DIR)
+
+# 網路評論搜尋客戶端（Serper → free-search bing → Google News RSS）
+# 失敗/無 key 時 web_search_client.search() 自動回退，web_results 為空 list
+try:
+    import web_search_client as _wsc
+    WEB_SEARCH_AVAILABLE = True
+except Exception as _e:
+    _wsc = None
+    WEB_SEARCH_AVAILABLE = False
+    print(f"[judge] web_search_client import failed: {_e}")
+
 # ---------------------------------------------------------------
 # 1. Dependency Checks
 # ---------------------------------------------------------------
@@ -373,6 +384,16 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         "duckduckgo": f"https://duckduckgo.com/?q={web_review_query}+評論+討論",
     }
 
+    # 真實網路評論/討論搜尋結果（Serper → free-search bing → Google News RSS 回退）
+    # 無 key 或全源失敗時回空 list，前端自動隱藏該區塊
+    web_results: List[Dict] = []
+    if WEB_SEARCH_AVAILABLE and _wsc is not None:
+        try:
+            web_results = _wsc.search(_query_src, max_results=6)
+        except Exception as _e:
+            print(f"[judge] web_search failed: {_e}")
+            web_results = []
+
     final = (total / avail) * 100 if avail > 0 else 0.0
     rating = "相對可靠" if final >= 70 else "可靠度中等" if final >= 40 else "可靠度較低"
     return {
@@ -383,6 +404,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         "rating_text": rating,
         "sources": sources,
         "review_links": review_links,
+        "web_results": web_results,
     }
 
 # ---------------------------------------------------------------
@@ -509,6 +531,7 @@ def judge_news():
         },
         "sources": score.get("sources", []),
         "review_links": score.get("review_links", {}),
+        "web_results": score.get("web_results", []),
     }
 
 if __name__ == "__main__":
