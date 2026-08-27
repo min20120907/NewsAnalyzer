@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NewsAnalyzer · 新聞可靠度分析</title>
+<style>
+  :root {
+    --bg-0: #0b0f1a;
+    --bg-1: #111827;
+    --card: rgba(255,255,255,0.05);
+    --card-solid: #161c2e;
+    --card-border: rgba(255,255,255,0.12);
+    --text: #e5e7eb;
+    --text-dim: #9ca3af;
+    --accent: #6366f1;
+    --accent-2: #8b5cf6;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --radius: 18px;
+    --shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", sans-serif;
+    background-color: var(--bg-0);
+    background-image: radial-gradient(1200px 800px at 80% -10%, #1e1b4b 0%, transparent 60%),
+                      radial-gradient(1000px 700px at -10% 110%, #0f172a 0%, transparent 55%),
+                      linear-gradient(160deg, var(--bg-0), var(--bg-1));
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  /* ---------- Header ---------- */
+  .header { text-align:center; margin-bottom: 36px; max-width:720px; width:100%; }
+  .logo {
+    display:inline-flex; align-items:center; gap:12px;
+    font-size: 26px; font-weight:800; letter-spacing:0.5px;
+    color:#c4b5fd;
+  }
+  .logo .badge {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color:#fff;
+    font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px;
+    letter-spacing:1px;
+    margin-left:4px;
+  }
+  .subtitle { color:var(--text-dim); margin-top:10px; font-size:15px; line-height:1.5; }
+
+  /* ---------- Card ---------- */
+  .card {
+    width:100%; max-width:720px;
+    background-color: var(--card-solid);
+    background-image: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border:1px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  /* ---------- Input ---------- */
+  .input-wrap { width:100%; }
+  .input-wrap textarea {
+    width:100%; min-height:120px; resize:vertical;
+    background-color: rgba(0,0,0,0.4);
+    border:1px solid var(--card-border);
+    border-radius:12px;
+    color:var(--text);
+    font-size:15px; line-height:1.7;
+    padding:16px;
+    font-family:inherit;
+    display:block;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .input-wrap textarea:focus {
+    outline:none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+  }
+  .input-wrap textarea::placeholder { color:#6b7280; }
+
+  .actions { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
+  .btn {
+    flex:1 1 140px;
+    min-width:140px;
+    padding:14px 20px;
+    border:none; border-radius:12px;
+    font-size:15px; font-weight:700; cursor:pointer;
+    font-family:inherit;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    transition: transform .15s, box-shadow .2s, opacity .2s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color:#fff; box-shadow: 0 8px 24px rgba(99,102,241,0.35);
+  }
+  .btn-primary:hover:not(:disabled) { box-shadow: 0 10px 30px rgba(99,102,241,0.5); }
+  .btn-ghost {
+    background-color: rgba(255,255,255,0.08);
+    color:var(--text); border:1px solid var(--card-border);
+  }
+  .btn-ghost:hover:not(:disabled) { background-color: rgba(255,255,255,0.14); }
+
+  .spinner {
+    width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);
+    border-top-color:#fff; border-radius:50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- Result ---------- */
+  .result { display:none; }
+  .result.show { display:block; animation: fadeUp .5s ease; }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(16px);} to {opacity:1; transform:none;} }
+
+  .result-head {
+    display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+    padding-bottom:22px; border-bottom:1px solid var(--card-border);
+  }
+  .gauge-wrap { position:relative; width:150px; height:150px; flex-shrink:0; }
+  .gauge-wrap svg { transform: rotate(-90deg); display:block; }
+  .gauge-bg { fill:none; stroke:rgba(255,255,255,0.08); stroke-width:12; }
+  .gauge-fg {
+    fill:none; stroke-width:12; stroke-linecap:round;
+    transition: stroke-dashoffset 1s cubic-bezier(.22,1,.36,1), stroke .5s;
+  }
+  .gauge-center {
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .gauge-score { font-size:38px; font-weight:800; line-height:1; }
+  .gauge-score small { font-size:16px; font-weight:600; color:var(--text-dim); }
+  .gauge-label { font-size:12px; color:var(--text-dim); margin-top:4px; }
+
+  .result-info { flex:1 1 220px; min-width:220px; }
+  .rating-badge {
+    display:inline-block; padding:6px 16px; border-radius:20px;
+    font-size:15px; font-weight:800; letter-spacing:0.5px;
+  }
+  .rating-good { background:rgba(52,211,153,0.15); color:var(--green); border:1px solid rgba(52,211,153,0.3); }
+  .rating-mid   { background:rgba(251,191,36,0.15); color:var(--yellow); border:1px solid rgba(251,191,36,0.3); }
+  .rating-bad   { background:rgba(248,113,113,0.15); color:var(--red); border:1px solid rgba(248,113,113,0.3); }
+  .result-title { margin-top:12px; font-size:16px; font-weight:600; line-height:1.5; word-break:break-word; }
+  .result-url {
+    margin-top:6px; font-size:12px; color:var(--text-dim);
+    word-break:break-all;
+  }
+  .result-url a { color:var(--accent); text-decoration:none; }
+  .result-url a:hover { text-decoration:underline; }
+
+  /* ---------- Metrics ---------- */
+  .metrics { margin-top:22px; display:grid; gap:16px; }
+  .metric { width:100%; }
+  .metric-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:10px; }
+  .metric-name { font-size:13px; font-weight:600; color:var(--text-dim); display:flex; align-items:center; gap:8px; }
+  .metric-name .icon { font-size:15px; }
+  .metric-val { font-size:13px; font-weight:700; flex-shrink:0; }
+  .bar { height:8px; border-radius:6px; background:rgba(255,255,255,0.07); overflow:hidden; width:100%; }
+  .bar-fill {
+    height:100%; border-radius:6px; width:0%;
+    transition: width 1s cubic-bezier(.22,1,.36,1);
+  }
+  .metric-desc { margin-top:5px; font-size:11px; color:#6b7280; word-break:break-word; }
+
+  /* ---------- Fact-check sources block ---------- */
+  .sources { margin-top:22px; border-top:1px solid var(--card-border); padding-top:18px; }
+  .sources-title { font-size:13px; font-weight:700; color:var(--text-dim); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .source-item { display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .source-item:last-child { border-bottom:none; }
+  .source-badge { flex-shrink:0; font-size:11px; font-weight:700; padding:3px 10px; border-radius:8px; background:rgba(255,255,255,0.08); color:var(--text-dim); }
+  .source-badge.hit { background:rgba(248,113,113,0.18); color:var(--red); }
+  .source-badge.ok  { background:rgba(52,211,153,0.18); color:var(--green); }
+  .source-body { flex:1; min-width:0; }
+  .source-name { font-size:13px; font-weight:600; }
+  .source-reason { font-size:12px; color:var(--text-dim); margin-top:3px; line-height:1.5; word-break:break-word; }
+  .source-link { font-size:12px; color:var(--accent); text-decoration:none; word-break:break-all; display:inline-block; margin-top:3px; }
+  .source-link:hover { text-decoration:underline; }
+
+  /* 網路評論搜尋連結 */
+  .review-links { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
+  .review-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 14px; border-radius:10px; font-size:13px; font-weight:600;
+    text-decoration:none; color:var(--text);
+    background:rgba(255,255,255,0.08); border:1px solid var(--card-border);
+    transition: background .2s, transform .15s;
+  }
+  .review-btn:hover { background:rgba(255,255,255,0.16); transform:translateY(-1px); }
+  .review-btn .ic { font-size:15px; }
+
+  /* ---------- Error ---------- */
+  .error {
+    display:none; margin-top:16px; padding:14px 16px;
+    background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3);
+    border-radius:12px; color:var(--red); font-size:14px;
+  }
+  .error.show { display:block; animation: fadeUp .3s ease; }
+
+  /* ---------- Footer ---------- */
+  .footer { margin-top:auto; padding-top:40px; color:#4b5563; font-size:12px; text-align:center; max-width:720px; width:100%; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 560px) {
+    body { padding:24px 14px 40px; }
+    .card { padding:20px; }
+    .result-head { gap:16px; }
+    .gauge-wrap { width:120px; height:120px; margin:0 auto; }
+    .result-info { text-align:center; }
+    .btn { flex:1 1 100%; min-width:100%; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">
+      <span>🛡️ NewsAnalyzer</span><span class="badge">AI 可靠度分析</span>
+    </div>
+    <div class="subtitle">貼上 Facebook 貼文或新聞連結，立即分析內容可靠度</div>
+  </div>
+
+  <div class="card">
+    <div class="input-wrap">
+      <textarea id="input" placeholder="貼上新聞連結或 Facebook 貼文內容…&#10;&#10;例如：https://www.ettoday.net/news/20240826/1234.htm&#10;或直接貼上貼文文字內容"></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="analyzeBtn">🔍 開始分析</button>
+      <button class="btn btn-ghost" id="clearBtn">🗑️ 清除</button>
+    </div>
+
+    <div class="error" id="error"></div>
+  </div>
+
+  <!-- 結果卡片 -->
+  <div class="card result" id="resultCard">
+    <div class="result-head">
+      <div class="gauge-wrap">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle class="gauge-bg" cx="75" cy="75" r="66"></circle>
+          <circle class="gauge-fg" id="gaugeFg" cx="75" cy="75" r="66"
+                  stroke="#6366f1" stroke-dasharray="414.69" stroke-dashoffset="414.69"></circle>
+        </svg>
+        <div class="gauge-center">
+          <div class="gauge-score"><span id="scoreNum">0</span><small> / 100</small></div>
+          <div class="gauge-label">可靠度分數</div>
+        </div>
+      </div>
+      <div class="result-info">
+        <span class="rating-badge" id="ratingBadge">—</span>
+        <div class="result-title" id="resultTitle"></div>
+        <div class="result-url" id="resultUrl"></div>
+      </div>
+    </div>
+
+    <div class="metrics" id="metrics"></div>
+
+    <!-- 多源查核結果 -->
+    <div class="sources" id="sources" style="display:none;">
+      <div class="sources-title">🔎 事實查核來源</div>
+      <div id="sourcesList"></div>
+    </div>
+
+    <!-- 網路評論搜尋連結 -->
+    <div class="sources" id="reviewLinks" style="display:none;">
+      <div class="sources-title">💬 網路評論搜尋</div>
+      <div id="reviewLinksList" class="review-links"></div>
+    </div>
+  </div>
+
+  <div class="footer">NewsAnalyzer · 基於多模態 AI 模型分析 · 結果僅供參考</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const input = $('input'), analyzeBtn = $('analyzeBtn'), clearBtn = $('clearBtn');
+const errorBox = $('error'), resultCard = $('resultCard');
+
+// 貼上內容時自動偵測是否為網址
+input.addEventListener('paste', () => setTimeout(() => {
+  const v = input.value.trim();
+  if (/^https?:\/\/\S+$/i.test(v)) {
+    analyze();
+  }
+}, 50));
+
+// Enter 快捷鍵（Ctrl+Enter 或 Cmd+Enter）
+input.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); analyze(); }
+});
+
+clearBtn.addEventListener('click', () => {
+  input.value = '';
+  errorBox.classList.remove('show');
+  resultCard.classList.remove('show');
+  input.focus();
+});
+
+analyzeBtn.addEventListener('click', analyze);
+
+async function analyze() {
+  const text = input.value.trim();
+  if (!text) { showError('請先貼上新聞連結或貼文內容'); return; }
+
+  setLoading(true);
+  hideError();
+  resultCard.classList.remove('show');
+
+  const payload = /^https?:\/\/\S+$/i.test(text)
+    ? { url: text }
+    : { postText: text };
+
+  try {
+    const res = await fetch('/judge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) { showError(data.error || '分析失敗，請稍後再試'); return; }
+    renderResult(data);
+  } catch (err) {
+    showError('無法連線到分析伺服器：' + err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function setLoading(on) {
+  analyzeBtn.disabled = on;
+  analyzeBtn.innerHTML = on
+    ? '<span class="spinner"></span> 分析中…'
+    : '🔍 開始分析';
+}
+
+function showError(msg) { errorBox.textContent = msg; errorBox.classList.add('show'); }
+function hideError() { errorBox.classList.remove('show'); }
+
+function renderResult(data) {
+  const score = Math.round(data.final_score);
+  const rating = data.rating_text;
+
+  // 分數環
+  const CIRC = 414.69;
+  const fg = $('gaugeFg');
+  const offset = CIRC - (score / 100) * CIRC;
+  fg.style.strokeDashoffset = offset;
+
+  // 顏色依等級
+  let color;
+  if (score >= 70) color = '#34d399';
+  else if (score >= 40) color = '#fbbf24';
+  else color = '#f87171';
+  fg.style.stroke = color;
+
+  // 數字動畫
+  animateNumber($('scoreNum'), score);
+
+  // 等級徽章
+  const badge = $('ratingBadge');
+  badge.textContent = rating;
+  badge.className = 'rating-badge ' + (score >= 70 ? 'rating-good' : score >= 40 ? 'rating-mid' : 'rating-bad');
+
+  // 標題與網址
+  $('resultTitle').textContent = data.title || '（無標題）';
+  const urlEl = $('resultUrl');
+  if (data.url && data.url !== 'https://unknown') {
+    urlEl.innerHTML = '🔗 <a href="' + data.url + '" target="_blank" rel="noopener">' + data.url + '</a>';
+  } else {
+    urlEl.innerHTML = '';
+  }
+
+  // 各維度
+  const metrics = data.metrics || {};
+  const defs = {
+    sentiment:     { name: '情緒傾向',   icon: '😊', max: 15 },
+    domain:        { name: '來源可信度', icon: '🏛️', max: 25 },
+    similarity:    { name: '內容相似度', icon: '📊', max: 15 },
+    fact_check:    { name: '事實查核',   icon: '✅', max: 30 },
+    user_feedback: { name: '網路評論',   icon: '👥', max: 10 },
+    timeliness:    { name: '時效性',     icon: '⏱️', max: 5 },
+  };
+  // 無資料的 desc 視為 N/A（不顯示 0% 誤導使用者）
+  const NA_DESCS = new Set(['none', 'unknown', 'not_found', 'not_checked', 'disabled', '—', '']);
+  const mEl = $('metrics');
+  mEl.innerHTML = '';
+  for (const [key, def] of Object.entries(defs)) {
+    const m = metrics[key] || { score: 0, desc: '—', weight: def.max };
+    const isNA = (m.score === 0 || m.score == null) && NA_DESCS.has(String(m.desc));
+    const pct = isNA ? 0 : Math.max(0, Math.min(100, (m.score / def.max) * 100));
+    const barColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
+    const row = document.createElement('div');
+    row.className = 'metric';
+    const valText = isNA ? 'N/A' : pct.toFixed(0) + '%';
+    const valColor = isNA ? '#94a3b8' : barColor;
+    const descText = isNA ? '查無資料' : (m.desc || '—');
+    row.innerHTML = `
+      <div class="metric-top">
+        <span class="metric-name"><span class="icon">${def.icon}</span> ${def.name}</span>
+        <span class="metric-val" style="color:${valColor}">${valText}</span>
+      </div>
+      <div class="bar"><div class="bar-fill" style="background:${valColor}"></div></div>
+      <div class="metric-desc">${descText}</div>
+    `;
+    mEl.appendChild(row);
+    // 觸發寬度動畫
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        row.querySelector('.bar-fill').style.width = (isNA ? 0 : pct) + '%';
+      });
+    });
+  }
+
+  // 多源查核來源區塊
+  const sourcesWrap = $('sources');
+  const sourcesList = $('sourcesList');
+  const sources = data.sources || [];
+  if (sources.length) {
+    sourcesWrap.style.display = 'block';
+    sourcesList.innerHTML = '';
+    const labelMap = { cofacts: 'Cofacts', google: 'Google 查核', mygopen: 'MyGoPen' };
+    const statusMap = {
+      inaccurate: { t: '不實', c: 'hit' },
+      partial:    { t: '部分正確', c: 'hit' },
+      accurate:   { t: '屬實', c: 'ok' },
+      not_found:  { t: '查無', c: '' },
+      disabled:   { t: '未啟用', c: '' },
+      error:      { t: '查詢失敗', c: '' },
+    };
+    for (const s of sources) {
+      const st = statusMap[s.status] || { t: s.status, c: '' };
+      const item = document.createElement('div');
+      item.className = 'source-item';
+      const reasons = (s.reasons || []).map(r => r.text || '').filter(Boolean);
+      const reasonHtml = reasons.length ? reasons.join('； ') : (s.note || '');
+      const linkHtml = s.url ? `<a class="source-link" href="${s.url}" target="_blank" rel="noopener">${s.url}</a>` : '';
+      item.innerHTML = `
+        <span class="source-badge ${st.c}">${st.t}</span>
+        <div class="source-body">
+          <div class="source-name">${labelMap[s.source] || s.source}</div>
+          ${reasonHtml ? `<div class="source-reason">${reasonHtml}</div>` : ''}
+          ${linkHtml}
+        </div>
+      `;
+      sourcesList.appendChild(item);
+    }
+  } else {
+    sourcesWrap.style.display = 'none';
+  }
+
+  // 網路評論搜尋連結區塊
+  const reviewWrap = $('reviewLinks');
+  const reviewList = $('reviewLinksList');
+  const reviewLinks = data.review_links || {};
+  const reviewDefs = {
+    google:  { label: 'Google 搜尋', ic: '🔍' },
+    threads: { label: 'Threads 搜尋', ic: '🧵' },
+    facebook:{ label: 'Facebook 搜尋', ic: '📘' },
+  };
+  const reviewKeys = Object.keys(reviewLinks).filter(k => reviewLinks[k]);
+  if (reviewKeys.length) {
+    reviewWrap.style.display = 'block';
+    reviewList.innerHTML = '';
+    for (const k of reviewKeys) {
+      const def = reviewDefs[k] || { label: k, ic: '🔗' };
+      const a = document.createElement('a');
+      a.className = 'review-btn';
+      a.href = reviewLinks[k];
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.innerHTML = `<span class="ic">${def.ic}</span> ${def.label}`;
+      reviewList.appendChild(a);
+    }
+  } else {
+    reviewWrap.style.display = 'none';
+  }
+
+  resultCard.classList.add('show');
+  resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function animateNumber(el, target) {
+  const dur = 1000, start = performance.now();
+  function tick(now) {
+    const t = Math.min(1, (now - start) / dur);
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(target * eased);
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+</script>
+</body>
+</html>

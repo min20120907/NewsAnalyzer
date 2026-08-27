@@ -38,7 +38,7 @@ const SELECTOR_BUTTON_TARGET_AREA_ALT = 'div[data-ad-rendering-role="story_messa
     // --- END SELECTORS ---
 
     // Server configuration - UPDATED IP
-    const SERVER_IP = "163.13.127.42"; // <--- MODIFIED IP ADDRESS
+    const SERVER_IP = "120.126.84.227"; // <--- MODIFIED IP ADDRESS
     const SERVER_PORT = "5000";
     const SERVER_ENDPOINT = `http://${SERVER_IP}:${SERVER_PORT}/judge`;
 

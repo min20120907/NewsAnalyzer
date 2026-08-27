@@ -2,3 +2,10 @@ python/news_kw_extract.py
 __pycache__/
 *.pyc
 *.swp
+.DS_Store
+
+# 可重建的快取 / 索引（非源碼，勿入版控）
+data/cofacts/cofacts_cache.db
+data/cofacts/multifc_cache.db
+data/cofacts/sbert_index.npz
+python/seed_stderr.log
