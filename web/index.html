@@ -150,6 +150,10 @@
   .rating-good { background:rgba(52,211,153,0.15); color:var(--green); border:1px solid rgba(52,211,153,0.3); }
   .rating-mid   { background:rgba(251,191,36,0.15); color:var(--yellow); border:1px solid rgba(251,191,36,0.3); }
   .rating-bad   { background:rgba(248,113,113,0.15); color:var(--red); border:1px solid rgba(248,113,113,0.3); }
+  .rating-warn  { background:rgba(251,146,60,0.15); color:#fb923c; border:1px solid rgba(251,146,60,0.3); }
+  .rating-caution { background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); }
+  .rating-mid2  { background:rgba(251,191,36,0.15); color:var(--yellow); border:1px solid rgba(251,191,36,0.3); }
+  .rating-good2 { background:rgba(45,212,191,0.15); color:#2dd4bf; border:1px solid rgba(45,212,191,0.3); }
   .result-title { margin-top:12px; font-size:16px; font-weight:600; line-height:1.5; word-break:break-word; }
   .result-url {
     margin-top:6px; font-size:12px; color:var(--text-dim);
@@ -406,11 +410,13 @@ function renderResult(data) {
   const offset = CIRC - (score / 100) * CIRC;
   fg.style.strokeDashoffset = offset;
 
-  // 顏色依等級
-  let color;
-  if (score >= 70) color = '#34d399';
-  else if (score >= 40) color = '#fbbf24';
-  else color = '#f87171';
+  // 顏色依 5 級評級（PolitiFact-style 序數標籤）
+  let color, badgeCls;
+  if (score >= 75)      { color = '#34d399'; badgeCls = 'rating-good'; }
+  else if (score >= 55) { color = '#2dd4bf'; badgeCls = 'rating-good2'; }
+  else if (score >= 35) { color = '#fbbf24'; badgeCls = 'rating-mid2'; }
+  else if (score >= 15) { color = '#fb923c'; badgeCls = 'rating-warn'; }
+  else                  { color = '#f87171'; badgeCls = 'rating-bad'; }
   fg.style.stroke = color;
 
   // 數字動畫
@@ -419,7 +425,7 @@ function renderResult(data) {
   // 等級徽章
   const badge = $('ratingBadge');
   badge.textContent = rating;
-  badge.className = 'rating-badge ' + (score >= 70 ? 'rating-good' : score >= 40 ? 'rating-mid' : 'rating-bad');
+  badge.className = 'rating-badge ' + badgeCls;
 
   // 標題與網址
   $('resultTitle').textContent = data.title || '（無標題）';

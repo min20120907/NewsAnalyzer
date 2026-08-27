@@ -489,18 +489,39 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         except Exception as _e:
             print(f"[judge] deep_analyze failed: {_e}", flush=True)
             deep = {}
-    # 融合：LLM 可信度分動態加權進總評（避免與 fact_check 維度雙算查核源）
+    # 融合：LLM 可信度分動態加權進總評
+    # - 查核命中：規則已強證據，LLM 僅微調 (w=0.10)
+    # - 查核全 not_found：規則維度無信號，LLM 成主要依據 (w=0.60)
     ai_cs = deep.get('credibility_score') if isinstance(deep, dict) else None
     if ai_cs is not None:
         try:
             cs = float(ai_cs)
             fc_hit = any((s.get('status') in ('hit', 'ok', 'inaccurate', 'partial'))
                          for s in (sources or []))
-            w = 0.10 if fc_hit else 0.25
+            w = 0.10 if fc_hit else 0.60
             final = final * (1 - w) + cs * w
         except (TypeError, ValueError):
             pass
-    rating = "相對可靠" if final >= 70 else "可靠度中等" if final >= 40 else "可靠度較低"
+    # 查核命中錨定（PolitiFact 序數標籤精神）：機構已判定不實/部分不實，
+    # 不該被其他弱維度稀釋回中等區，直接 clamp 總評上限
+    for _s in (sources or []):
+        _st = _s.get('status')
+        if _st in ('inaccurate', 'false', 'misleading', 'fake'):
+            final = min(final, 25.0)
+            break
+        elif _st == 'partial':
+            final = min(final, 55.0)
+    # 5 級評級（PolitiFact-style 序數標籤）
+    if final >= 75:
+        rating = "高度可信"
+    elif final >= 55:
+        rating = "大致可信"
+    elif final >= 35:
+        rating = "待查證"
+    elif final >= 15:
+        rating = "疑似不實"
+    else:
+        rating = "高度可疑"
     return {
         **res,
         "total_raw_score": total,
