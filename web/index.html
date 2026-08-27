@@ -198,6 +198,7 @@
   .deep-key-points { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px; }
   .deep-key-points li { font-size:12.5px; padding:7px 10px; background:rgba(255,255,255,0.04); border-left:3px solid var(--accent); border-radius:6px; }
   .deep-viewpoints, .deep-analysis-text { font-size:12.5px; line-height:1.6; color:var(--text); background:rgba(255,255,255,0.04); padding:10px 12px; border-radius:8px; }
+  .deep-basis { margin-top:12px; font-size:12px; line-height:1.5; color:var(--text-dim); background:rgba(56,189,248,0.07); border-left:3px solid rgba(56,189,248,0.4); padding:8px 12px; border-radius:0 8px 8px 0; }
   .deep-model { font-size:10px; color:#6b7280; margin-top:10px; }
   .source-reason { font-size:12px; color:var(--text-dim); margin-top:3px; line-height:1.5; word-break:break-word; }
   .source-link { font-size:12px; color:var(--accent); text-decoration:none; word-break:break-all; display:inline-block; margin-top:3px; }
@@ -328,6 +329,7 @@
       <div class="deep-section-label">分析總結</div>
       <div class="deep-analysis-text" id="deepAnalysisText"></div>
       <div class="deep-model" id="deepModel"></div>
+      <div class="deep-basis" id="scoringBasis" style="display:none;"></div>
     </div>
   </div>
 
@@ -596,6 +598,16 @@ function renderResult(data) {
     const modelLine = '模型：' + (da.model || 'local-llm');
     const rs = data.rule_score;
     $('deepModel').textContent = (rs != null ? `規則分 ${Math.round(rs)} ｜ ` : '') + modelLine;
+    // 評分依據說明（為什麼給這個等級）
+    const basisEl = $('scoringBasis');
+    if (basisEl) {
+      let txt = data.scoring_basis || '';
+      if (da.samples && da.score_std != null) {
+        txt += ` ｜ AI分 ${da.credibility_score}±${da.score_std}（${da.samples}次取樣）`;
+      }
+      basisEl.textContent = txt;
+      basisEl.style.display = txt ? 'block' : 'none';
+    }
   } else {
     deepWrap.style.display = 'none';
   }

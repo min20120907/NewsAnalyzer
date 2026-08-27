@@ -306,7 +306,7 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list) -> 
 
 
 def deep_analyze(title: str, web_results: list, sources: list,
-                 timeout: float = None) -> dict:
+                 timeout: "float | None" = None) -> dict:
     """呼叫本機 Ollama 模型做深入分析。回傳 dict 或空 dict（失敗）。"""
     if not REQUESTS_AVAILABLE:
         return {}
@@ -344,6 +344,47 @@ def deep_analyze(title: str, web_results: list, sources: list,
     except Exception as _e:
         print(f"[judge] deep_analyze failed: {_e}")
         return {}
+
+
+def deep_analyze_ensemble(title: str, web_results: list, sources: list,
+                          samples: int = None, timeout: float = None) -> dict:
+    """多次取樣本機 LLM 以降低 7B 模型分數抖動；並回傳 std / 樣本數供前端說明。
+    並發呼叫（ThreadPoolExecutor）控制總延遲約等於單次。"""
+    import concurrent.futures as _cf
+    n = int(samples if samples is not None else os.environ.get("DEEP_ANALYZE_SAMPLES", "3"))
+    n = max(1, min(n, 5))
+    to = timeout or DEEP_ANALYZE_TIMEOUT
+
+    def _one():
+        return deep_analyze(title, web_results, sources, timeout=to)
+
+    results = []
+    if n == 1:
+        results = [_one()]
+    else:
+        with _cf.ThreadPoolExecutor(max_workers=n) as ex:
+            for fut in _cf.as_completed([ex.submit(_one) for _ in range(n)]):
+                try:
+                    results.append(fut.result())
+                except Exception:
+                    pass
+    valid = [r for r in results if isinstance(r, dict) and r.get("credibility_score") is not None]
+    if not valid:
+        return {}
+    scores = [float(r["credibility_score"]) for r in valid]
+    avg = sum(scores) / len(scores)
+    std = (sum((s - avg) ** 2 for s in scores) / len(scores)) ** 0.5
+    # 取最靠近平均的那次作為質化內容（key_points/viewpoints/analysis），保持一致性
+    best = min(valid, key=lambda r: abs(float(r["credibility_score"]) - avg))
+    return {
+        "key_points": best.get("key_points", []),
+        "viewpoints": best.get("viewpoints", ""),
+        "credibility_score": int(round(avg)),
+        "analysis": best.get("analysis", ""),
+        "model": best.get("model", OLLAMA_MODEL),
+        "samples": len(valid),
+        "score_std": round(std, 1),
+    }
 
 
 # ---------------------------------------------------------------
@@ -481,11 +522,11 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
 
     final = (total / avail) * 100 if avail > 0 else 0.0
     rule_score = final
-    # 深入分析：本機 LLM 把 web_results + 查核源結論轉為結構化分析
+    # 深入分析：本機 LLM 把 web_results + 查核源結論轉為結構化分析（多次取樣降抖動）
     deep = {}
     if web_results or sources:
         try:
-            deep = deep_analyze(_title_clean or content[:60], web_results, sources)
+            deep = deep_analyze_ensemble(_title_clean or content[:60], web_results, sources)
         except Exception as _e:
             print(f"[judge] deep_analyze failed: {_e}", flush=True)
             deep = {}
@@ -522,6 +563,18 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         rating = "疑似不實"
     else:
         rating = "高度可疑"
+    # 評分依據說明（前端展示「為什麼給這個等級」）
+    fc_statuses = [s.get('status') for s in (sources or [])]
+    if any(st in ('inaccurate', 'false', 'misleading', 'fake') for st in fc_statuses):
+        basis = "查核機構判定不實，已錨定低分"
+    elif any(st == 'partial' for st in fc_statuses):
+        basis = "查核機構判定部分不實，已錨定上限"
+    elif any(st in ('hit', 'ok', 'accurate', 'true') for st in fc_statuses):
+        basis = "查核機構判定屬實，規則分主導"
+    elif deep and deep.get('credibility_score') is not None:
+        basis = f"無查核證據，由本機 AI 模型補位評分（{deep.get('samples','?')}次取樣）"
+    else:
+        basis = "無查核證據且 AI 評分失敗，僅依規則分"
     return {
         **res,
         "total_raw_score": total,
@@ -529,6 +582,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         "final_score": final,
         "rule_score": rule_score,
         "rating_text": rating,
+        "scoring_basis": basis,
         "sources": sources,
         "review_links": review_links,
         "web_results": web_results,
@@ -662,6 +716,7 @@ def judge_news():
         "web_results": score.get("web_results", []),
         "deep_analysis": score.get("deep_analysis", {}),
         "rule_score": score.get("rule_score"),
+        "scoring_basis": score.get("scoring_basis", ""),
     }
 
 if __name__ == "__main__":
