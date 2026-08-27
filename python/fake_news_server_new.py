@@ -370,7 +370,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     web_review_query = quote_plus(_query_src)
     review_links = {
         "threads": f"https://www.threads.net/search?q={web_review_query}",
-        "google": f"https://www.google.com/search?q={web_review_query}+評論+討論",
+        "duckduckgo": f"https://duckduckgo.com/?q={web_review_query}+評論+討論",
     }
 
     final = (total / avail) * 100 if avail > 0 else 0.0
