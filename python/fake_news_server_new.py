@@ -214,6 +214,12 @@ TAIWAN_MAINSTREAM_DOMAINS = {
     "bcc.com.tw", "cw.com.tw", "mirrormedia.mg", "thenewslens.com",
 }
 
+UGC_DOMAINS = {
+    "facebook.com", "fb.com", "fb.watch", "twitter.com", "x.com",
+    "instagram.com", "youtube.com", "youtu.be", "tiktok.com",
+    "ptt.cc", "dcard.tw", "line.me", "plurk.com", "threads.net"
+}
+
 _article_cache: Dict[str, Optional[Article]] = {}
 
 
@@ -442,11 +448,17 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     parsed = urlparse(url); host = parsed.netloc.lower().replace("www.", "")
     parts = host.split(".")
     main = ".".join(parts[-2:]) if len(parts) >= 2 else host
-    dom_pts = 15.0
+    
+    dom_pts = 15.0  # Default for unknown standard HTTPS sites
     if main in TAIWAN_MAINSTREAM_DOMAINS:
         dom_pts = DEFAULT_WEIGHTS["domain"]
+    elif main in UGC_DOMAINS or host in UGC_DOMAINS:
+        dom_pts = 0.0  # UGC platforms (social media) have 0 inherent credibility
+        
     if parsed.scheme == "http":
-        dom_pts = -5.0
+        dom_pts -= 10.0  # Penalize plain HTTP
+        
+    dom_pts = max(0.0, dom_pts)  # Don't go below 0 for this metric to avoid UI weirdness
     total += dom_pts
     res["domain"] = {"score": dom_pts, "desc": main, "weight": DEFAULT_WEIGHTS["domain"]}
 
