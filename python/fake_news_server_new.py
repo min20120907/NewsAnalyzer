@@ -850,12 +850,11 @@ def judge_news():
         if not url:
             url = extracted.get("source") or url
 
-    print(f"DEBUG: content={content}, extracted={extracted}")
     if not content:
         return {"error": "請提供貼文內容或新聞網址"}, 422
 
     # Prevent AI from analyzing the Facebook login wall
-    if "facebook.com" in url.lower() and (title == "Facebook" or "登入 Facebook" in title or "登入 Facebook" in content):
+    if "facebook.com" in url.lower() and (title == "Facebook" or "登入 Facebook" in title or "登入 Facebook" in content or "Log into Facebook" in content or "Log In" in content):
         return {"error": "Facebook 阻擋了自動抓取（需要登入）。\n請直接「複製貼文文字」並貼上來進行分析！"}, 422
 
     score = analyze_article_data(title=title, url=url, content=content, publish_date=extracted.get("publish_date"))
