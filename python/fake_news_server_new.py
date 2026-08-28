@@ -799,12 +799,18 @@ def _extract_from_url(url: str) -> Dict:
         from pw_scraper import extract_with_playwright
         pw_result = extract_with_playwright(url)
         if pw_result:
-            return {
-                "title": pw_result.get("title", ""),
-                "content": pw_result.get("text", "")[:4000],
-                "source": url,
-                "publish_date": pw_result.get("publish_date")
-            }
+            title = pw_result.get("title", "")
+            text = pw_result.get("text", "")
+            # If Playwright hit the FB login wall, skip it and let Selenium try
+            if title == "Facebook" and ("登入" in text or not text):
+                pass
+            else:
+                return {
+                    "title": title,
+                    "content": text[:4000],
+                    "source": url,
+                    "publish_date": pw_result.get("publish_date")
+                }
     except Exception as e:
         print(f"Playwright fallback failed: {e}")
 
@@ -844,8 +850,13 @@ def judge_news():
         if not url:
             url = extracted.get("source") or url
 
+    print(f"DEBUG: content={content}, extracted={extracted}")
     if not content:
         return {"error": "請提供貼文內容或新聞網址"}, 422
+
+    # Prevent AI from analyzing the Facebook login wall
+    if "facebook.com" in url.lower() and (title == "Facebook" or "登入 Facebook" in title or "登入 Facebook" in content):
+        return {"error": "Facebook 阻擋了自動抓取（需要登入）。\n請直接「複製貼文文字」並貼上來進行分析！"}, 422
 
     score = analyze_article_data(title=title, url=url, content=content, publish_date=extracted.get("publish_date"))
     return {
