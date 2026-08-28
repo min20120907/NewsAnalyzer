@@ -16,8 +16,7 @@ def extract_with_playwright(url: str, timeout: int = 15) -> Optional[Dict]:
             context = p.chromium.launch_persistent_context(
                 user_data_dir=user_data_dir,
                 headless=True,
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                viewport={"width": 1280, "height": 800},
+                                viewport={"width": 1280, "height": 800},
                 args=["--disable-blink-features=AutomationControlled"]
             )
             
@@ -33,14 +32,24 @@ def extract_with_playwright(url: str, timeout: int = 15) -> Optional[Dict]:
                 pass
                 
             text = page.locator("body").inner_text()
+            html = page.content()
             title = page.title()
             
             context.close()
             
-            if not text or len(text.strip()) < 20:
-                return None
-                
-            return {"title": title, "text": text}
+            # 嘗試從 Facebook 的 GraphQL payload 中提取精確發文時間 (Unix Epoch)
+            import re
+            from datetime import datetime
+            publish_date = None
+            try:
+                match = re.search(r'"creation_time":(\d+)', html)
+                if match:
+                    timestamp = int(match.group(1))
+                    publish_date = datetime.fromtimestamp(timestamp).isoformat()
+            except Exception:
+                pass
+
+            return {"title": title, "text": text, "publish_date": publish_date}
             
         except Exception as e:
             print(f"Playwright error: {e}")

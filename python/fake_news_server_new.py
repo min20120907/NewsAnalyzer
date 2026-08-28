@@ -794,7 +794,21 @@ def _extract_from_url(url: str) -> Dict:
                 "publish_date": pub,
             }
 
-    # --- Strategy 3: Selenium headless (JS-rendered fallback) ---
+    # --- Strategy 3: Playwright (Optimized for FB/JS-rendered sites) ---
+    try:
+        from pw_scraper import extract_with_playwright
+        pw_result = extract_with_playwright(url)
+        if pw_result:
+            return {
+                "title": pw_result.get("title", ""),
+                "content": pw_result.get("text", "")[:4000],
+                "source": url,
+                "publish_date": pw_result.get("publish_date")
+            }
+    except Exception as e:
+        print(f"Playwright fallback failed: {e}")
+
+    # --- Strategy 4: Selenium headless (Legacy JS fallback) ---
     selenium_result = _extract_with_selenium(url)
     if selenium_result:
         return selenium_result
