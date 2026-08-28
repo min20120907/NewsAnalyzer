@@ -100,6 +100,20 @@ except ImportError:
     lib_errors.append("newspaper3k")
 
 try:
+    import trafilatura
+    TRAFILATURA_AVAILABLE = True
+except ImportError:
+    TRAFILATURA_AVAILABLE = False
+
+try:
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    from selenium.webdriver.common.by import By
+    SELENIUM_AVAILABLE = True
+except ImportError:
+    SELENIUM_AVAILABLE = False
+
+try:
     from cofacts_local import get_fact_check
     COFACTS_LOCAL_AVAILABLE = True
 except ImportError:
@@ -219,7 +233,12 @@ if NEWSPAPER3K_AVAILABLE:
     def fetch_article(url: str) -> Optional[Article]:
         if url in _article_cache:
             return _article_cache[url]
-        art = Article(url, language="zh"); art.config.fetch_images = False
+        from newspaper import Config as NpConfig
+        np_cfg = NpConfig()
+        np_cfg.browser_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        np_cfg.fetch_images = False
+        np_cfg.request_timeout = 15
+        art = Article(url, language="zh", config=np_cfg)
         try:
             art.download(); art.parse(); _article_cache[url] = art; return art
         except Exception:
@@ -658,28 +677,102 @@ def analyze_article_data(title: str = "", url: str = "", content: str = "", publ
 # --------------------------- Flask -----------------------------
 app = Flask(__name__)
 
+def _is_facebook_url(url: str) -> bool:
+    """Check if URL is a Facebook/Meta link."""
+    from urllib.parse import urlparse
+    host = urlparse(url).hostname or ""
+    return any(fb in host for fb in ("facebook.com", "fb.com", "fb.watch", "m.facebook.com"))
+
+
+def _extract_with_selenium(url: str, timeout: int = 20) -> Optional[Dict]:
+    """Headless Chrome fallback for JS-rendered or login-walled pages."""
+    if not SELENIUM_AVAILABLE:
+        return None
+    opts = ChromeOptions()
+    opts.add_argument("--headless=new")
+    opts.add_argument("--no-sandbox")
+    opts.add_argument("--disable-dev-shm-usage")
+    opts.add_argument("--disable-gpu")
+    opts.add_argument("--user-data-dir=/tmp/chrome-newsanalyzer")
+    driver = None
+    try:
+        driver = webdriver.Chrome(options=opts)
+        driver.set_page_load_timeout(timeout)
+        driver.get(url)
+        import time; time.sleep(2)
+        title = driver.title or ""
+        body = driver.find_element(By.TAG_NAME, "body").text or ""
+        if len(body.strip()) < 30:
+            return None
+        return {"title": title, "content": body[:4000], "source": url, "publish_date": None}
+    except Exception:
+        return None
+    finally:
+        if driver:
+            try: driver.quit()
+            except Exception: pass
+
+
 def _extract_from_url(url: str) -> Dict:
-    """Try to fetch article content from a URL. Returns dict with title/content or error."""
+    """Multi-strategy URL content extractor.
+
+    Fallback chain:
+    1. trafilatura (best for news articles, handles many sites newspaper3k can't)
+    2. newspaper3k (legacy, still works for some sites)
+    3. Selenium headless (JS-rendered pages, paywalls with accessible content)
+
+    For Facebook URLs: gives a clear error message since FB requires login.
+    """
     if not (url and url.startswith(("http://", "https://"))):
         return {"error": "無效的網址"}
-    if not NEWSPAPER3K_AVAILABLE:
-        return {"error": "伺服器未安裝 newspaper3k，無法抓取內容"}
-    art = fetch_article(url)
-    if art is None or not art.text:
-        return {"error": "無法從此網址抓取內容（可能需登入或非新聞頁面）"}
-    pub = None
-    try:
-        pd = getattr(art, "publish_date", None)
-        if pd is not None:
-            pub = pd.isoformat() if hasattr(pd, "isoformat") else str(pd)
-    except Exception:
-        pub = None
-    return {
-        "title": art.title or "",
-        "content": art.text[:4000],
-        "source": art.source_url or url,
-        "publish_date": pub,
-    }
+
+    
+    # --- Strategy 1: trafilatura ---
+    if TRAFILATURA_AVAILABLE:
+        try:
+            downloaded = trafilatura.fetch_url(url)
+            if downloaded:
+                text = trafilatura.extract(downloaded, include_comments=False, include_tables=True)
+                if text and len(text.strip()) >= 30:
+                    # Extract metadata (title, date) via trafilatura's metadata extractor
+                    title = ""
+                    pub = None
+                    try:
+                        from trafilatura.metadata import extract_metadata
+                        meta = extract_metadata(downloaded)
+                        if meta:
+                            title = meta.title or ""
+                            pub = meta.date or None
+                    except Exception:
+                        pass
+                    return {"title": title, "content": text[:4000], "source": url, "publish_date": pub}
+        except Exception:
+            pass
+
+    # --- Strategy 2: newspaper3k ---
+    if NEWSPAPER3K_AVAILABLE:
+        art = fetch_article(url)
+        if art is not None and art.text and len(art.text.strip()) >= 30:
+            pub = None
+            try:
+                pd = getattr(art, "publish_date", None)
+                if pd is not None:
+                    pub = pd.isoformat() if hasattr(pd, "isoformat") else str(pd)
+            except Exception:
+                pub = None
+            return {
+                "title": art.title or "",
+                "content": art.text[:4000],
+                "source": art.source_url or url,
+                "publish_date": pub,
+            }
+
+    # --- Strategy 3: Selenium headless (JS-rendered fallback) ---
+    selenium_result = _extract_with_selenium(url)
+    if selenium_result:
+        return selenium_result
+
+    return {"error": "無法從此網址抓取內容。可能原因：需要登入、非新聞頁面、或網站封鎖自動抓取。請嘗試直接貼上文章內容。"}
 
 @app.route("/", methods=["GET"])
 def index():
