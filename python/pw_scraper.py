@@ -9,7 +9,7 @@ def extract_with_playwright(url: str, timeout: int = 15) -> Optional[Dict]:
         
     with sync_playwright() as p:
         # Use persistent context to allow the user to login to FB once if they want
-        user_data_dir = "/tmp/chrome-newsanalyzer"
+        user_data_dir = os.path.expanduser("~/.config/newsanalyzer-browser")
         
         try:
             # We use a persistent context so cookies are saved (for FB login etc)
