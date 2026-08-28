@@ -535,13 +535,18 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     # - 查核命中：規則已強證據，LLM 僅微調 (w=0.10)
     # - 查核全 not_found：規則維度無信號，LLM 成主要依據 (w=0.60)
     ai_cs = deep.get('credibility_score') if isinstance(deep, dict) else None
+    fusion_weight = 0.0
+    post_fusion_score = final
+    clamped = False
+    clamp_reason = ""
     if ai_cs is not None:
         try:
             cs = float(ai_cs)
             fc_hit = any((s.get('status') in ('hit', 'ok', 'inaccurate', 'partial'))
                          for s in (sources or []))
-            w = 0.10 if fc_hit else 0.60
-            final = final * (1 - w) + cs * w
+            fusion_weight = 0.10 if fc_hit else 0.60
+            final = final * (1 - fusion_weight) + cs * fusion_weight
+            post_fusion_score = final
         except (TypeError, ValueError):
             pass
     # 查核命中錨定（PolitiFact 序數標籤精神）：機構已判定不實/部分不實，
@@ -549,9 +554,15 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     for _s in (sources or []):
         _st = _s.get('status')
         if _st in ('inaccurate', 'false', 'misleading', 'fake'):
+            if final > 25.0:
+                clamped = True
+                clamp_reason = f"查核機構 ({_s.get('source', '查核庫')}) 判定不實/誤導，觸發安全上限錨定 (最高 25.0)"
             final = min(final, 25.0)
             break
         elif _st == 'partial':
+            if final > 55.0:
+                clamped = True
+                clamp_reason = f"查核機構 ({_s.get('source', '查核庫')}) 判定部分不實，觸發上限錨定 (最高 55.0)"
             final = min(final, 55.0)
     # 5 級評級（PolitiFact-style 序數標籤）- adjusted for higher precision
     if final >= 75:
@@ -582,6 +593,10 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         "available_weight": avail,
         "final_score": final,
         "rule_score": rule_score,
+        "fusion_weight": fusion_weight,
+        "post_fusion_score": post_fusion_score,
+        "clamped": clamped,
+        "clamp_reason": clamp_reason,
         "rating_text": rating,
         "scoring_basis": basis,
         "sources": sources,
@@ -717,6 +732,12 @@ def judge_news():
         "web_results": score.get("web_results", []),
         "deep_analysis": score.get("deep_analysis", {}),
         "rule_score": score.get("rule_score"),
+        "total_raw_score": score.get("total_raw_score"),
+        "available_weight": score.get("available_weight"),
+        "fusion_weight": score.get("fusion_weight"),
+        "post_fusion_score": score.get("post_fusion_score"),
+        "clamped": score.get("clamped"),
+        "clamp_reason": score.get("clamp_reason"),
         "scoring_basis": score.get("scoring_basis", ""),
     }
 

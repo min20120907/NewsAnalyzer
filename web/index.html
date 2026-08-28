@@ -204,6 +204,18 @@
   .source-link { font-size:12px; color:var(--accent); text-decoration:none; word-break:break-all; display:inline-block; margin-top:3px; }
   .source-link:hover { text-decoration:underline; }
 
+  /* ---------- Pipeline / Formula ---------- */
+  .pipeline-wrap { display:flex; flex-direction:column; gap:12px; font-size:13px; margin-top:6px; }
+  .pipeline-card { background:rgba(255,255,255,0.03); border:1px solid var(--card-border); border-radius:12px; padding:14px 16px; }
+  .pipeline-step-title { font-weight:700; color:#c4b5fd; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; }
+  .pipeline-table { width:100%; border-collapse:collapse; margin-top:6px; font-size:12.5px; }
+  .pipeline-table th { text-align:left; color:var(--text-dim); padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.1); }
+  .pipeline-table td { padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .pipeline-formula { font-family:monospace; background:rgba(0,0,0,0.3); padding:10px 12px; border-radius:8px; border-left:3px solid var(--accent); margin-top:8px; color:#e2e8f0; line-height:1.6; word-break:break-all; }
+  .pipeline-badge { font-size:11px; padding:2px 8px; border-radius:12px; font-weight:700; }
+  .badge-clamp { background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid rgba(239,68,68,0.4); }
+  .badge-normal { background:rgba(99,102,241,0.2); color:#c7d2fe; }
+
   /* 網路評論搜尋連結 */
   .review-links { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
   .review-btn {
@@ -296,6 +308,12 @@
     </div>
 
     <div class="metrics" id="metrics"></div>
+
+    <!-- 權重與最終分數計算公式分解 (Score Calculation Pipeline) -->
+    <div class="sources" id="scorePipeline" style="display:none;">
+      <div class="sources-title">🧮 評分權重與計算過程分解</div>
+      <div id="scorePipelineContent" class="pipeline-wrap"></div>
+    </div>
 
     <!-- 多源查核結果 -->
     <div class="sources" id="sources" style="display:none;">
@@ -477,6 +495,89 @@ function renderResult(data) {
         row.querySelector('.bar-fill').style.width = (isNA ? 0 : pct) + '%';
       });
     });
+  }
+
+  // 渲染評分計算過程管道 (Calculation Pipeline)
+  const pipeWrap = $('scorePipeline');
+  const pipeContent = $('scorePipelineContent');
+  if (pipeWrap && pipeContent) {
+    pipeWrap.style.display = 'block';
+    
+    // Step 1: 規則維度表格
+    let rowsHtml = '';
+    let sumRaw = 0;
+    let sumW = 0;
+    for (const [key, def] of Object.entries(defs)) {
+      const m = metrics[key] || { score: 0, desc: '—', weight: def.max };
+      const s = Number(m.score || 0);
+      const w = Number(m.weight || def.max);
+      sumRaw += s;
+      sumW += w;
+      rowsHtml += `
+        <tr>
+          <td>${def.icon} ${def.name}</td>
+          <td><b>${s > 0 ? '+' + s.toFixed(1) : s.toFixed(1)}</b></td>
+          <td>/ ${w}</td>
+          <td style="color:var(--text-dim); font-size:11.5px;">${escapeHtml(m.desc || '—')}</td>
+        </tr>
+      `;
+    }
+    const ruleScore = data.rule_score != null ? Number(data.rule_score).toFixed(1) : ((sumRaw / sumW) * 100).toFixed(1);
+    const aiCs = (data.deep_analysis && data.deep_analysis.credibility_score != null) ? Number(data.deep_analysis.credibility_score).toFixed(1) : null;
+    const fusionW = Number(data.fusion_weight || 0);
+    const postFusion = Number(data.post_fusion_score != null ? data.post_fusion_score : data.final_score).toFixed(1);
+    const finalScore = Number(data.final_score).toFixed(1);
+
+    let html = `
+      <div class="pipeline-card">
+        <div class="pipeline-step-title">
+          <span>階段 1：各維度基礎規則權重得分 (Rule Weights)</span>
+          <span class="pipeline-badge badge-normal">加權基底：${sumW} 分</span>
+        </div>
+        <table class="pipeline-table">
+          <thead>
+            <tr><th>評估維度</th><th>得分</th><th>權重上限</th><th>依據細節</th></tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <div class="pipeline-formula">
+          📐 規則總分 (Rule Score) = (${sumRaw.toFixed(1)} ÷ ${sumW}) × 100 = <b>${ruleScore} 分</b>
+        </div>
+      </div>
+    `;
+
+    // Step 2: AI 動態融合
+    if (aiCs !== null) {
+      const ruleWeightPct = ((1 - fusionW) * 100).toFixed(0);
+      const aiWeightPct = (fusionW * 100).toFixed(0);
+      html += `
+        <div class="pipeline-card">
+          <div class="pipeline-step-title">
+            <span>階段 2：本地 AI 模型 (Gemma 12B) 動態加權融合</span>
+            <span class="pipeline-badge badge-normal">AI 權重: ${aiWeightPct}% ｜ 規則權重: ${ruleWeightPct}%</span>
+          </div>
+          <div class="pipeline-formula">
+            🧠 融合分數 = (規則分 ${ruleScore} × ${1 - fusionW}) + (AI評分 ${aiCs} × ${fusionW}) = <b>${postFusion} 分</b>
+          </div>
+        </div>
+      `;
+    }
+
+    // Step 3: 安全上限錨定 / 最終判定
+    html += `
+      <div class="pipeline-card">
+        <div class="pipeline-step-title">
+          <span>階段 3：事實查核安全上限錨定與最終判定 (Clamp & Final Score)</span>
+          ${data.clamped ? '<span class="pipeline-badge badge-clamp">🚨 觸發硬規則扣分</span>' : '<span class="pipeline-badge badge-normal">無強制錨定</span>'}
+        </div>
+        ${data.clamped ? `<div style="color:#f87171; font-size:12.5px; margin-bottom:6px;">⚠️ ${escapeHtml(data.clamp_reason || '命中查核庫不實紀錄，強制上限錨定')}</div>` : ''}
+        <div class="pipeline-formula">
+          🏁 最終可靠度 (Final Score) = <b>${finalScore} 分</b> ➔ 評級：<b>${escapeHtml(data.rating_text || '—')}</b>
+        </div>
+      </div>
+    `;
+
+    pipeContent.innerHTML = html;
   }
 
   // 多源查核來源區塊
