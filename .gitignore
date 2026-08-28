@@ -15,3 +15,5 @@ python/seed_stderr.log
 .env
 .env.*
 tools/free-search/.env
+python/cofacts_articles.db
+test_results.html
