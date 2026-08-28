@@ -207,17 +207,30 @@ except Exception as e:
 # ---------------------------------------------------------------
 # 4. Utility Functions (redirects, domain checks, etc.)
 # ---------------------------------------------------------------
+# 新增：加入台視、NOWnews、上報、新頭殼、數位時代、今周刊、鏡新聞、NextApple (壹蘋) 等
 TAIWAN_MAINSTREAM_DOMAINS = {
     "cna.com.tw", "udn.com", "ltn.com.tw", "chinatimes.com", "pts.org.tw",
     "news.pts.org.tw", "storm.mg", "ettoday.net", "news.tvbs.com.tw",
     "news.cts.com.tw", "ftvnews.com.tw", "setn.com", "rti.org.tw",
     "bcc.com.tw", "cw.com.tw", "mirrormedia.mg", "thenewslens.com",
+    "ttv.com.tw", "news.ttv.com.tw", "nownews.com", "upmedia.mg",
+    "newtalk.tw", "businesstoday.com.tw", "bnext.com.tw", "tw.nextapple.com",
+    "mnews.tw", "tw.news.yahoo.com"
 }
 
+# 新增：加入 Mobile01、小紅書、微博、Bilibili、Medium、方格子、痞客邦等
 UGC_DOMAINS = {
     "facebook.com", "fb.com", "fb.watch", "twitter.com", "x.com",
     "instagram.com", "youtube.com", "youtu.be", "tiktok.com",
-    "ptt.cc", "dcard.tw", "line.me", "plurk.com", "threads.net"
+    "ptt.cc", "dcard.tw", "line.me", "plurk.com", "threads.net",
+    "mobile01.com", "xiaohongshu.com", "weibo.com", "bilibili.com",
+    "medium.com", "vocus.cc", "pixnet.net", "reddit.com"
+}
+
+# 新增：事實查核機構 (最高可信度)
+FACT_CHECK_DOMAINS = {
+    "tfc-taiwan.org.tw", "mygopen.com", "cofacts.tw", "cofacts.g0v.tw",
+    "rumtoast.com"
 }
 
 _article_cache: Dict[str, Optional[Article]] = {}
@@ -450,7 +463,9 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     main = ".".join(parts[-2:]) if len(parts) >= 2 else host
     
     dom_pts = 15.0  # Default for unknown standard HTTPS sites
-    if main in TAIWAN_MAINSTREAM_DOMAINS:
+    if main in FACT_CHECK_DOMAINS or host in FACT_CHECK_DOMAINS:
+        dom_pts = DEFAULT_WEIGHTS["domain"]  # 滿分 (查核機構)
+    elif main in TAIWAN_MAINSTREAM_DOMAINS or host in TAIWAN_MAINSTREAM_DOMAINS:
         dom_pts = DEFAULT_WEIGHTS["domain"]
     elif main in UGC_DOMAINS or host in UGC_DOMAINS:
         dom_pts = 0.0  # UGC platforms (social media) have 0 inherent credibility
