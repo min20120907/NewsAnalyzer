@@ -38,7 +38,7 @@ results = analyze_batch_article_data(
 The returned list contains the same dictionaries as legacy `analyze_article_data`.
 """
 
-import os, re, html, json, math, traceback, time
+import os, re, html, json, math, traceback, time, csv, io
 from typing import List, Dict, Union, Optional
 from datetime import datetime, timedelta
 from urllib.parse import urlparse, unquote_plus, quote_plus
@@ -270,7 +270,7 @@ def _similarity_batch(contents: List[str], refs: List[str]) -> List[float]:
 #     失敗或超時則回傳空 dict，前端隱藏該區塊（不影響主評分）。
 # ---------------------------------------------------------------
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:18443/api/generate")
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:7b")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma4:12b")
 DEEP_ANALYZE_TIMEOUT = float(os.environ.get("DEEP_ANALYZE_TIMEOUT", "20"))
 
 _DEEP_PROMPT_TMPL = """你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字），格式：
@@ -553,14 +553,14 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
             break
         elif _st == 'partial':
             final = min(final, 55.0)
-    # 5 級評級（PolitiFact-style 序數標籤）
+    # 5 級評級（PolitiFact-style 序數標籤）- adjusted for higher precision
     if final >= 75:
         rating = "高度可信"
-    elif final >= 55:
+    elif final >= 60:
         rating = "大致可信"
-    elif final >= 35:
+    elif final >= 40:
         rating = "待查證"
-    elif final >= 15:
+    elif final >= 20:
         rating = "疑似不實"
     else:
         rating = "高度可疑"
@@ -719,6 +719,150 @@ def judge_news():
         "rule_score": score.get("rule_score"),
         "scoring_basis": score.get("scoring_basis", ""),
     }
+
+def generate_test_results_page():
+    """Generate an interactive HTML page showing test results on the WSDM Chinese fake news title dataset."""
+    # Limit rows for speed; adjust as needed
+    MAX_ROWS = 50
+    dataset_url = "https://docs.google.com/spreadsheets/d/1FZak61ZcNmQRC4s4RixLT2-tgnSjmD4MwyxGF2xxiuA/export?format=csv"
+    try:
+        resp = requests.get(dataset_url, timeout=20)
+        resp.raise_for_status()
+        content = resp.content.decode('utf-8')
+    except Exception as e:
+        return f"<h2>Failed to load dataset: {e}</h2>"
+    reader = csv.DictReader(io.StringIO(content))
+    rows = []
+    for i, row in enumerate(reader):
+        if i >= MAX_ROWS:
+            break
+        rows.append(row)
+    # Prepare results
+    results = []
+    for idx, row in enumerate(rows):
+        title = row['news_title'].strip()
+        label_str = row['is_fake'].strip().lower()
+        is_fake = label_str == 'true'
+        # Use internal scoring function (no HTTP overhead)
+        try:
+            score = analyze_article_data(title=title, url="https://example.com", content=title)
+        except Exception as e:
+            score = {"error": str(e)}
+        # Determine prediction: fake if rating in low trust
+        rating = score.get('rating_text', '') if isinstance(score, dict) else ''
+        pred_fake = rating in ["疑似不實", "高度可疑"]
+        results.append({
+            "idx": idx,
+            "title": title,
+            "actual": "fake" if is_fake else "real",
+            "pred": "fake" if pred_fake else "real",
+            "rating": rating,
+            "score": score.get('final_score') if isinstance(score, dict) else None,
+            "full": score  # store full dict for details
+        })
+    # Compute metrics
+    tp = fp = fn = tn = 0
+    for r in results:
+        if r["actual"] == "fake" and r["pred"] == "fake":
+            tp += 1
+        elif r["actual"] == "real" and r["pred"] == "fake":
+            fp += 1
+        elif r["actual"] == "fake" and r["pred"] == "real":
+            fn += 1
+        else:
+            tn += 1
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    accuracy = (tp + tn) / (tp + fp + fn + tn) if (tp + fp + fn + tn) > 0 else 0.0
+    # Build HTML
+    html = f"""
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>NewsAnalyzer 測試結果</title>
+    <style>
+        body {{font-family: Arial, sans-serif; margin: 20px; line-height: 1.6;}}
+        h1, h2 {{color: #2c3e50;}}
+        table {{border-collapse: collapse; width: 100%; max-width: 1000px; margin-bottom: 20px;}}
+        th, td {{border: 1px solid #ddd; padding: 8px; text-align: left;}}
+        th {{background-color: #f2f2f2;}}
+        tr:nth-child(even) {{background-color: #f9f9f9;}}
+        .metric {{font-size: 1.2em; margin: 10px 0;}}
+        .good {{color: green;}}
+        .bad {{color: red;}}
+        .note {{font-size: 0.9em; color: #555;}}
+        .details {{display: none; margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px;}}
+        button {{cursor: pointer;}}
+    </style>
+</head>
+<body>
+    <h1>NewsAnalyzer 假新聞檢測測試結果</h1>
+    <p class="note">測試資料集：WSDM Fake News Classification (Chinese title-only) 前 {len(rows)} 筆樣本</p>
+    <h2>總體指標</h2>
+    <div class="metric">True Positives (TP): <span class="good">{tp}</span></div>
+    <div class="metric">False Positives (FP): <span class="good">{fp}</span></div>
+    <div class="metric">False Negatives (FN): <span class="bad">{fn}</span></div>
+    <div class="metric">True Negatives (TN): <span class="good">{tn}</span></div>
+    <div class="metric">精準度 (Precision): <span class="good">{precision:.3f} ({precision*100:.1f}%)</span></div>
+    <div class="metric">召回率 (Recall): <span class="{'good' if recall >= 0.5 else 'bad'}">{recall:.3f} ({recall*100:.1f}%)</span></div>
+    <div class="metric">準確率 (Accuracy): <span class="{'good' if accuracy >= 0.5 else 'bad'}">{accuracy:.3f} ({accuracy*100:.1f}%)</span></div>
+    <h2>混淆矩陣</h2>
+    <table>
+        <tr><th></th><th colspan="2">預測</th></tr>
+        <tr><th></th><th>假新聞 (Fake)</th><th>真新聞 (Real)</th></tr>
+        <tr><th>實際 假新聞</th><td>TP = {tp}</td><td>FN = {fn}</td></tr>
+        <tr><th>實際 真新聞</th><td>FP = {fp}</td><td>TN = {tn}</td></tr>
+    </table>
+    <h2>詳細結果（點擊顯示/隱藏）</h2>
+    <table>
+        <tr><th>#</th><th>標題</th><th>實際</th><th>預測</th><th>評級</th><th>分數</th><th>操作</th></tr>
+"""
+    for r in results:
+        # Escape HTML in title
+        title_esc = r['title'].replace("&", "&").replace("<", "<").replace(">", ">")
+        actual_class = "good" if r["actual"] == "fake" else "bad"
+        pred_class = "good" if r["pred"] == "fake" else "bad"
+        rating = r['rating'] if r['rating'] else "-"
+        score_val = f"{r['score']:.2f}" if r['score'] is not None else "-"
+        html += f"""
+        <tr>
+            <td>{r['idx']+1}</td>
+            <td title=\"{title_esc}\">{title_esc[:80]}{'...' if len(title_esc) > 80 else ''}</td>
+            <td class=\"{actual_class}\">{r['actual']}</td>
+            <td class=\"{pred_class}\">{r['pred']}</td>
+            <td>{rating}</td>
+            <td>{score_val}</td>
+            <td><button onclick=\"toggleDetails({r['idx']})\">顯示詳情</button></td>
+        </tr>
+        <tr id=\"details_{r['idx']}\" class=\"details\" colspan=\"7\">
+            <div style=\"padding:10px; background:#f8f8f8; border-radius:5px;\">
+                <strong>完整回傳：</strong><pre style=\"white-space: pre-wrap; background:#fff; padding:10px; border:1px solid #ccc; max-height:300px; overflow:auto;\">{json.dumps(r['full'], ensure_ascii=False, indent=2)}</pre>
+            </div>
+        </tr>
+"""
+    html += """
+    </table>
+    <hr>
+    <p class="note">此頁面由 Hermes Agent 自動生成，僅供內部參考。</p>
+    <script>
+        function toggleDetails(idx) {
+            var el = document.getElementById('details_' + idx);
+            if (el.style.display === 'none' || el.style.display === '') {
+                el.style.display = 'table-row';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
+"""
+    return html
+
+@app.route('/test_results', methods=['GET'])
+def test_results():
+    return generate_test_results_page()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
