@@ -650,16 +650,23 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
             post_fusion_score = final
         except (TypeError, ValueError):
             pass
-    # 查核命中錨定（PolitiFact 序數標籤精神）：機構已判定不實/部分不實，
-    # 不該被其他弱維度稀釋回中等區，直接 clamp 總評上限
+    # 階段三：三級動態信心度衰減錨定 (Stage 3 Dynamic Confidence Decay Clamp)
     for _s in (sources or []):
         _st = _s.get('status')
+        sim_score = float(_s.get('similarity_score') or 1.0)
         if _st in ('inaccurate', 'false', 'misleading', 'fake'):
-            if final > 25.0:
-                clamped = True
-                clamp_reason = f"查核機構 ({_s.get('source', '查核庫')}) 判定不實/誤導，觸發安全上限錨定 (最高 25.0)"
-            final = min(final, 25.0)
-            break
+            if sim_score >= 0.85:
+                if final > 25.0:
+                    clamped = True
+                    clamp_reason = f"查核機構 ({_s.get('source', '查核庫')}) 高度信心判定不實 (相似度 {int(sim_score*100)}%)，觸發安全上限錨定 (最高 25.0)"
+                final = min(final, 25.0)
+                break
+            elif sim_score >= 0.72:
+                if final > 50.0:
+                    clamped = True
+                    clamp_reason = f"查核機構 ({_s.get('source', '查核庫')}) 中度相關爭議 (相似度 {int(sim_score*100)}%)，觸發軟上限錨定 (最高 50.0)"
+                final = min(final, 50.0)
+                break
         elif _st == 'partial':
             if final > 55.0:
                 clamped = True
