@@ -31,7 +31,7 @@ UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
 # Cofacts moreLikeThis 即使相似度極低也會回傳「最像」的一筆，造成錯連結。
 # 主路命中後用本地 SBERT 對「用戶輸入 vs 命中文章」算 cosine 相似度，
 # 低於此門檻視為 not_found，避免給出不相干文章的連結。
-COFACTS_MIN_SIM = float(os.environ.get("COFACTS_MIN_SIM", "0.65"))
+COFACTS_MIN_SIM = float(os.environ.get("COFACTS_MIN_SIM", "0.72"))
 
 CACHE_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                         "..", "data", "cofacts", "cofacts_cache.db")
@@ -245,7 +245,7 @@ def get_fact_check(text: str, use_cache: bool = True,
     # 主路命中後再用 SBERT 驗證「用戶輸入 vs 命中文章」相似度，過低則視為 not_found。
     if result["status"] != "not_found" and result.get("matched_text"):
         sim = _sbert_sim(snippet, result["matched_text"])
-        if sim is not None and sim < COFACTS_MIN_SIM:
+        if sim is None or sim < COFACTS_MIN_SIM:
             result = {"status": "not_found", "feedback_count": 0,
                       "created_at": None, "article_id": None,
                       "matched_text": None, "url": None, "reasons": []}
@@ -431,7 +431,7 @@ def build_local_index(force=False):
     return _LOCAL_EMB
 
 
-def local_match(query, threshold=0.55):
+def local_match(query, threshold=0.72):
     """本地近鄰檢索。回傳 dict 或 None。
 
     優先用服務注入的模型（_SBERT_MODEL），否則惰性 CPU 自載（standalone 評測用，

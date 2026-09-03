@@ -4,32 +4,39 @@ import os
 def extract_with_playwright(url: str, timeout: int = 15) -> Optional[Dict]:
     try:
         from playwright.sync_api import sync_playwright
-    except ImportError:
+    except ImportError as e:
+        print(f'Playwright import error: {e}')
         return None
         
+    import os
+    os.environ["DISPLAY"] = ":1"
+    os.environ["DBUS_SESSION_BUS_ADDRESS"] = "unix:path=/run/user/1000/bus"
+    os.environ["XAUTHORITY"] = "/run/user/1000/gdm/Xauthority"
     with sync_playwright() as p:
-        # Use persistent context to allow the user to login to FB once if they want
-        user_data_dir = os.path.expanduser("~/.config/newsanalyzer-browser")
+        # Use your existing Chrome profile (the one Selenium uses for MFP bot)
+        # This profile already has Facebook login session
+        user_data_dir = os.path.expanduser("~/.config/google-chrome-mfp")
         
         try:
-            # We use a persistent context so cookies are saved (for FB login etc)
+            # Use persistent context with the existing profile
+            # This gives us cookies, localStorage, and login state
             context = p.chromium.launch_persistent_context(
                 user_data_dir=user_data_dir,
                 headless=True,
-                                viewport={"width": 1280, "height": 800},
-                args=["--disable-blink-features=AutomationControlled"]
+                viewport={"width": 1280, "height": 800},
+                args=[
+                    "--disable-blink-features=AutomationControlled",
+                    "--disable-features=IsolateOrigins,site-per-process",
+                    "--disable-web-security",
+                    "--disable-features=BlockInsecurePrivateNetworkRequests",
+                ]
             )
             
             page = context.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=timeout*1000)
-            page.wait_for_timeout(2000) # JS render time
+            page.wait_for_timeout(5000) # JS render time
             
-            # Dismiss popups
-            try:
-                page.keyboard.press("Escape")
-                page.wait_for_timeout(500)
-            except:
-                pass
+            # Do not press Escape, FB closes the post modal
                 
             text = page.locator("body").inner_text()
             html = page.content()

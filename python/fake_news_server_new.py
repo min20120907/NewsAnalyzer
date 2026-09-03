@@ -114,6 +114,14 @@ except ImportError:
     SELENIUM_AVAILABLE = False
 
 try:
+    from fb_session import get_facebook_post, extract_facebook_playwright
+    FB_SESSION_AVAILABLE = True
+    print("[Init] Facebook session management loaded.")
+except ImportError as e:
+    FB_SESSION_AVAILABLE = False
+    print(f"[WARN] fb_session not available - Facebook session management disabled: {e}")
+
+try:
     from cofacts_local import get_fact_check
     COFACTS_LOCAL_AVAILABLE = True
 except ImportError:
@@ -215,7 +223,8 @@ TAIWAN_MAINSTREAM_DOMAINS = {
     "bcc.com.tw", "cw.com.tw", "mirrormedia.mg", "thenewslens.com",
     "ttv.com.tw", "news.ttv.com.tw", "nownews.com", "upmedia.mg",
     "newtalk.tw", "businesstoday.com.tw", "bnext.com.tw", "tw.nextapple.com",
-    "mnews.tw", "tw.news.yahoo.com"
+    "mnews.tw", "tw.news.yahoo.com", "technews.tw", "vogue.com.tw",
+    "pchome.com.tw", "feitsui.com", "gamer.com.tw", "soundofhope.org"
 }
 
 # 新增：加入 Mobile01、小紅書、微博、Bilibili、Medium、方格子、痞客邦等
@@ -440,27 +449,72 @@ DEFAULT_WEIGHTS = {
 }
 
 
-def _score_single(title: str, url: str, content: str, refs: List[str], publish_date=None) -> Dict:
+def _score_single(title: str, url: str, content: str, refs: List[str], publish_date=None, target_url: str = None) -> Dict:
     """Return full metric dict for one article (fast, GPU‑ready)."""
     res: Dict[str, Dict] = {}
     total = 0.0; avail = sum(DEFAULT_WEIGHTS.values())
 
-    # 1) Sentiment
+    # Pre-resolve Domain info for downstream metric logic (supports Google News RSS title/content publisher resolution)
+    MEDIA_NAME_TO_DOMAIN = {
+        "自由時報": "ltn.com.tw", "自由電子報": "ltn.com.tw", "自由體育": "ltn.com.tw", "自由健康網": "ltn.com.tw", "自由財經": "ltn.com.tw",
+        "中央社": "cna.com.tw", "CNA": "cna.com.tw",
+        "聯合報": "udn.com", "UDN": "udn.com", "經濟日報": "udn.com",
+        "中時": "chinatimes.com", "中國時報": "chinatimes.com",
+        "TVBS": "tvbs.com.tw", "news.tvbs.com.tw": "tvbs.com.tw",
+        "ETtoday": "ettoday.net", "東森新聞": "ebc.net.tw",
+        "三立": "setn.com", "SETN": "setn.com",
+        "風傳媒": "storm.mg", "Storm": "storm.mg",
+        "公視": "pts.org.tw", "華視": "cts.com.tw", "台視": "ttv.com.tw",
+        "民視": "ftvnews.com.tw", "鏡週刊": "mirrormedia.mg", "鏡新聞": "mnews.tw",
+        "NOWnews": "nownews.com", "今日新聞": "nownews.com",
+        "蘋果": "nextapple.com", "壹蘋": "nextapple.com",
+        "天下雜誌": "cw.com.tw", "商業周刊": "businesstoday.com.tw",
+        "關鍵評論": "thenewslens.com", "科技新報": "technews.tw", "TechNews": "technews.tw",
+        "鉅亨網": "cnyes.com", "Yahoo": "tw.news.yahoo.com",
+        "巴哈姆特": "gamer.com.tw", "GNN": "gamer.com.tw",
+        "PChome": "pchome.com.tw", "遠見": "gvm.com.tw"
+    }
+
+    eval_url = target_url or url
+    parsed = urlparse(eval_url); host = parsed.netloc.lower().replace("www.", "")
+    if host in ("news.google.com", "google.com", "bit.ly", "t.co", "tinyurl.com") and target_url:
+        parsed = urlparse(target_url)
+        host = parsed.netloc.lower().replace("www.", "")
+    parts = host.split(".")
+    main = ".".join(parts[-2:]) if len(parts) >= 2 else host
+
+    # If domain is generic google.com aggregator or unknown, resolve media outlet from title/content
+    if main in ("google.com", "unknown", "") or host == "news.google.com":
+        search_text = (title or "") + " " + (content[:500] if content else "")
+        for m_name, m_dom in MEDIA_NAME_TO_DOMAIN.items():
+            if m_name in search_text:
+                main = m_dom
+                host = m_dom
+                break
+
+    # 1) Sentiment (Decoupled negative news reporting penalty)
     s = _sentiment_batch([content])[0]
-    abs_s = abs(s); sent_pts = 0.0
-    if abs_s <= 0.5:
+    abs_s = abs(s); sent_pts = DEFAULT_WEIGHTS["sentiment"]
+    
+    clickbait_keywords = ["震撼", "網全嚇傻", "竟然", "不看會後悔", "急了", "震撼彈", "太誇張", "傻眼", "敗類", "割韭菜"]
+    has_clickbait = any(kw in (title + content[:300]) for kw in clickbait_keywords)
+    is_mainstream = (main in TAIWAN_MAINSTREAM_DOMAINS or host in TAIWAN_MAINSTREAM_DOMAINS or main in FACT_CHECK_DOMAINS)
+    
+    if abs_s <= 0.6:
         sent_pts = DEFAULT_WEIGHTS["sentiment"]
-    elif abs_s < 0.8:
-        sent_pts = 5.0
+    elif abs_s <= 0.85:
+        sent_pts = 12.0
     else:
-        sent_pts = -DEFAULT_WEIGHTS["sentiment"]
+        if is_mainstream and not has_clickbait:
+            sent_pts = 10.0
+        elif has_clickbait or main in UGC_DOMAINS:
+            sent_pts = -DEFAULT_WEIGHTS["sentiment"]
+        else:
+            sent_pts = 5.0
     total += sent_pts
     res["sentiment"] = {"score": sent_pts, "desc": f"{s:.2f}", "weight": DEFAULT_WEIGHTS["sentiment"]}
 
-    # 2) Domain (simple rules)
-    parsed = urlparse(url); host = parsed.netloc.lower().replace("www.", "")
-    parts = host.split(".")
-    main = ".".join(parts[-2:]) if len(parts) >= 2 else host
+    # 2) Domain (simple rules with redirect resolution support)
     
     dom_pts = 15.0  # Default for unknown standard HTTPS sites
     if main in FACT_CHECK_DOMAINS or host in FACT_CHECK_DOMAINS:
@@ -500,8 +554,9 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
             elif worst["status"] == "accurate":
                 fc_pts = DEFAULT_WEIGHTS["fact_check"]
         else:
-            # 所有源都是 not_found/disabled/error → 視為查無資料
+            # 所有源都是 not_found/disabled/error → 視為查無資料 (即時新聞中性基準分 15.0)
             fc_desc = "not_found"
+            fc_pts = DEFAULT_WEIGHTS["fact_check"] * 0.5
         # 4) 用戶回饋（網路評論）→ 改為生成搜尋連結，不依賴回饋數
         #    有任一源命中（inaccurate/partial/accurate）視為有討論度，給部分分
         hit = any(r.get("status") in ("inaccurate", "partial", "accurate") for r in sources)
@@ -694,12 +749,12 @@ def analyze_batch_article_data(
 # 7. Existing single‑article wrapper & Flask API (minimal changes)
 # ---------------------------------------------------------------
 
-def analyze_article_data(title: str = "", url: str = "", content: str = "", publish_date=None, **_) -> Dict:
+def analyze_article_data(title: str = "", url: str = "", content: str = "", publish_date=None, target_url: str = None, **_) -> Dict:
     if not content:
         raise ValueError("content required for single analysis")
     if not url:
         url = "https://unknown"
-    return _score_single(title or "N/A", url, content, [title, content], publish_date=publish_date)
+    return _score_single(title or "N/A", url, content, [title, content], publish_date=publish_date, target_url=target_url)
 
 # --------------------------- Flask -----------------------------
 app = Flask(__name__)
@@ -720,7 +775,7 @@ def _extract_with_selenium(url: str, timeout: int = 20) -> Optional[Dict]:
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-gpu")
-    opts.add_argument("--user-data-dir=/tmp/chrome-newsanalyzer")
+    opts.add_argument("--user-data-dir=/home/min20120907/.config/google-chrome")
     driver = None
     try:
         driver = webdriver.Chrome(options=opts)
@@ -740,7 +795,89 @@ def _extract_with_selenium(url: str, timeout: int = 20) -> Optional[Dict]:
             except Exception: pass
 
 
-def _extract_from_url(url: str) -> Dict:
+def _extract_facebook_requests(url: str) -> Dict:
+    """Extract Facebook post content using requests + BeautifulSoup (no browser)."""
+    try:
+        import requests
+        from bs4 import BeautifulSoup
+        import re
+        import json
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        resp = requests.get(url, headers=headers, timeout=15)
+        if resp.status_code != 200:
+            return {}
+        
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        
+        # 1) Open Graph
+        title = None
+        og_title = soup.find('meta', property='og:title')
+        if og_title and og_title.get('content'):
+            title = og_title['content'].strip()
+        
+        og_desc = soup.find('meta', property='og:description')
+        content = og_desc.get('content', '').strip() if og_desc else ''
+        
+        # 2) JSON-LD
+        scripts = soup.find_all('script', type='application/ld+json')
+        for script in scripts:
+            try:
+                data = json.loads(script.string)
+                if isinstance(data, list):
+                    for item in data:
+                        if item.get('@type') in ['SocialMediaPosting', 'Article']:
+                            if not title and item.get('headline'):
+                                title = item['headline']
+                            if not content and item.get('description'):
+                                content = item['description']
+                            if item.get('articleBody') and len(item['articleBody']) > len(content):
+                                content = item['articleBody']
+                elif isinstance(data, dict) and data.get('@type') in ['SocialMediaPosting', 'Article']:
+                    if not title and data.get('headline'):
+                        title = data['headline']
+                    if not content and data.get('description'):
+                        content = data['description']
+                    if data.get('articleBody') and len(data['articleBody']) > len(content):
+                        content = data['articleBody']
+            except:
+                pass
+        
+        # 3) Fallback: extract from div with data-testid
+        if not content or len(content) < 50:
+            post_div = soup.find('div', {'data-testid': 'post_message'})
+            if post_div:
+                content = post_div.get_text(separator='\n').strip()
+        
+        # Clean up
+        if title and not title.startswith('Facebook'):
+            pass
+        else:
+            # Try to get title from URL
+            match = re.search(r'story_fbid=(\d+)', url)
+            if match:
+                title = f'Facebook Post {match.group(1)}'
+            else:
+                title = 'Facebook Post'
+        
+        # If content still empty, try to find any significant text
+        if not content or len(content) < 20:
+            for tag in soup.find_all(['p', 'div', 'span']):
+                text = tag.get_text(strip=True)
+                if len(text) > 50 and 'Facebook' not in text[:20]:
+                    content = text[:2000]
+                    break
+        
+        if content and len(content) > 20:
+            return {"title": title, "content": content[:4000], "publish_date": None}
+        return {}
+    except Exception as e:
+        print(f"[Extract] Facebook requests fallback error: {e}")
+        return {}
+
+def _extract_facebook_selenium(url: str) -> Dict:
     """Multi-strategy URL content extractor.
 
     Fallback chain:
@@ -794,6 +931,87 @@ def _extract_from_url(url: str) -> Dict:
                 "publish_date": pub,
             }
 
+def _extract_from_url(url: str) -> Dict:
+    """Multi-strategy URL content extractor.
+
+    Fallback chain:
+    1. trafilatura (fast, clean text)
+    2. newspaper3k (legacy, still works for some sites)
+    3. Playwright (JS-rendered pages, paywalls with accessible content)
+    4. Selenium headless (last resort, for heavily JS sites)
+    """
+    if not (url and url.startswith(("http://", "https://"))):
+        return {"error": "無效的網址"}
+
+    # --- Strategy 0: Facebook specific with session management ---
+    if "facebook.com" in url.lower():
+        # 優先使用帶有 session 管理的 Playwright
+        if FB_SESSION_AVAILABLE:
+            try:
+                print(f"[FB Session] 嘗試使用 session 管理擷取: {url}")
+                fb_result = get_facebook_post(url, timeout=25)
+                if fb_result and fb_result.get("text"):
+                    # 檢查是否為有效的貼文內容（不是登入頁面）
+                    text = fb_result.get("text", "")
+                    title = fb_result.get("title", "")
+                    if len(text.strip()) > 100 and not ("登入" in text and len(text.strip()) < 500):
+                        print(f"[FB Session] ✅ 成功擷取貼文，內容長度: {len(text)} 字元")
+                        return {
+                            "title": title,
+                            "content": text[:4000],
+                            "source": url,
+                            "publish_date": fb_result.get("publish_date"),
+                        }
+                    else:
+                        print(f"[FB Session] ⚠️ 擷取到的內容可能是登入頁面，嘗試 fallback")
+            except Exception as e:
+                print(f"[FB Session] ❌ 錯誤: {e}")
+        
+        # Fallback: 原來的 requests 方法
+        fb_result = _extract_facebook_requests(url)
+        if fb_result and fb_result.get("content"):
+            return fb_result
+
+    # --- Strategy 1: trafilatura ---
+    if TRAFILATURA_AVAILABLE:
+        try:
+            downloaded = trafilatura.fetch_url(url)
+            if downloaded:
+                text = trafilatura.extract(downloaded, include_comments=False, include_tables=True)
+                if text and len(text.strip()) >= 30:
+                    # Extract metadata (title, date) via trafilatura's metadata extractor
+                    title = ""
+                    pub = None
+                    try:
+                        from trafilatura.metadata import extract_metadata
+                        meta = extract_metadata(downloaded)
+                        if meta:
+                            title = meta.title or ""
+                            pub = meta.date or None
+                    except Exception:
+                        pass
+                    return {"title": title, "content": text[:4000], "source": url, "publish_date": pub}
+        except Exception:
+            pass
+
+    # --- Strategy 2: newspaper3k ---
+    if NEWSPAPER3K_AVAILABLE:
+        art = fetch_article(url)
+        if art is not None and art.text and len(art.text.strip()) >= 30:
+            pub = None
+            try:
+                pd = getattr(art, "publish_date", None)
+                if pd is not None:
+                    pub = pd.isoformat() if hasattr(pd, "isoformat") else str(pd)
+            except Exception:
+                pub = None
+            return {
+                "title": art.title or "",
+                "content": art.text[:4000],
+                "source": art.source_url or url,
+                "publish_date": pub,
+            }
+
     # --- Strategy 3: Playwright (Optimized for FB/JS-rendered sites) ---
     try:
         from pw_scraper import extract_with_playwright
@@ -801,9 +1019,25 @@ def _extract_from_url(url: str) -> Dict:
         if pw_result:
             title = pw_result.get("title", "")
             text = pw_result.get("text", "")
-            # If Playwright hit the FB login wall, skip it and let Selenium try
-            if title == "Facebook" and ("登入" in text or not text):
-                pass
+            
+            # 檢查 Playwright 是否抓到了無效的 FB 首頁或登入牆
+            is_fb_junk = ("facebook.com" in url.lower() and (title == "Facebook" or title.startswith("(1) ") or "登入" in text or "Log In" in text or "パスワード" in text or len(text.strip()) < 50))
+            
+            if is_fb_junk:
+                print(f"Playwright got FB junk (title={title}), falling back to Selenium for content, but keeping publish_date.")
+                # We save publish_date and let Selenium try to get the real content
+                publish_date = pw_result.get("publish_date")
+                sel_result = _extract_with_selenium(url)
+                if sel_result:
+                    sel_result["publish_date"] = publish_date # Merge the date
+                    return sel_result
+                else:
+                    return {
+                        "title": title,
+                        "content": text[:4000],
+                        "source": url,
+                        "publish_date": publish_date
+                    }
             else:
                 return {
                     "title": title,
@@ -814,10 +1048,29 @@ def _extract_from_url(url: str) -> Dict:
     except Exception as e:
         print(f"Playwright fallback failed: {e}")
 
-    # --- Strategy 4: Selenium headless (Legacy JS fallback) ---
+        # --- Strategy 4: Selenium headless (Legacy JS fallback) ---
     selenium_result = _extract_with_selenium(url)
-    if selenium_result:
+    if selenium_result and len(selenium_result.get("content", "").strip()) >= 50:
         return selenium_result
+
+    # --- Strategy 5: Fact Check Local Archive / Web Search Fallback ---
+    if COFACTS_LOCAL_AVAILABLE:
+        try:
+            print(f"[Archive Fallback] 嘗試從 Cofacts 存檔資料庫補全: {url}")
+            cf_match = get_fact_check(url)
+            if cf_match and cf_match.get("matched_text"):
+                t_match = cf_match.get("matched_text", "").strip()
+                if len(t_match) >= 20:
+                    first_l = t_match.splitlines()[0][:80]
+                    print(f"[Archive Fallback] 成功從 Cofacts 存檔資料庫還原內文 ({len(t_match)} 字元)")
+                    return {
+                        "title": first_l or "Facebook 存檔貼文",
+                        "content": t_match[:4000],
+                        "source": url,
+                        "publish_date": None
+                    }
+        except Exception as e:
+            print(f"[Archive Fallback] 錯誤: {e}")
 
     return {"error": "無法從此網址抓取內容。可能原因：需要登入、非新聞頁面、或網站封鎖自動抓取。請嘗試直接貼上文章內容。"}
 
@@ -842,6 +1095,7 @@ def judge_news():
     # 若只有 URL 沒有內容 → 自動抓取
     if not content and url:
         extracted = _extract_from_url(url)
+        print(f"DEBUG_EXTRACT_RESULT: {repr(extracted)}")
         if "error" in extracted:
             return {"error": extracted["error"]}, 422
         content = extracted["content"]
@@ -853,11 +1107,30 @@ def judge_news():
     if not content:
         return {"error": "請提供貼文內容或新聞網址"}, 422
 
+    print(f"DEBUG_JUDGE: title={repr(title)}, content_len={len(content)}, content={repr(content[:50])}", flush=True)
     # Prevent AI from analyzing the Facebook login wall
-    if "facebook.com" in url.lower() and (title == "Facebook" or "登入 Facebook" in title or "登入 Facebook" in content or "Log into Facebook" in content or "Log In" in content):
-        return {"error": "Facebook 阻擋了自動抓取（需要登入）。\n請直接「複製貼文文字」並貼上來進行分析！"}, 422
+    # Only block if title is exactly Facebook (or notification variants) and content is suspiciously short or strictly login text.
+    if "facebook.com" in url.lower() or not content or len(content) < 100:
+        if title == "Facebook" or title.startswith("(1) ") or title.startswith("(2) ") or "登入 Facebook" in title or len(content) < 300:
+            # 嘗試最後防線：從 Cofacts 存檔還原
+            if COFACTS_LOCAL_AVAILABLE:
+                try:
+                    print(f"[Judge Fallback] 嘗試從 Cofacts 資料庫自動還原: {url}")
+                    cf_match = get_fact_check(url)
+                    if cf_match and cf_match.get("matched_text"):
+                        t_match = cf_match.get("matched_text", "").strip()
+                        if len(t_match) >= 20:
+                            content = t_match[:4000]
+                            first_l = t_match.splitlines()[0][:80]
+                            title = first_l or "Facebook 存檔貼文"
+                            print(f"[Judge Fallback] 成功還原 FB 貼文內容 ({len(content)} 字元)")
+                except Exception as e:
+                    print(f"[Judge Fallback] 錯誤: {e}")
 
-    score = analyze_article_data(title=title, url=url, content=content, publish_date=extracted.get("publish_date"))
+            if title == "Facebook" or "登入 Facebook" in title or len(content) < 100:
+                return {"error": "Facebook 阻擋了自動抓取（無法精確解析，或需要不同登入權限）。\n請直接「複製貼文文字」並貼上來進行分析！"}, 422
+
+    score = analyze_article_data(title=title, url=url, content=content, publish_date=extracted.get("publish_date"), target_url=extracted.get("source"))
     return {
         "rating_text": score["rating_text"],
         "final_score": score["final_score"],
