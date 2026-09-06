@@ -242,6 +242,55 @@ FACT_CHECK_DOMAINS = {
     "rumtoast.com"
 }
 
+# ---------------------------------------------------------------
+# 動態開源黑名單訂閱 (Content Farm / SEO Spam Dynamic Blocklist)
+# 自動定期抓取 終結內容農場 (danny0838) 與 中文 SEO 垃圾網域 (cobaltdisco)
+# ---------------------------------------------------------------
+DYNAMIC_BLOCKLIST_DOMAINS: set = set()
+
+def fetch_dynamic_blocklists():
+    global DYNAMIC_BLOCKLIST_DOMAINS
+    import urllib.request
+    urls = [
+        "https://danny0838.github.io/content-farm-terminator/files/blocklist/content-farms.txt",
+        "https://raw.githubusercontent.com/cobaltdisco/Google-Chinese-Results-Blocklist/master/uBlacklist_subscription.txt",
+        "https://raw.githubusercontent.com/cobaltdisco/Google-Chinese-Results-Blocklist/master/uBlacklist_subscription_extra.txt"
+    ]
+    new_domains = set()
+    for url in urls:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "NewsAnalyzer-Bot/1.0"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                raw_text = resp.read().decode("utf-8", errors="ignore")
+                for line in raw_text.splitlines():
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        line = re.sub(r"^(127\.0\.0\.1|0\.0\.0\.0|\|\|)\s*", "", line)
+                        dom = line.replace("*://*.", "").replace("*://", "").replace("/*", "").strip("^/ ")
+                        if dom and "." in dom and not dom.startswith("*") and "/" not in dom:
+                            new_domains.add(dom.lower())
+        except Exception as e:
+            print(f"[Blocklist Warning] Failed to fetch {url}: {e}")
+
+    if new_domains:
+        DYNAMIC_BLOCKLIST_DOMAINS = new_domains
+        print(f"[Init] 成功更新動態內容農場與垃圾網域黑名單: 共 {len(DYNAMIC_BLOCKLIST_DOMAINS)} 筆")
+
+def _start_dynamic_blocklist_scheduler():
+    import threading
+    fetch_dynamic_blocklists()
+    def loop():
+        while True:
+            time.sleep(86400)  # 24小時更新一次
+            try:
+                fetch_dynamic_blocklists()
+            except Exception as e:
+                print(f"[Blocklist Scheduler ERR] {e}")
+    t = threading.Thread(target=loop, daemon=True)
+    t.start()
+
+_start_dynamic_blocklist_scheduler()
+
 _article_cache: Dict[str, Optional[Article]] = {}
 
 
@@ -499,6 +548,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     clickbait_keywords = ["震撼", "網全嚇傻", "竟然", "不看會後悔", "急了", "震撼彈", "太誇張", "傻眼", "敗類", "割韭菜"]
     has_clickbait = any(kw in (title + content[:300]) for kw in clickbait_keywords)
     is_mainstream = (main in TAIWAN_MAINSTREAM_DOMAINS or host in TAIWAN_MAINSTREAM_DOMAINS or main in FACT_CHECK_DOMAINS)
+    is_blocked = (main in DYNAMIC_BLOCKLIST_DOMAINS or host in DYNAMIC_BLOCKLIST_DOMAINS)
     
     if abs_s <= 0.6:
         sent_pts = DEFAULT_WEIGHTS["sentiment"]
@@ -507,7 +557,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     else:
         if is_mainstream and not has_clickbait:
             sent_pts = 10.0
-        elif has_clickbait or main in UGC_DOMAINS:
+        elif has_clickbait or main in UGC_DOMAINS or is_blocked:
             sent_pts = -DEFAULT_WEIGHTS["sentiment"]
         else:
             sent_pts = 5.0
@@ -521,7 +571,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         dom_pts = DEFAULT_WEIGHTS["domain"]  # 滿分 (查核機構)
     elif main in TAIWAN_MAINSTREAM_DOMAINS or host in TAIWAN_MAINSTREAM_DOMAINS:
         dom_pts = DEFAULT_WEIGHTS["domain"]
-    elif main in UGC_DOMAINS or host in UGC_DOMAINS:
+    elif main in UGC_DOMAINS or host in UGC_DOMAINS or is_blocked:
         dom_pts = 0.0  # UGC platforms (social media) have 0 inherent credibility
         
     if parsed.scheme == "http":
