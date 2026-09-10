@@ -46,7 +46,7 @@ Tamkang University, New Taipei City 25137, Taiwan \\
 % ABSTRACT
 %======================================================================
 \begin{abstract}
-This paper presents NewsAnalyzer, a real-time fake news detection system deploying a local large language model directly on client hardware for multi-dimensional credibility analysis---including structured viewpoint synthesis, inquiry targets, and contextual credibility scoring---without third-party cloud APIs, latency overheads, or privacy exposure. Unlike standard cloud API deployments, our system enforces strict JSON output via Ollama's grammar-constrained decoding (\texttt{format:\allowbreak json}), eliminating reasoning artifacts (e.g., thought markers) that trigger \texttt{JSON\-Decode\-Error} exceptions. The system integrates Sentence-BERT (SBERT) semantic embeddings over a localized Traditional Chinese fact-checking corpus (Cofacts) for nearest-neighbor retrieval. The resulting multi-signal assessment is rendered directly in the social feed via a Chrome Extension, providing robust misinformation deterrence for the Traditional Chinese social media ecosystem.
+This paper presents NewsAnalyzer, a real-time fake news detection system that deploys a local large language model directly on client hardware. NewsAnalyzer conducts multi-dimensional credibility analysis---including structured viewpoint synthesis, inquiry targets, and contextual credibility scoring---without relying on remote cloud APIs, thereby eliminating network latency overheads and user privacy risks. Unlike standard cloud API deployments, our system enforces strict JSON output via Ollama's grammar-constrained decoding (\texttt{format:\allowbreak json}), eliminating reasoning artifacts (e.g., \texttt{<thought>} tags) that trigger \texttt{JSONDecodeError} exceptions. The system integrates Sentence-BERT (SBERT) semantic embeddings over a localized Traditional Chinese fact-checking corpus (Cofacts) for nearest-neighbor retrieval. The resulting multi-signal assessment is rendered directly in the social feed via a Chrome Extension, providing robust misinformation deterrence for the Traditional Chinese social media ecosystem.
 \keywords{fake news detection, large language models, local deployment, Gemma, JSON structured output, semantic search, system robustness, Chrome extension, Taiwan news}
 \end{abstract}
 
@@ -269,9 +269,9 @@ A recurring challenge when incorporating modern open-weight LLMs into automated 
   \node[box, right=0.4cm of raw] (prompt) {Prompt Builder\\(System + Article)};
 
   \node[box, above right=0.45cm and 0.4cm of prompt] (unconstrained) {Unconstrained Prompt\\(Free-form generation)};
-  \node[box, below right=0.45cm and 0.4cm of prompt] (constrained) {Ollama Engine\\(\texttt{format:json}, think:false)};
+  \node[box, below right=0.45cm and 0.4cm of prompt] (constrained) {Ollama Engine\\(\texttt{format:json}, \texttt{think:false})};
 
-  \node[box, right=0.4cm of unconstrained] (fail) {JSONDecodeError\\(15--20\% failure rate)};
+  \node[box, right=0.4cm of unconstrained] (fail) {\texttt{JSONDecodeError}\\(15--20\% failure rate)};
   \node[box, right=0.4cm of constrained] (ok) {Strict JSON Object\\(100\% parse rate)};
 
   \draw[arr] (raw) -- (prompt);
