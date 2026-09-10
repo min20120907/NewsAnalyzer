@@ -1,0 +1,10 @@
+REMINDER (2026-09-06):
+New conference format ready for NewsAnalyzer.
+Location: ~/Documents/LaTeX2e+Proceedings+Templates+download/
+Files involved:
+  - llncs.cls (version 2.24)
+  - splncs04.bst (LNCS BibTeX style)
+  - samplepaper.tex (sample paper)
+  - llncsdoc.pdf (documentation)
+
+This format is ready for NewsAnalyzer to generate conference-style proceedings/reports.

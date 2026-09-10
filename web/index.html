@@ -342,10 +342,18 @@
       </div>
       <div class="deep-section-label">關鍵質疑點</div>
       <ul class="deep-key-points" id="deepKeyPoints"></ul>
-      <div class="deep-section-label">正反觀點</div>
-      <div class="deep-viewpoints" id="deepViewpoints"></div>
-      <div class="deep-section-label">分析總結</div>
-      <div class="deep-analysis-text" id="deepAnalysisText"></div>
+      
+      <button id="toggleDeepDetailsBtn" type="button" style="margin-top: 10px; padding: 6px 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #cbd5e1; cursor: pointer; font-size: 12.5px; display: none; width: 100%; text-align: center; transition: background 0.2s;">
+        🔍 查看進階分析細節 (AI 觀點與總結) ▾
+      </button>
+
+      <div id="deepDetailsContainer" style="display: none; margin-top: 5px;">
+        <div class="deep-section-label">正反觀點</div>
+        <div class="deep-viewpoints" id="deepViewpoints"></div>
+        <div class="deep-section-label">分析總結</div>
+        <div class="deep-analysis-text" id="deepAnalysisText"></div>
+      </div>
+
       <div class="deep-model" id="deepModel"></div>
       <div class="deep-basis" id="scoringBasis" style="display:none;"></div>
     </div>
@@ -670,7 +678,7 @@ function renderResult(data) {
   // 深入分析（本機 LLM）渲染
   const deepWrap = $('deepAnalysis');
   const da = data.deep_analysis || {};
-  if (da && (da.key_points && da.key_points.length) || da.analysis || da.viewpoints) {
+  if (da && ((da.key_points && da.key_points.length) || da.analysis || da.viewpoints)) {
     deepWrap.style.display = 'block';
     const score = parseInt(da.credibility_score, 10);
     const scoreValid = !isNaN(score);
@@ -696,6 +704,31 @@ function renderResult(data) {
     });
     $('deepViewpoints').textContent = da.viewpoints || '—';
     $('deepAnalysisText').textContent = da.analysis || '—';
+    
+    // 判斷是否有進階細節可顯示
+    const hasDetails = (da.viewpoints && da.viewpoints !== '—') || (da.analysis && da.analysis !== '—');
+    const toggleBtn = $('toggleDeepDetailsBtn');
+    const detailsContainer = $('deepDetailsContainer');
+    if (hasDetails) {
+        toggleBtn.style.display = 'block';
+        detailsContainer.style.display = 'none'; // 預設隱藏，避免雜亂
+        toggleBtn.textContent = '🔍 查看進階分析細節 (AI 觀點與總結) ▾';
+        
+        // 綁定點擊事件（先移除舊的，避免重複綁定）
+        toggleBtn.onclick = function() {
+            if (detailsContainer.style.display === 'none') {
+                detailsContainer.style.display = 'block';
+                toggleBtn.textContent = '隱藏進階分析細節 ▴';
+            } else {
+                detailsContainer.style.display = 'none';
+                toggleBtn.textContent = '🔍 查看進階分析細節 (AI 觀點與總結) ▾';
+            }
+        };
+    } else {
+        toggleBtn.style.display = 'none';
+        detailsContainer.style.display = 'none';
+    }
+
     const modelLine = '模型：' + (da.model || 'local-llm');
     const rs = data.rule_score;
     $('deepModel').textContent = (rs != null ? `規則分 ${Math.round(rs)} ｜ ` : '') + modelLine;

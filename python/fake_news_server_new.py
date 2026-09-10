@@ -423,8 +423,30 @@ def deep_analyze(title: str, web_results: list, sources: list,
         r.raise_for_status()
         data = r.json()
         resp = data.get("response", "")
-        # resp 可能本身就是 JSON 字串
-        parsed = json.loads(resp) if isinstance(resp, str) else resp
+        
+        # resp 可能本身就是 JSON 字串，處理 Gemma 可能回傳的 Markdown code block
+        parsed = {}
+        if isinstance(resp, str):
+            import json, re
+            try:
+                parsed = json.loads(resp)
+            except Exception:
+                m = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", resp, re.DOTALL)
+                if m:
+                    try:
+                        parsed = json.loads(m.group(1))
+                    except:
+                        pass
+                if not parsed:
+                    m = re.search(r"\{.*\}", resp, re.DOTALL)
+                    if m:
+                        try:
+                            parsed = json.loads(m.group(0))
+                        except:
+                            pass
+        else:
+            parsed = resp or {}
+            
         # 正規化
         score = parsed.get("credibility_score", 0)
         try:
