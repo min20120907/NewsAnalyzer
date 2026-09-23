@@ -367,11 +367,12 @@ def _similarity_batch(contents: List[str], refs: List[str]) -> List[float]:
 # ---------------------------------------------------------------
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:18443/api/generate")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma4:12b")
-# Qwen3.8-27B 常駐推理（llama.cpp FastMTP，OpenAI 相容）：deep_analyze 預設走這條。
+# Qwen3.8-27B 常駐推理（llama.cpp FastMTP，OpenAI 相容）與 deep-proxy（DeepSeek Web，OpenAI 相容）
+# 二選一：QWEN_URL 指到哪個後端就走哪個。2026-09-23 起預設走 deep-proxy（qwen 慢）。
 # Ollama 變數保留僅為相容（gemma 已實測無法在 CPU 時限內交卷）。
-QWEN_URL = os.environ.get("QWEN_URL", "http://127.0.0.1:8088/v1/chat/completions")
-QWEN_MODEL = os.environ.get("QWEN_MODEL", "qwen3.8-27b-fastmtp")
-DEEP_ANALYZE_TIMEOUT = float(os.environ.get("DEEP_ANALYZE_TIMEOUT", "20"))
+QWEN_URL = os.environ.get("QWEN_URL", "http://127.0.0.1:3000/v1/chat/completions")
+QWEN_MODEL = os.environ.get("QWEN_MODEL", "deepseek-chat")
+DEEP_ANALYZE_TIMEOUT = float(os.environ.get("DEEP_ANALYZE_TIMEOUT", "60"))
 QWEN_SLOTS_URL = os.environ.get("QWEN_SLOTS_URL", "http://127.0.0.1:8088/slots")
 # 佇列預估等待超過此秒數就跳過深入分析（:8088 單槽，Hermes 長上下文請求一次可佔 100-330s）
 QWEN_BUSY_ETA_SKIP = float(os.environ.get("QWEN_BUSY_ETA_SKIP", "5"))
@@ -433,7 +434,7 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list) -> 
 
 def deep_analyze(title: str, web_results: list, sources: list,
                  timeout: "float | None" = None) -> dict:
-    """呼叫本機 Qwen3.8-27B（:8088 FastMTP）做深入分析。回傳 dict 或空 dict（失敗）。"""
+    """呼叫 LLM（預設 deep-proxy DeepSeek，QWEN_URL 指到 :8088 則走本機 Qwen3.8-27B）做深入分析。回傳 dict 或空 dict（失敗）。"""
     if not REQUESTS_AVAILABLE:
         return {}
     prompt = _deep_analyze_build_prompt(title, web_results, sources)
@@ -514,12 +515,14 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
     n = max(1, min(n, 5))
     to = timeout or DEEP_ANALYZE_TIMEOUT
 
-    # 排隊感知：:8088 單槽常被 Hermes 的長上下文請求佔用（實測單次 100-330s），
-    # 硬等只會吃滿 20s 逾時後拿到空結果 → 前端「沒有 qwen 回覆」。
-    eta = qwen_queue_eta()
-    if eta > QWEN_BUSY_ETA_SKIP:
-        print(f"[judge] deep_analyze skipped: :8088 忙碌中 (queue eta≈{eta:.0f}s)", flush=True)
-        return {"skipped": "qwen_busy", "queue_eta_s": round(eta, 1)}
+    # 排隊感知：只在後端是 :8088（單槽，常被 Hermes 長上下文佔用 100-330s）時才檢查；
+    # deep-proxy（DeepSeek Web）走雲端排隊，不適用此邏輯。
+    # 硬等只會吃滿逾時後拿到空結果 → 前端「沒有 qwen 回覆」。
+    if "8088" in QWEN_URL:
+        eta = qwen_queue_eta()
+        if eta > QWEN_BUSY_ETA_SKIP:
+            print(f"[judge] deep_analyze skipped: :8088 忙碌中 (queue eta≈{eta:.0f}s)", flush=True)
+            return {"skipped": "qwen_busy", "queue_eta_s": round(eta, 1)}
 
     def _one():
         return deep_analyze(title, web_results, sources, timeout=to)
