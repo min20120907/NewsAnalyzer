@@ -731,7 +731,10 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     sim = 0.0
     web_results: List[Dict] = []
     with _cf.ThreadPoolExecutor(max_workers=3) as _ex:
-        _fu_fc = _ex.submit(_timed, get_all_fact_checks, content, timeout_api=15) \
+        # 事實查核吃「標題＋內文」：抓取器常把站台宣傳字留在內文開頭，
+        # 只傳 content 會讓 snippet[:300] 與關鍵字被垃圾污染（實例：UDN 經濟日報 LINE 烤肉文 → cofacts 誤報 not_found）
+        _fc_text = (f"{title}。{content}" if title else content)
+        _fu_fc = _ex.submit(_timed, get_all_fact_checks, _fc_text, timeout_api=15) \
             if MULTI_FC_AVAILABLE else None
         _fu_sim = _ex.submit(_timed, _similarity_batch, [content], refs)
         _fu_web = _ex.submit(_timed, _wsc.search, _query_src, max_results=6) \
