@@ -35,7 +35,7 @@ UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
 GOOGLE_API_KEY = os.environ.get("GOOGLE_FACTCHECK_API_KEY", "")
 GOOGLE_EP = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
 
-MYGOPEN_SEARCH = "https://www.mygopen.com/search"
+MYGOPEN_FEED = "https://www.mygopen.com/feeds/posts/default"
 MYGOPEN_BASE = "https://www.mygopen.com"
 
 CACHE_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -158,7 +158,7 @@ def get_google_factcheck(text: str, use_cache: bool = True,
 def _map_mygopen_title(title: str):
     """MyGoPen 標題通常含【易誤解】【詐騙】【是真的嗎】等，粗略對映。"""
     t = (title or "")
-    if any(k in t for k in ["詐騙", "假", "謠言", "不實", "易誤解", "錯誤"]):
+    if any(k in t for k in ["詐騙", "假", "謠言", "不實", "易誤解", "誤導", "錯誤"]):
         return "inaccurate"
     if any(k in t for k in ["是真的", "正確", "屬實", "破解"]):
         return "accurate"
@@ -171,36 +171,64 @@ def get_mygopen(text: str, use_cache: bool = True,
         return _empty("mygopen")
     # 取前兩句關鍵字做搜尋（避免整段太長抓不到）
     snippet = text[:120]
-    key = hashlib.sha1(("m:" + snippet).encode("utf-8")).hexdigest()
+    # key 前綴 m2：2026-09-23 起改走 Blogger feed（舊 m: 快取全是 HTML 版抓不到的 not_found，作廢）
+    key = hashlib.sha1(("m2:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("mygopen", key)
         if c:
             return c
+    # feed 的 q 是嚴格片語比對：整句 120 字查永遠 0 筆，必須斷成空白分隔關鍵字
     try:
-        r = requests.get(MYGOPEN_SEARCH, params={"q": snippet},
+        import jieba as _jieba
+        _STOP = {"網傳", "宣稱", "真的", "請問", "消息", "影片", "圖片",
+                 "可以", "這是", "那是", "是否", "今天", "昨天"}
+        _toks, _seen = [], set()
+        for _t in _jieba.cut(snippet):
+            _t = _t.strip("，。、；：『』「」！？!?,. \t")
+            if 2 <= len(_t) <= 6 and _t not in _seen and _t not in _STOP and any(
+                    "一" <= _c <= "鿿" for _c in _t):
+                _seen.add(_t)
+                _toks.append(_t)
+            if len(_toks) >= 4:
+                break
+        query = " ".join(_toks) or snippet[:30]
+    except Exception:
+        query = snippet[:30]
+    try:
+        # 舊版爬 /search HTML，但該站主題改 JS 渲染後頁面無內文連結（200 空殼），一律 not_found；
+        # 改打 Blogger 公開 feed（免 key、伺服器端回 JSON）：/feeds/posts/default?q=&alt=json
+        r = requests.get(MYGOPEN_FEED, params={"q": query, "alt": "json",
+                                               "max-results": 6},
                          headers={"User-Agent": UA,
                                   "Accept-Language": "zh-TW,zh;q=0.9"},
                          timeout=timeout_api)
         r.raise_for_status()
-        html = r.text
+        feed = (r.json().get("feed") or {})
+        entries = feed.get("entry") or []
     except Exception as e:
         res = {"source": "mygopen", "status": "error",
                "feedback_count": 0, "created_at": None,
                "article_id": None, "matched_text": None, "url": None,
                "reasons": [], "note": f"爬蟲錯誤: {e}"}
         return res
-    # 解析搜尋結果：MyGoPen 站內搜尋結果是 <article> 含 <a href> 與 <h2>/<h3> 標題
-    links = re.findall(r'<a[^>]+href="(' + re.escape(MYGOPEN_BASE) +
-                       r'/[\d]{4}/[\d]{2}/[^"]+)"[^>]*>', html)
-    titles = re.findall(r'<h[23][^>]*>(?:<a[^>]*>)?\s*(.*?)\s*(?:</a>)?</h[23]>',
-                        html, re.S)
-    clean = lambda s: re.sub(r"<[^>]+>", "", s).strip()
+    # 解析 feed 條目：title.$t + rel=alternate 連結（形如 /2026/09/xxx.html）
+    links, titles = [], []
+    for e in entries:
+        t = ((e.get("title") or {}).get("$t") or "").strip()
+        u = ""
+        for l in (e.get("link") or []):
+            if l.get("rel") == "alternate" and (l.get("href") or "").startswith(MYGOPEN_BASE):
+                u = l["href"]
+                break
+        if t and u:
+            titles.append(t)
+            links.append(u)
     if not links:
         res = _empty("mygopen")
         _mcache_put("mygopen", key, res)
         return res
     top_url = links[0]
-    top_title = clean(titles[0]) if titles else ""
+    top_title = titles[0] if titles else ""
     status = _map_mygopen_title(top_title)
     res = {"source": "mygopen", "status": status,
            "feedback_count": len(links), "created_at": None,
