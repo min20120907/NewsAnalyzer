@@ -187,17 +187,32 @@ def _sbert_sim(text_a: str, text_b: str):
     return float(np.dot(a, b))
 
 
+def _is_bare_url(text: str) -> bool:
+    """文章內文若只是純連結（無實質中文），相似度比對須改用回覆內文，否則 SBERT 必死（實測 URL vs 新聞 = -0.05）。"""
+    import re as _re
+    t = (text or "").strip()
+    if len(t) > 120:
+        return False
+    nospace = _re.sub(r"\s+", "", t)
+    if not (nospace.startswith("http://") or nospace.startswith("https://")):
+        return False
+    rest = _re.sub(r"https?://\S+", "", t)
+    cjk = sum(1 for ch in rest if "\u4e00" <= ch <= "\u9fff")
+    return cjk < 10
+
+
 def _classify_candidate(node) -> dict:
     """從 GraphQL node 解析查核結構。"""
     replies = node.get("articleReplies") or []
     has_false = has_true = has_opinion = False
+    has_verified_link = False  # NOT_ARTICLE 但回覆內含實質查證（如：新聞連結＋確認活動存在）
     total_fb = 0
     reasons = []
     for ar in replies:
         total_fb += int(ar.get("feedbackCount") or 0)
         rtype = (ar.get("reply") or {}).get("type", "").upper()
         rtext = (ar.get("reply") or {}).get("text") or ""
-        if rtype in ("FALSE", "RUMOR", "TRUE", "NOT_RUMOR", "OPINIONATED"):
+        if rtype in ("FALSE", "RUMOR", "TRUE", "NOT_RUMOR", "OPINIONATED", "NOT_ARTICLE"):
             if rtext.strip():
                 reasons.append({"type": rtype, "text": rtext.strip()[:200]})
         if rtype in ("FALSE", "RUMOR"):
@@ -206,12 +221,16 @@ def _classify_candidate(node) -> dict:
             has_true = True
         elif rtype == "OPINIONATED":
             has_opinion = True
+        elif rtype == "NOT_ARTICLE" and len(rtext.strip()) >= 15:
+            has_verified_link = True
     if has_false:
         status = "inaccurate"
     elif has_true:
         status = "accurate"
     elif has_opinion:
         status = "partial"
+    elif has_verified_link:
+        status = "accurate"
     else:
         status = "not_found"
     created_at = None
@@ -222,9 +241,15 @@ def _classify_candidate(node) -> dict:
         created_at = None
     article_id = node.get("id")
     url = f"https://cofacts.tw/article/{article_id}" if article_id else None
+    raw_text = node.get("text") or ""
+    if _is_bare_url(raw_text) and reasons:
+        # 純連結文：用最長的回覆內文當比對文本（內文本體是 URL，SBERT 無法比）
+        matched = max((r.get("text") or "" for r in reasons), key=len)
+    else:
+        matched = raw_text[:200]
     return {"status": status, "feedback_count": total_fb,
             "created_at": created_at, "article_id": article_id,
-            "matched_text": (node.get("text") or "")[:200],
+            "matched_text": matched[:200],
             "url": url, "reasons": reasons[:3]}
 
 
@@ -270,6 +295,99 @@ def local_match_candidates(query: str, top_k: int = 5) -> list:
     return results
 
 
+def _recall_queries(snippet: str) -> list:
+    """moreLikeThis 召回的多查詢備援：整段 snippet 常回 0 筆（標題太長太具體），
+    退回首句 / 去標點壓縮關鍵字再查（實例：機車抽獎案整句 0 筆，短查 2-4 筆）。"""
+    import re as _re
+    qs = []
+    s1 = snippet.split("。")[0].strip()
+    if s1 and len(s1) >= 8 and s1 != snippet.strip():
+        qs.append(s1[:100])
+    compact = _re.sub(r"[，。、；：『』「」！？!?,.\s]", "", snippet)
+    if len(compact) >= 12:
+        qs.append(compact[:60])
+    return qs[:2]
+
+
+def _keyword_query(snippet: str) -> str:
+    """jieba 關鍵字查詢（最後備援）：空白分隔的短詞組是 moreLikeThis 最吃的形式
+    （實例：'交通安全月 機車族 零違規 抽獎 公路局 重機' 直接命中目標 #1）。lazy 載入，失敗回 ''。"""
+    try:
+        import jieba as _jieba
+        _STOP = {"推出", "符合", "資格", "表示", "指出", "認為", "今天", "昨天",
+                 "今年", "記者", "報導", "中央社", "綜合", "開跑", "大獎",
+                 "活動", "事項", "相關", "進行", "造成", "導致", "呼籲", "強調"}
+        toks, seen = [], set()
+        for t in _jieba.cut(snippet[:200]):
+            t = t.strip()
+            if len(t) < 2 or len(t) > 6 or t in seen:
+                continue
+            if not any("\u4e00" <= ch <= "\u9fff" for ch in t):
+                continue
+            if t in _STOP:
+                continue
+            seen.add(t)
+            toks.append(t)
+            if len(toks) >= 8:
+                break
+        return " ".join(toks)
+    except Exception:
+        return ""
+
+
+def _graphql_recall(snippet: str, timeout_api: int) -> list:
+    """主查＋短查＋jieba 關鍵字備援，合併去重（by id），最多 8 個 node。"""
+    seen, nodes = set(), []
+    queries = [snippet] + _recall_queries(snippet)
+    try:
+        for qi, q in enumerate(queries):
+            if qi > 0 and len(nodes) >= 3:
+                break
+            r = requests.post(COFACTS_API_URL, json={
+                "query": _GRAPHQL, "variables": {
+                    "filter": {"moreLikeThis": {"like": q}}}},
+                headers={"User-Agent": UA, "Content-Type": "application/json"},
+                timeout=timeout_api + 5)
+            if r.status_code != 200:
+                continue
+            data = r.json()
+            edges = (data.get("data") or {}).get("ListArticles", {}).get("edges") or []
+            for edge in edges:
+                node = edge.get("node") or {}
+                nid = node.get("id")
+                if nid and nid not in seen:
+                    seen.add(nid)
+                    nodes.append(node)
+                if len(nodes) >= 8:
+                    break
+    except Exception:
+        pass
+    if len(nodes) < 3:
+        # 最後備援：jieba 關鍵字查詢（lazy，約 +3s，只在前面撈不到時觸發）
+        try:
+            kq = _keyword_query(snippet)
+            if kq:
+                r = requests.post(COFACTS_API_URL, json={
+                    "query": _GRAPHQL, "variables": {
+                        "filter": {"moreLikeThis": {"like": kq}}}},
+                    headers={"User-Agent": UA, "Content-Type": "application/json"},
+                    timeout=timeout_api + 5)
+                if r.status_code == 200:
+                    data = r.json()
+                    edges = (data.get("data") or {}).get("ListArticles", {}).get("edges") or []
+                    for edge in edges:
+                        node = edge.get("node") or {}
+                        nid = node.get("id")
+                        if nid and nid not in seen:
+                            seen.add(nid)
+                            nodes.append(node)
+                        if len(nodes) >= 8:
+                            break
+        except Exception:
+            pass
+    return nodes
+
+
 def get_fact_check(text: str, use_cache: bool = True,
                    timeout_api: int = 15) -> dict:
     """三階段事實查核入口：
@@ -293,23 +411,9 @@ def get_fact_check(text: str, use_cache: bool = True,
 
     candidates = []
 
-    # 1. 階段一召回：Cofacts GraphQL API
-    payload = {"query": _GRAPHQL, "variables": {
-        "filter": {"moreLikeThis": {"like": snippet}}}}
-    try:
-        r = requests.post(COFACTS_API_URL, json=payload,
-                          headers={"User-Agent": UA, "Content-Type": "application/json"},
-                          timeout=timeout_api + 5)
-        if r.status_code == 200:
-            data = r.json()
-            edges = (data.get("data") or {}).get("ListArticles", {}).get("edges") or []
-            for edge in edges[:5]:
-                node = edge.get("node")
-                if node:
-                    c_info = _classify_candidate(node)
-                    candidates.append(c_info)
-    except Exception:
-        pass
+    # 1. 階段一召回：Cofacts GraphQL API（主查＋短查備援合併）
+    for node in _graphql_recall(snippet, timeout_api):
+        candidates.append(_classify_candidate(node))
 
     # 2. 階段一召回：本地 SBERT Top-K
     local_cands = local_match_candidates(snippet, top_k=5)
