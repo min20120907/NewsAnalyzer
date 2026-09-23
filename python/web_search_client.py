@@ -192,34 +192,47 @@ def search_google_news(query: str, max_results: int = MAX_RESULTS,
 
 
 def search(query: str, max_results: int = MAX_RESULTS) -> List[Dict[str, str]]:
-    """主入口：三源並行 fan-out，照優先順序合併（瀏覽器 Google > News RSS > bing）。
+    """主入口：快源並行（News RSS + bing，約 1 秒）→ 不足才補瀏覽器 Google。
 
+    瀏覽器啟動一次約 2.8 秒，只當備援；合併順序為 News RSS > bing > 瀏覽器
+    （去重後截斷，快源優先）。
     SerpApi / Serper 已停用（配額燒完、key 失效），函式保留以備未來恢復。
-    並行以延遲最長者為準；各源內部已自行吞錯回空 list。
+    各源內部已自行吞錯回空 list。
     """
     import concurrent.futures as _cf
-    _parts: List[List[Dict[str, str]]] = [[], [], []]
-    with _cf.ThreadPoolExecutor(max_workers=3) as _ex:
-        _fu = [
-            _ex.submit(search_browser_google, query, max_results),
-            _ex.submit(search_google_news, query, max_results),
-            _ex.submit(search_bing, query=query, max_results=max_results),
-        ]
-        for _i, _f in enumerate(_fu):
-            try:
-                _parts[_i] = _f.result() or []
-            except Exception as _e:
-                print(f"[web_search_client] fanout source {_i} failed: {_e}")
+    with _cf.ThreadPoolExecutor(max_workers=2) as _ex:
+        _f_n = _ex.submit(search_google_news, query, max_results)
+        _f_g = _ex.submit(search_bing, query=query, max_results=max_results)
+        try:
+            _news = _f_n.result() or []
+        except Exception as _e:
+            print(f"[web_search_client] news failed: {_e}")
+            _news = []
+        try:
+            _bing = _f_g.result() or []
+        except Exception as _e:
+            print(f"[web_search_client] bing failed: {_e}")
+            _bing = []
     results: List[Dict[str, str]] = []
-    for _p in _parts:
-        results += _p
-    seen, dedup = set(), []
-    for r in results:
-        if r["url"] in seen:
+    seen: set = set()
+    for _r in _news + _bing:
+        if _r["url"] in seen:
             continue
-        seen.add(r["url"])
-        dedup.append(r)
-    return dedup[:max_results]
+        seen.add(_r["url"])
+        results.append(_r)
+    if len(results) < max_results and os.environ.get("BROWSER_SEARCH", "1") != "0":
+        try:
+            _b = search_browser_google(query, max_results=max_results) or []
+        except Exception as _e:
+            print(f"[web_search_client] browser failed: {_e}")
+            _b = []
+        for _r in _b:
+            if _r["url"] in seen:
+                continue
+            seen.add(_r["url"])
+            _r["source"] = "browser_google"
+            results.append(_r)
+    return results[:max_results]
 
 
 def search_browser_google(query: str, max_results: int = MAX_RESULTS,
