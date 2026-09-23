@@ -360,6 +360,55 @@ def _similarity_batch(contents: List[str], refs: List[str]) -> List[float]:
 
 
 # ---------------------------------------------------------------
+# 4.4b 搜尋相關性備援：首查結果若與標題無關（突發新聞 RSS 尚未收錄），
+#      用縮短查詢（去站台後綴、取首段）再查一次並合併，避免 deep LLM
+#      拿到無關證據、被迫用過時內建知識臆斷（實例：日相高市案）。
+# ---------------------------------------------------------------
+def _web_query_core(query: str) -> str:
+    core = (query or "").split("|")[0].strip()
+    return core
+
+
+def _web_relevant_count(web_results: list, query: str) -> int:
+    core = _web_query_core(query).replace(" ", "").replace("　", "")
+    if len(core) < 8:
+        return len(web_results)
+    keys = [core[i:i + 4] for i in range(0, len(core) - 3, 2)]
+    n = 0
+    for r in web_results or []:
+        t = (r.get("title") or "").replace(" ", "").replace("　", "")
+        if any(k in t for k in keys):
+            n += 1
+    return n
+
+
+def _web_search_fallback(query: str, web_results: list, max_results: int = 6) -> list:
+    """相關 < 2 筆時觸發：縮短查詢再查並去重合併。失敗回原結果。"""
+    if not (WEB_SEARCH_AVAILABLE and _wsc is not None):
+        return web_results
+    try:
+        if _web_relevant_count(web_results, query) >= 2:
+            return web_results
+        core = _web_query_core(query)
+        short = core.split()[0] if core.split() else core
+        if len(short) < 6 or short == query:
+            return web_results
+        extra = _wsc.search(short, max_results=max_results) or []
+        seen = {r.get("url") for r in web_results}
+        merged = list(web_results)
+        for r in extra:
+            if r.get("url") in seen:
+                continue
+            seen.add(r.get("url"))
+            merged.append(r)
+        print(f"[judge] web fallback query={short[:30]} +{len(merged) - len(web_results)}")
+        return merged[:max_results]
+    except Exception as _e:
+        print(f"[judge] web fallback failed: {_e}")
+        return web_results
+
+
+# ---------------------------------------------------------------
 # 4.5 Deep Analysis (local LLM via :8088 Qwen3.8-27B)
 #     把標題 + 網路搜尋結果摘要 + 三源查核結論餵入本機模型，
 #     產出結構化深入分析：質疑點 / 正反觀點 / 可信度分數(0-100) / 總結。
@@ -401,6 +450,8 @@ def qwen_queue_eta() -> float:
 
 _DEEP_PROMPT_TMPL = """你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字），格式：
 {{"key_points":["質疑點1","質疑點2"],"viewpoints":"正反觀點摘要(80字內)","credibility_score":0到100的整數,"analysis":"100字內總結"}}
+今天日期：{today}。你的內建知識可能已過時，人物職稱、時事現況一律以「網路搜尋結果摘要」為準，嚴禁憑內建知識斷言（例如現任首相是誰）。
+若搜尋結果皆與標題無關、且查核源皆為 not_found/disabled：不可臆斷為假訊息，credibility_score 取 55 到 65，並在 analysis 明說「無相關佐證」。
 新聞標題：{title}
 網路搜尋結果摘要：
 {web_summary}
@@ -427,9 +478,11 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list) -> 
         mt = (s.get("matched_text") or "")[:60]
         fc_lines.append(f"  - {nm}: {st}（{mt}）" if mt else f"  - {nm}: {st}")
     fc_summary = "\n".join(fc_lines) or "（無查核源）"
+    from datetime import date as _date
     return _DEEP_PROMPT_TMPL.format(title=title or "（無標題）",
                                     web_summary=web_summary,
-                                    fc_summary=fc_summary)
+                                    fc_summary=fc_summary,
+                                    today=_date.today().isoformat())
 
 
 def deep_analyze(title: str, web_results: list, sources: list,
@@ -690,6 +743,9 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         if _fu_web is not None:
             try:
                 web_results, timings["web_search"] = _fu_web.result()
+                _t0 = time.perf_counter()
+                web_results = _web_search_fallback(_query_src, web_results)
+                timings["web_search"] += round((time.perf_counter() - _t0) * 1000, 1)
             except Exception as _e:
                 print(f"[judge] web_search failed: {_e}")
 
