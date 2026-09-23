@@ -223,27 +223,38 @@ def _empty(source):
 
 def get_all_fact_checks(text: str, use_cache: bool = True,
                         timeout_api: int = 15) -> list:
-    """並行查詢所有源，回傳結果清單（含 disabled/error 狀態的源也列出）。"""
-    results = []
-    # Cofacts（含本地 SBERT fallback）
-    try:
-        results.append(get_fact_check_structured(text, use_cache=use_cache,
-                                                 timeout_api=timeout_api))
-    except Exception as e:
-        results.append({**_empty("cofacts"), "status": "error",
-                        "note": str(e)})
-    # Google（無 key 自動 disabled）
-    try:
-        results.append(get_google_factcheck(text, use_cache=use_cache,
-                                            timeout_api=timeout_api))
-    except Exception as e:
-        results.append({**_empty("google"), "status": "error", "note": str(e)})
-    # MyGoPen（爬蟲）
-    try:
-        results.append(get_mygopen(text, use_cache=use_cache,
-                                   timeout_api=timeout_api))
-    except Exception as e:
-        results.append({**_empty("mygopen"), "status": "error", "note": str(e)})
+    """並行查詢所有源，回傳結果清單（含 disabled/error 狀態的源也列出）。
+
+    三源皆為 requests 呼叫＋各自 try/except，自行吞錯；快取每次開新連線，
+    例外同樣吞掉，因此 ThreadPool 並行安全。順序固定 [cofacts, google, mygopen]。
+    """
+    import concurrent.futures as _cf
+
+    def _run_cofacts():
+        try:
+            return get_fact_check_structured(text, use_cache=use_cache,
+                                             timeout_api=timeout_api)
+        except Exception as e:
+            return {**_empty("cofacts"), "status": "error", "note": str(e)}
+
+    def _run_google():
+        try:
+            return get_google_factcheck(text, use_cache=use_cache,
+                                        timeout_api=timeout_api)
+        except Exception as e:
+            return {**_empty("google"), "status": "error", "note": str(e)}
+
+    def _run_mygopen():
+        try:
+            return get_mygopen(text, use_cache=use_cache,
+                               timeout_api=timeout_api)
+        except Exception as e:
+            return {**_empty("mygopen"), "status": "error", "note": str(e)}
+
+    with _cf.ThreadPoolExecutor(max_workers=3) as _ex:
+        _fu = [_ex.submit(_run_cofacts), _ex.submit(_run_google),
+               _ex.submit(_run_mygopen)]
+        results = [_f.result() for _f in _fu]
     return results
 
 
