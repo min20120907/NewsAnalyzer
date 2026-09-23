@@ -192,16 +192,27 @@ def search_google_news(query: str, max_results: int = MAX_RESULTS,
 
 
 def search(query: str, max_results: int = MAX_RESULTS) -> List[Dict[str, str]]:
-    """主入口：瀏覽器 Google → Google News RSS → free-search bing。
+    """主入口：三源並行 fan-out，照優先順序合併（瀏覽器 Google > News RSS > bing）。
 
     SerpApi / Serper 已停用（配額燒完、key 失效），函式保留以備未來恢復。
+    並行以延遲最長者為準；各源內部已自行吞錯回空 list。
     """
+    import concurrent.futures as _cf
+    _parts: List[List[Dict[str, str]]] = [[], [], []]
+    with _cf.ThreadPoolExecutor(max_workers=3) as _ex:
+        _fu = [
+            _ex.submit(search_browser_google, query, max_results),
+            _ex.submit(search_google_news, query, max_results),
+            _ex.submit(search_bing, query=query, max_results=max_results),
+        ]
+        for _i, _f in enumerate(_fu):
+            try:
+                _parts[_i] = _f.result() or []
+            except Exception as _e:
+                print(f"[web_search_client] fanout source {_i} failed: {_e}")
     results: List[Dict[str, str]] = []
-    results += search_browser_google(query, max_results=max_results)
-    if len(results) < max_results:
-        results += search_google_news(query, max_results=max_results - len(results))
-    if len(results) < max_results:
-        results += search_bing(query=query, max_results=max_results - len(results))
+    for _p in _parts:
+        results += _p
     seen, dedup = set(), []
     for r in results:
         if r["url"] in seen:
