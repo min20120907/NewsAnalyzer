@@ -657,15 +657,47 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     total += dom_pts
     res["domain"] = {"score": dom_pts, "desc": main, "weight": DEFAULT_WEIGHTS["domain"]}
 
+    # 查詢詞先算好（只依賴 title/content，供下面並行任務共用）
+    _title_clean = (title or "").strip()
+    if _title_clean in ("", "N/A"):
+        _query_src = content[:80].strip()
+    else:
+        _query_src = _title_clean
+    web_review_query = quote_plus(_query_src)
+    review_links = {
+        "threads": f"https://www.threads.net/search?q={web_review_query}",
+        "duckduckgo": f"https://duckduckgo.com/?q={web_review_query}+評論+討論",
+    }
+
+    # 3)/4)/6) 多源事實查核 + 5) Similarity + web_search 並行送出（網路 I/O 與 GPU 推理重疊）
+    def _timed(_fn, *_a, **_k):
+        _s = time.perf_counter()
+        return (_fn(*_a, **_k), round((time.perf_counter() - _s) * 1000, 1))
+    import concurrent.futures as _cf
+    sources = []
+    sim = 0.0
+    web_results: List[Dict] = []
+    with _cf.ThreadPoolExecutor(max_workers=3) as _ex:
+        _fu_fc = _ex.submit(_timed, get_all_fact_checks, content, timeout_api=15) \
+            if MULTI_FC_AVAILABLE else None
+        _fu_sim = _ex.submit(_timed, _similarity_batch, [content], refs)
+        _fu_web = _ex.submit(_timed, _wsc.search, _query_src, max_results=6) \
+            if (WEB_SEARCH_AVAILABLE and _wsc is not None) else None
+        if _fu_fc is not None:
+            sources, timings["fact_check"] = _fu_fc.result()
+        _sim_list, timings["similarity"] = _fu_sim.result()
+        sim = _sim_list[0]
+        if _fu_web is not None:
+            try:
+                web_results, timings["web_search"] = _fu_web.result()
+            except Exception as _e:
+                print(f"[judge] web_search failed: {_e}")
+
     # 3)/4)/6) 多源事實查核（Cofacts + Google + MyGoPen）共用一次查詢
     fc_pts = 0.0; fc_desc = "not_checked"
     fb_pts = 0.0; fb_desc = "none"
     tl_pts = 0.0; tl_desc = "unknown"
-    sources = []
     if MULTI_FC_AVAILABLE:
-        _t = time.perf_counter()
-        sources = get_all_fact_checks(content, timeout_api=15)
-        timings["fact_check"] = round((time.perf_counter() - _t) * 1000, 1)
         # 取最嚴重的查核結論（inaccurate > partial > accurate > not_found/disabled）
         sev = {"inaccurate": 3, "partial": 2, "accurate": 1, "not_found": 0, "disabled": 0, "error": 0}
         worst = None
@@ -718,10 +750,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     res["fact_check"] = {"score": fc_pts, "desc": fc_desc, "weight": DEFAULT_WEIGHTS["fact_check"]}
     res["user_feedback"] = {"score": fb_pts, "desc": fb_desc, "weight": DEFAULT_WEIGHTS["feedback"]}
 
-    # 5) Similarity
-    _t = time.perf_counter()
-    sim = _similarity_batch([content], refs)[0]
-    timings["similarity"] = round((time.perf_counter() - _t) * 1000, 1)
+    # 5) Similarity（已在上面並行算好）
     sim_pts = sim * DEFAULT_WEIGHTS["similarity"]
     total += sim_pts
     res["similarity"] = {"score": sim_pts, "desc": f"{sim:.2%}", "weight": DEFAULT_WEIGHTS["similarity"]}
@@ -729,30 +758,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     # 6) Timeliness 寫入
     res["timeliness"] = {"score": tl_pts, "desc": tl_desc, "weight": DEFAULT_WEIGHTS["timeliness"]}
 
-    # 網路評論搜尋連結（用戶回饋維度改為此）
-    # 優先使用真實標題；標題為空或佔位 'N/A' 時改用內文前段
-    _title_clean = (title or "").strip()
-    if _title_clean in ("", "N/A"):
-        _query_src = content[:80].strip()
-    else:
-        _query_src = _title_clean
-    web_review_query = quote_plus(_query_src)
-    review_links = {
-        "threads": f"https://www.threads.net/search?q={web_review_query}",
-        "duckduckgo": f"https://duckduckgo.com/?q={web_review_query}+評論+討論",
-    }
-
-    # 真實網路評論/討論搜尋結果（Serper → free-search bing → Google News RSS 回退）
-    # 無 key 或全源失敗時回空 list，前端自動隱藏該區塊
-    web_results: List[Dict] = []
-    if WEB_SEARCH_AVAILABLE and _wsc is not None:
-        try:
-            _t = time.perf_counter()
-            web_results = _wsc.search(_query_src, max_results=6)
-            timings["web_search"] = round((time.perf_counter() - _t) * 1000, 1)
-        except Exception as _e:
-            print(f"[judge] web_search failed: {_e}")
-            web_results = []
+    # web_results 已在上面並行取得（失敗則為空 list，前端自動隱藏該區塊）
 
     final = (total / avail) * 100 if avail > 0 else 0.0
     rule_score = final
