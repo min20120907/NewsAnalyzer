@@ -1,13 +1,3 @@
-// ==UserScript==
-// @name         Facebook Post Info Client -> Server Scorer (v1.3 Revived - POST, Simpler Placement)
-// @namespace    http://tampermonkey.net/
-// @version      1.3.1
-// @description  Reverted to simpler button placement (targets specific area). Sends data via POST. Selectors need F12 tuning!
-// @match        https://www.facebook.com/*
-// @grant        GM_xmlhttpRequest
-// @connect      163.13.127.42
-// @connect      localhost     // Keep localhost for testing if needed
-// ==/UserScript==
 
 (function() {
     'use strict';
@@ -38,7 +28,7 @@ const SELECTOR_BUTTON_TARGET_AREA_ALT = 'div[data-ad-rendering-role="story_messa
     // --- END SELECTORS ---
 
     // Server configuration - UPDATED IP
-    const SERVER_IP = "120.126.84.227"; // <--- MODIFIED IP ADDRESS
+    const SERVER_IP = "127.0.0.1"; // <--- MODIFIED IP ADDRESS
     const SERVER_PORT = "5000";
     const SERVER_ENDPOINT = `http://${SERVER_IP}:${SERVER_PORT}/judge`;
 
@@ -220,12 +210,17 @@ const SELECTOR_BUTTON_TARGET_AREA_ALT = 'div[data-ad-rendering-role="story_messa
                             return;
                         }
                         const postData = JSON.stringify(dataToSend);
-                        GM_xmlhttpRequest({
-                            method: "POST", url: SERVER_ENDPOINT, headers: { "Content-Type": "application/json;charset=UTF-8" },
-                            data: postData, timeout: 30000,
-                            onload: function(response) { if(infoPanel) { if (response.status >= 200 && response.status < 300) { infoPanel.innerHTML = response.responseText; } else { console.error("Server error:", response.status, response.statusText); infoPanel.innerHTML = `<p style="color: red;">錯誤 ${response.status}</p>`; }}},
-                            onerror: function(response) { if(infoPanel) { console.error("Request error:", response); infoPanel.innerHTML = '<p style="color: red;">錯誤：無法連接伺服器。</p>'; }},
-                            ontimeout: function() { if(infoPanel){ console.error("Request timeout."); infoPanel.innerHTML = '<p style="color: orange;">錯誤：請求超時。</p>'; }}
+                        chrome.runtime.sendMessage({ type: 'na_judge', url: SERVER_ENDPOINT, body: postData }, function (res) {
+                            if (!infoPanel) { return; }
+                            if (!res || !res.ok) {
+                                console.error("Request error:", res);
+                                infoPanel.innerHTML = '<p style="color: red;">錯誤：無法連接伺服器。</p>';
+                                return;
+                            }
+                            var data = null;
+                            try { data = JSON.parse(res.text); } catch (e) {}
+                            var html = data ? renderResultHtml(data) : null;
+                            infoPanel.innerHTML = html || ('<pre style="white-space: pre-wrap;">' + escHtml(res.text) + '</pre>');
                         });
                     }, 50);
                 }

@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "News Analyzer FB Panel (test)",
+  "version": "0.1",
+  "description": "Test build: renders /judge result on Facebook posts",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.facebook.com/*"
+      ],
+      "js": [
+        "na_panel.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:5000/*"
+  ]
+}
