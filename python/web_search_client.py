@@ -1,16 +1,18 @@
-"""網路評論搜尋客戶端（多源，優先 SerpApi）。
+"""網路評論搜尋客戶端（多源，優先瀏覽器 Google）。
 
 來源優先順序：
-  1. SerpApi（Google SERP JSON API，需 key：SERPAPI_API_KEY）
-  2. Serper.dev（Google SERP JSON API，需 key：SERPER_API_KEY）
+  1. 瀏覽器 Google 搜尋（headless Chrome + Selenium，免 key）
+  2. Google News RSS（免 key，中文備援）
   3. 自架開源 free-search 服務（vandyand/free-search，bing scraping，免 key）
-  4. Google News RSS（免 key，中文備援）
+  （SerpApi / Serper 保留函式但預設停用：配額燒完且 key 失效，見 search()）
 
 所有來源失敗時回傳空 list，由呼叫方決定要給搜尋連結。
 
 環境變數：
-  SERPAPI_API_KEY   SerpApi 金鑰（無則跳過該源）
-  SERPER_API_KEY    Serper 金鑰（無則跳過該源）
+  SERPAPI_API_KEY   SerpApi 金鑰（保留，未使用）
+  SERPER_API_KEY    Serper 金鑰（保留，未使用）
+  BROWSER_SEARCH    設為 0 停用瀏覽器搜尋（預設啟用）
+  BROWSER_MIN_GAP   瀏覽器搜尋最小間隔秒數（預設 2.0，防 Google 節流）
   WEB_SEARCH_BASE   free-search 服務網址（預設 http://127.0.0.1:3030）
   WEB_SEARCH_ENGINE free-search 引擎（預設 bing）
 """
@@ -20,6 +22,8 @@ import base64
 import json
 import os
 import re
+import threading
+import time
 import urllib.parse
 import urllib.request
 from typing import List, Dict, Optional
@@ -32,6 +36,10 @@ DEFAULT_BASE = os.environ.get("WEB_SEARCH_BASE", "http://127.0.0.1:3030")
 DEFAULT_ENGINE = os.environ.get("WEB_SEARCH_ENGINE", "bing")
 DEFAULT_TIMEOUT = 20
 MAX_RESULTS = 8
+
+# 瀏覽器搜尋節流鎖（模組級全域，避免併發觸發 Google bot 偵測）
+_BROWSER_LOCK = threading.Lock()
+_BROWSER_LAST = 0.0
 
 
 def _decode_bing_url(raw: str) -> str:
@@ -184,11 +192,12 @@ def search_google_news(query: str, max_results: int = MAX_RESULTS,
 
 
 def search(query: str, max_results: int = MAX_RESULTS) -> List[Dict[str, str]]:
-    """主入口：SerpApi → Serper → Google News RSS → free-search bing。"""
+    """主入口：瀏覽器 Google → Google News RSS → free-search bing。
+
+    SerpApi / Serper 已停用（配額燒完、key 失效），函式保留以備未來恢復。
+    """
     results: List[Dict[str, str]] = []
-    results += search_serpapi(query, max_results=max_results)
-    if len(results) < max_results:
-        results += search_serper(query, max_results=max_results - len(results))
+    results += search_browser_google(query, max_results=max_results)
     if len(results) < max_results:
         results += search_google_news(query, max_results=max_results - len(results))
     if len(results) < max_results:
@@ -200,6 +209,91 @@ def search(query: str, max_results: int = MAX_RESULTS) -> List[Dict[str, str]]:
         seen.add(r["url"])
         dedup.append(r)
     return dedup[:max_results]
+
+
+def search_browser_google(query: str, max_results: int = MAX_RESULTS,
+                          timeout: int = DEFAULT_TIMEOUT) -> List[Dict[str, str]]:
+    """headless Chrome 直搜 Google（免 key）。失敗回空 list。
+
+    節流保護：全域鎖 + 最小間隔（BROWSER_MIN_GAP，預設 2 秒），避免併發觸發
+    Google bot 偵測。每次呼叫用獨立 profile 目錄（避開 SingletonLock 衝突）。
+    """
+    if not query or os.environ.get("BROWSER_SEARCH", "1") == "0":
+        return []
+    try:
+        from selenium import webdriver
+        from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+    except Exception as e:
+        print(f"[web_search_client] browser search: no selenium ({e})")
+        return []
+    import tempfile
+    global _BROWSER_LAST
+    gap = float(os.environ.get("BROWSER_MIN_GAP", "2.0"))
+    out: List[Dict[str, str]] = []
+    profdir = tempfile.mkdtemp(prefix="na-chrome-")
+    driver = None
+    try:
+        with _BROWSER_LOCK:
+            wait = gap - (time.time() - _BROWSER_LAST)
+            if wait > 0:
+                time.sleep(wait)
+            o = Options()
+            o.add_argument("--headless=new")
+            o.add_argument("--no-sandbox")
+            o.add_argument("--disable-gpu")
+            o.add_argument("--disable-blink-features=AutomationControlled")
+            o.add_argument("--lang=zh-TW")
+            o.add_argument(f"--user-data-dir={profdir}")
+            o.add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                           "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+            driver = webdriver.Chrome(options=o)
+            url = ("https://www.google.com.tw/search?q="
+                   + urllib.parse.quote(query) + "&hl=zh-TW&gl=tw&num=10")
+            driver.get(url)
+            try:
+                WebDriverWait(driver, timeout).until(
+                    lambda d: d.find_elements(By.CSS_SELECTOR, "div.MjjYud")
+                    or "sorry" in d.current_url or "consent" in d.current_url)
+            except Exception:
+                pass
+            if "sorry" in driver.current_url:
+                print("[web_search_client] browser search: sorry-page, skip")
+            elif "consent" in driver.current_url:
+                print("[web_search_client] browser search: consent-page, skip")
+            else:
+                for b in driver.find_elements(By.CSS_SELECTOR, "div.MjjYud")[:max_results + 2]:
+                    try:
+                        h3s = b.find_elements(By.CSS_SELECTOR, "h3")
+                        if not h3s:
+                            continue
+                        href = h3s[0].find_element(By.XPATH, "./ancestor::a[1]").get_attribute("href") or ""
+                        snip = ""
+                        for el in b.find_elements(By.CSS_SELECTOR, "div.VwiC3b"):
+                            if len(el.text) > 30:
+                                snip = el.text
+                                break
+                        if h3s[0].text and href.startswith("http"):
+                            out.append({"title": h3s[0].text, "url": href,
+                                        "snippet": snip, "source": "browser_google"})
+                    except Exception:
+                        continue
+            _BROWSER_LAST = time.time()
+    except Exception as e:
+        print(f"[web_search_client] browser search failed: {e}")
+    finally:
+        try:
+            if driver is not None:
+                driver.quit()
+        except Exception:
+            pass
+        import shutil
+        try:
+            shutil.rmtree(profdir, ignore_errors=True)
+        except Exception:
+            pass
+    return out[:max_results]
 
 
 def has_serpapi() -> bool:

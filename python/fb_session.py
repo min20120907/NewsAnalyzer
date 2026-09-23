@@ -8,6 +8,7 @@ Facebook Session 管理模組
 
 import os
 import re
+import json
 import sqlite3
 import shutil
 import urllib.parse
@@ -132,6 +133,69 @@ def extract_facebook_cookies() -> List[Dict]:
     return extracted_cookies
 
 
+def _clean_fb_title(title: str) -> str:
+    """清掉 FB 標題的未讀通知前綴 '(N) ' 與 ' | Facebook' 尾綴。
+
+    注意：'(1) ' 前綴在正常登入狀態下也會出現（未讀通知數），
+    不可拿它當登入牆訊號（舊版 judge 守門即因此誤殺所有 FB 連結）。
+    """
+    t = re.sub(r'^\(\d+\)\s*', '', (title or "").strip())
+    t = re.sub(r'\s*\|\s*Facebook\s*$', '', t).strip()
+    return t
+
+
+# 貼文本體候選容器（依序嘗試）。實測（2026-09-23, share/p 永久連結頁）：
+#   - div[role="article"] 會先命中側欄/河道裡「別人的貼文」→ 不可單獨使用
+#   - [data-ad-rendering-role="story_message"] / [data-ad-comet-preview="message"] 命中本體（可能被 See more 截斷）
+#   - 頁面 HTML 內嵌的 "message":{"text":"..."} 為完整貼文（2725 字 vs 容器 475 字）
+_POST_TEXT_SELECTORS = (
+    'div[data-ad-rendering-role="story_message"]',
+    'div[data-ad-comet-preview="message"]',
+    'div[data-ad-preview="message"]',
+    'div[data-testid="post_message"]',
+    'div[aria-posinset]',
+)
+
+_FB_MESSAGE_JSON_RE = re.compile(r'"message":\{"text":"((?:[^"\\]|\\.)*)"')
+
+
+def _fb_post_start_from_title(title: str) -> str:
+    """從 FB 頁面標題抽出貼文開頭：標題格式為「<頁面名> - <貼文開頭…> | Facebook」。"""
+    t = _clean_fb_title(title)
+    if " - " in t:
+        t = t.rsplit(" - ", 1)[-1]
+    return re.sub(r"\s+", "", t)[:12]
+
+
+def _fb_html_message_texts(html: str) -> List[str]:
+    """從頁面 HTML 解出所有 "message":{"text":"…"} 的完整貼文文字（含 \\uXXXX 轉義）。"""
+    out: List[str] = []
+    for m in _FB_MESSAGE_JSON_RE.finditer(html or ""):
+        try:
+            out.append(json.loads('"' + m.group(1) + '"'))
+        except Exception:
+            continue
+    return out
+
+
+def _pick_post_text(candidates: List[str], title: str) -> str:
+    """挑出真正的貼文本體：優先用「與標題開頭相符」的候選，否則退回最長候選。
+
+    FB 永久連結頁會在 DOM 先渲染側欄/河道貼文，因此不能只看順序或第一個命中；
+    頁面 title 由本體貼文開頭組成，是最可靠的身分線索。
+    """
+    cands = [c.strip() for c in (candidates or []) if c and c.strip()]
+    if not cands:
+        return ""
+    key = _fb_post_start_from_title(title)
+    if key:
+        for c in cands:
+            if key in re.sub(r"\s+", "", c):
+                return c
+    best = max(cands, key=len)
+    return best if len(best) >= 80 else ""
+
+
 def get_facebook_post(url: str, timeout: int = 20) -> Optional[Dict]:
     """
     使用 Playwright 加上自動注入的 Facebook Session Cookies 抓取 FB 貼文內容
@@ -174,11 +238,46 @@ def get_facebook_post(url: str, timeout: int = 20) -> Optional[Dict]:
 
             page = context.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=timeout * 1000)
-            page.wait_for_timeout(3000)
+            # 動態等待貼文容器（原本固定等 3s 純浪費；容器出現就往下走，最長仍等 4s）
+            try:
+                page.wait_for_selector(", ".join(_POST_TEXT_SELECTORS), state="attached", timeout=4000)
+            except Exception:
+                pass
+            page.wait_for_timeout(1200)
 
-            title = page.title()
-            text = page.locator("body").inner_text()
+            raw_title = page.title() or ""
+            title = _clean_fb_title(raw_title)
             html = page.content()
+
+            # 收集候選：① 頁面內嵌 JSON 的完整貼文 ② DOM 容器（可能被 See more 截斷）
+            # 再由 _pick_post_text 以頁面 title 開頭做身分比對，避免拿到側欄別人的貼文。
+            candidates: List[str] = _fb_html_message_texts(html)
+            for sel in _POST_TEXT_SELECTORS:
+                try:
+                    loc = page.locator(sel)
+                    for i in range(min(loc.count(), 5)):
+                        t = (loc.nth(i).inner_text() or "").strip()
+                        if t:
+                            candidates.append(t)
+                except Exception:
+                    continue
+            post_text = _pick_post_text(candidates, title)
+            is_post_body = len(post_text) >= 80
+
+            # 登入牆：以登入表單欄位為主訊號（字串比對只在必要時才做，避免抓整頁 inner_text）
+            login_wall = False
+            try:
+                if page.locator('input[name="pass"], input[name="email"], form[action*="login"]').count() > 0:
+                    login_wall = True
+            except Exception:
+                pass
+
+            body_text = ""
+            if not login_wall and (not is_post_body or len(post_text) < 200):
+                body_text = page.locator("body").inner_text()
+                if "必須登入才能繼續" in body_text or "You must log in to continue" in body_text:
+                    login_wall = True
+            text = post_text if is_post_body else body_text
 
             # 嘗試提取發布時間 (creation_time)
             publish_date = None
@@ -193,14 +292,15 @@ def get_facebook_post(url: str, timeout: int = 20) -> Optional[Dict]:
 
             browser.close()
 
-            # 判斷是否為無效或阻擋內容
-            if "必須登入才能繼續" in text or "登入 Facebook" in text and len(text) < 300:
-                print(f"[FB Session] 頁面提示需要登入或內容受限 ({url})")
+            if login_wall:
+                print(f"[FB Session] ⚠️ 偵測到登入牆（session cookies 可能失效）({url})")
 
             return {
                 "title": title,
                 "text": text,
-                "publish_date": publish_date
+                "publish_date": publish_date,
+                "login_wall": login_wall,
+                "is_post_body": is_post_body,
             }
 
         except Exception as e:

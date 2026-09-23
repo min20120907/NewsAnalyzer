@@ -360,14 +360,43 @@ def _similarity_batch(contents: List[str], refs: List[str]) -> List[float]:
 
 
 # ---------------------------------------------------------------
-# 4.5 Deep Analysis (local LLM via Ollama)
+# 4.5 Deep Analysis (local LLM via :8088 Qwen3.8-27B)
 #     把標題 + 網路搜尋結果摘要 + 三源查核結論餵入本機模型，
 #     產出結構化深入分析：質疑點 / 正反觀點 / 可信度分數(0-100) / 總結。
 #     失敗或超時則回傳空 dict，前端隱藏該區塊（不影響主評分）。
 # ---------------------------------------------------------------
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:18443/api/generate")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma4:12b")
+# Qwen3.8-27B 常駐推理（llama.cpp FastMTP，OpenAI 相容）：deep_analyze 預設走這條。
+# Ollama 變數保留僅為相容（gemma 已實測無法在 CPU 時限內交卷）。
+QWEN_URL = os.environ.get("QWEN_URL", "http://127.0.0.1:8088/v1/chat/completions")
+QWEN_MODEL = os.environ.get("QWEN_MODEL", "qwen3.8-27b-fastmtp")
 DEEP_ANALYZE_TIMEOUT = float(os.environ.get("DEEP_ANALYZE_TIMEOUT", "20"))
+QWEN_SLOTS_URL = os.environ.get("QWEN_SLOTS_URL", "http://127.0.0.1:8088/slots")
+# 佇列預估等待超過此秒數就跳過深入分析（:8088 單槽，Hermes 長上下文請求一次可佔 100-330s）
+QWEN_BUSY_ETA_SKIP = float(os.environ.get("QWEN_BUSY_ETA_SKIP", "5"))
+
+
+def qwen_queue_eta() -> float:
+    """估計 :8088 目前任務還要多久（秒）。閒置或無法判斷時回 0.0。
+
+    依據 /slots 的 is_processing / n_prompt_tokens / n_prompt_tokens_processed / next_token.n_decoded。
+    以 300 tok/s prompt 預處理、26 tok/s 生成（2080Ti 22G 實測）估算。
+    """
+    if not REQUESTS_AVAILABLE:
+        return 0.0
+    try:
+        r = requests.get(QWEN_SLOTS_URL, timeout=2)
+        for s in r.json():
+            if not s.get("is_processing"):
+                continue
+            pt = float(s.get("n_prompt_tokens") or 0)
+            proc = float(s.get("n_prompt_tokens_processed") or 0)
+            n_dec = float((s.get("next_token") or {}).get("n_decoded") or 0)
+            return max(0.0, (pt - proc) / 300.0) + max(0.0, (450.0 - n_dec) / 26.0)
+    except Exception:
+        pass
+    return 0.0
 
 _DEEP_PROMPT_TMPL = """你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字），格式：
 {{"key_points":["質疑點1","質疑點2"],"viewpoints":"正反觀點摘要(80字內)","credibility_score":0到100的整數,"analysis":"100字內總結"}}
@@ -404,27 +433,35 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list) -> 
 
 def deep_analyze(title: str, web_results: list, sources: list,
                  timeout: "float | None" = None) -> dict:
-    """呼叫本機 Ollama 模型做深入分析。回傳 dict 或空 dict（失敗）。"""
+    """呼叫本機 Qwen3.8-27B（:8088 FastMTP）做深入分析。回傳 dict 或空 dict（失敗）。"""
     if not REQUESTS_AVAILABLE:
         return {}
     prompt = _deep_analyze_build_prompt(title, web_results, sources)
     payload = {
-        "model": OLLAMA_MODEL,
-        "prompt": prompt,
+        "model": QWEN_MODEL,
+        "messages": [
+            {"role": "system",
+             "content": "你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字）。"},
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.2,
+        "max_tokens": 400,
         "stream": False,
-        "think": False,
-        "format": "json",
-        "options": {"temperature": 0.2, "num_predict": 400},
+        "response_format": {"type": "json_object"},
+        "chat_template_kwargs": {"enable_thinking": False},
     }
     to = timeout or DEEP_ANALYZE_TIMEOUT
     try:
-        r = requests.post(OLLAMA_URL, json=payload, timeout=to,
+        r = requests.post(QWEN_URL, json=payload, timeout=to,
                           headers={"Content-Type": "application/json"})
         r.raise_for_status()
         data = r.json()
-        resp = data.get("response", "")
-        
-        # resp 可能本身就是 JSON 字串，處理 Gemma 可能回傳的 Markdown code block
+        try:
+            resp = data["choices"][0]["message"].get("content") or ""
+        except (KeyError, IndexError, TypeError):
+            resp = ""
+
+        # resp 可能本身就是 JSON 字串，處理可能回傳的 Markdown code block
         parsed = {}
         if isinstance(resp, str):
             import json, re
@@ -458,7 +495,7 @@ def deep_analyze(title: str, web_results: list, sources: list,
             "viewpoints": parsed.get("viewpoints", ""),
             "credibility_score": max(0, min(100, score)),
             "analysis": parsed.get("analysis", ""),
-            "model": OLLAMA_MODEL,
+            "model": QWEN_MODEL,
         }
     except Exception as _e:
         print(f"[judge] deep_analyze failed: {_e}")
@@ -468,11 +505,21 @@ def deep_analyze(title: str, web_results: list, sources: list,
 def deep_analyze_ensemble(title: str, web_results: list, sources: list,
                           samples: int = None, timeout: float = None) -> dict:
     """多次取樣本機 LLM 以降低 7B 模型分數抖動；並回傳 std / 樣本數供前端說明。
-    並發呼叫（ThreadPoolExecutor）控制總延遲約等於單次。"""
+    並發呼叫（ThreadPoolExecutor）控制總延遲約等於單次。
+    註：27B 單次即穩定，預設單樣本（:8088 單槽下多樣本會互相排隊超時）。"""
     import concurrent.futures as _cf
-    n = int(samples if samples is not None else os.environ.get("DEEP_ANALYZE_SAMPLES", "3"))
+    if os.environ.get("DEEP_ANALYZE_DISABLE", "0") == "1":
+        return {}
+    n = int(samples if samples is not None else os.environ.get("DEEP_ANALYZE_SAMPLES", "1"))
     n = max(1, min(n, 5))
     to = timeout or DEEP_ANALYZE_TIMEOUT
+
+    # 排隊感知：:8088 單槽常被 Hermes 的長上下文請求佔用（實測單次 100-330s），
+    # 硬等只會吃滿 20s 逾時後拿到空結果 → 前端「沒有 qwen 回覆」。
+    eta = qwen_queue_eta()
+    if eta > QWEN_BUSY_ETA_SKIP:
+        print(f"[judge] deep_analyze skipped: :8088 忙碌中 (queue eta≈{eta:.0f}s)", flush=True)
+        return {"skipped": "qwen_busy", "queue_eta_s": round(eta, 1)}
 
     def _one():
         return deep_analyze(title, web_results, sources, timeout=to)
@@ -524,6 +571,8 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     """Return full metric dict for one article (fast, GPU‑ready)."""
     res: Dict[str, Dict] = {}
     total = 0.0; avail = sum(DEFAULT_WEIGHTS.values())
+    timings: Dict[str, float] = {}   # 各階段耗時（ms）：延遲診斷用，隨 /judge 回傳
+    _t0 = time.perf_counter()
 
     # Pre-resolve Domain info for downstream metric logic (supports Google News RSS title/content publisher resolution)
     MEDIA_NAME_TO_DOMAIN = {
@@ -564,7 +613,9 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
                 break
 
     # 1) Sentiment (Decoupled negative news reporting penalty)
+    _t = time.perf_counter()
     s = _sentiment_batch([content])[0]
+    timings["sentiment"] = round((time.perf_counter() - _t) * 1000, 1)
     abs_s = abs(s); sent_pts = DEFAULT_WEIGHTS["sentiment"]
     
     clickbait_keywords = ["震撼", "網全嚇傻", "竟然", "不看會後悔", "急了", "震撼彈", "太誇張", "傻眼", "敗類", "割韭菜"]
@@ -609,7 +660,9 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     tl_pts = 0.0; tl_desc = "unknown"
     sources = []
     if MULTI_FC_AVAILABLE:
+        _t = time.perf_counter()
         sources = get_all_fact_checks(content, timeout_api=15)
+        timings["fact_check"] = round((time.perf_counter() - _t) * 1000, 1)
         # 取最嚴重的查核結論（inaccurate > partial > accurate > not_found/disabled）
         sev = {"inaccurate": 3, "partial": 2, "accurate": 1, "not_found": 0, "disabled": 0, "error": 0}
         worst = None
@@ -663,7 +716,9 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     res["user_feedback"] = {"score": fb_pts, "desc": fb_desc, "weight": DEFAULT_WEIGHTS["feedback"]}
 
     # 5) Similarity
+    _t = time.perf_counter()
     sim = _similarity_batch([content], refs)[0]
+    timings["similarity"] = round((time.perf_counter() - _t) * 1000, 1)
     sim_pts = sim * DEFAULT_WEIGHTS["similarity"]
     total += sim_pts
     res["similarity"] = {"score": sim_pts, "desc": f"{sim:.2%}", "weight": DEFAULT_WEIGHTS["similarity"]}
@@ -689,7 +744,9 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     web_results: List[Dict] = []
     if WEB_SEARCH_AVAILABLE and _wsc is not None:
         try:
+            _t = time.perf_counter()
             web_results = _wsc.search(_query_src, max_results=6)
+            timings["web_search"] = round((time.perf_counter() - _t) * 1000, 1)
         except Exception as _e:
             print(f"[judge] web_search failed: {_e}")
             web_results = []
@@ -700,7 +757,9 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     deep = {}
     if web_results or sources:
         try:
+            _t = time.perf_counter()
             deep = deep_analyze_ensemble(_title_clean or content[:60], web_results, sources)
+            timings["deep_analyze"] = round((time.perf_counter() - _t) * 1000, 1)
         except Exception as _e:
             print(f"[judge] deep_analyze failed: {_e}", flush=True)
             deep = {}
@@ -783,6 +842,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         "review_links": review_links,
         "web_results": web_results,
         "deep_analysis": deep,
+        "timings": {**timings, "scoring": round((time.perf_counter() - _t0) * 1000, 1)},
     }
 
 # ---------------------------------------------------------------
@@ -845,6 +905,76 @@ def _is_facebook_url(url: str) -> bool:
     return any(fb in host for fb in ("facebook.com", "fb.com", "fb.watch", "m.facebook.com"))
 
 
+# FB 登入牆的明確字句（只信這些，不用 title 前綴）
+_LOGIN_WALL_PHRASES = (
+    "必須登入才能繼續", "You must log in to continue",
+    "請先登入", "Log into Facebook", "ログインして続行",
+)
+
+
+def _clean_fb_title(title: str) -> str:
+    """清掉 FB 標題的未讀通知前綴 '(N) ' 與 ' | Facebook' 尾綴（避免污染搜尋詞與標題）。"""
+    import re as _re
+    t = _re.sub(r'^\(\d+\)\s*', '', (title or "").strip())
+    t = _re.sub(r'\s*\|\s*Facebook\s*$', '', t).strip()
+    return t
+
+
+def _looks_like_login_wall(title: str, content: str) -> bool:
+    """判斷是否為 FB 登入牆/空殼頁。
+
+    舊版用 `title.startswith("(1) ")` 當訊號是錯的——FB 正常登入頁面的標題
+    也會帶未讀通知前綴 '(1) '，導致所有 FB 連結被誤判為登入牆。
+    改以「內文是否為登入字句 / 標題是否就是 Facebook 且內文極短」判斷。
+    """
+    t = (title or "").strip()
+    c = (content or "").strip()
+    if not c:
+        return True
+    if any(p in c for p in _LOGIN_WALL_PHRASES) and len(c) < 400:
+        return True
+    if t in ("Facebook", "Facebook - 登入或註冊", "Facebook – log in or sign up") and len(c) < 300:
+        return True
+    return False
+
+
+_NA_EXTRACT_PROFILE = os.path.expanduser("~/.config/google-chrome-na-extract")
+
+
+def _inject_local_cookies(driver, url: str) -> int:
+    """導覽到目標網域後，注入本機 Chrome 解密出的 cookie（目前涵蓋 Facebook/Messenger）。
+
+    為什麼要注入：改用專屬 profile 後就沒有使用者的登入狀態，登入牆頁面會讀不到內容。
+    回傳注入筆數；失敗不拋例外（fallback 不該讓主流程失敗）。
+    """
+    try:
+        import fb_session
+        from urllib.parse import urlparse
+        host = (urlparse(url).netloc or "").lower()
+        if not host:
+            return 0
+        cookies = []
+        for c in fb_session.extract_facebook_cookies():
+            dom = (c.get("domain") or "").lstrip(".").lower()
+            if dom and (host == dom or host.endswith("." + dom)):
+                cookies.append(c)
+        if not cookies:
+            return 0
+        driver.get(f"https://{host}/")      # 必須先在同網域頁面才能 add_cookie
+        n = 0
+        for c in cookies:
+            try:
+                driver.add_cookie({"name": c["name"], "value": c["value"], "path": c.get("path", "/"),
+                                   "secure": bool(c.get("secure")), "httpOnly": bool(c.get("httpOnly"))})
+                n += 1
+            except Exception:
+                pass
+        return n
+    except Exception as e:
+        print(f"[extract_selenium] cookie 注入失敗: {type(e).__name__}: {str(e)[:120]}")
+        return 0
+
+
 def _extract_with_selenium(url: str, timeout: int = 20) -> Optional[Dict]:
     """Headless Chrome fallback for JS-rendered or login-walled pages."""
     if not SELENIUM_AVAILABLE:
@@ -854,11 +984,15 @@ def _extract_with_selenium(url: str, timeout: int = 20) -> Optional[Dict]:
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-gpu")
-    opts.add_argument("--user-data-dir=/home/min20120907/.config/google-chrome")
+    # ⚠️ 不可用使用者的主 profile：桌面 Chrome 常駐佔用 SingletonLock（實測自 9/19 一直被佔），
+    # 第二個實例必然起不來，例外又被吞掉 → 這條 fallback 會長期靜默失效。
+    # 改用專屬 profile，並注入本機解密的 cookie 來維持登入牆頁面的可讀性。
+    opts.add_argument(f"--user-data-dir={_NA_EXTRACT_PROFILE}")
     driver = None
     try:
         driver = webdriver.Chrome(options=opts)
         driver.set_page_load_timeout(timeout)
+        _inject_local_cookies(driver, url)
         driver.get(url)
         import time; time.sleep(2)
         title = driver.title or ""
@@ -866,7 +1000,8 @@ def _extract_with_selenium(url: str, timeout: int = 20) -> Optional[Dict]:
         if len(body.strip()) < 30:
             return None
         return {"title": title, "content": body[:4000], "source": url, "publish_date": None}
-    except Exception:
+    except Exception as e:
+        print(f"[extract_selenium] 失敗 {url[:70]}: {type(e).__name__}: {str(e)[:120]}")
         return None
     finally:
         if driver:
@@ -1030,11 +1165,14 @@ def _extract_from_url(url: str) -> Dict:
                 print(f"[FB Session] 嘗試使用 session 管理擷取: {url}")
                 fb_result = get_facebook_post(url, timeout=25)
                 if fb_result and fb_result.get("text"):
-                    # 檢查是否為有效的貼文內容（不是登入頁面）
                     text = fb_result.get("text", "")
                     title = fb_result.get("title", "")
-                    if len(text.strip()) > 100 and not ("登入" in text and len(text.strip()) < 500):
-                        print(f"[FB Session] ✅ 成功擷取貼文，內容長度: {len(text)} 字元")
+                    if fb_result.get("login_wall"):
+                        # 真登入牆（session 失效）→ 不硬吞，交給 judge 端的還原/422 邏輯
+                        print("[FB Session] ⚠️ 偵測到登入牆，改用 fallback")
+                    elif len(text.strip()) >= 100:
+                        kind = "貼文本體" if fb_result.get("is_post_body") else "頁面內容"
+                        print(f"[FB Session] ✅ 成功擷取{kind}，內容長度: {len(text)} 字元")
                         return {
                             "title": title,
                             "content": text[:4000],
@@ -1042,10 +1180,10 @@ def _extract_from_url(url: str) -> Dict:
                             "publish_date": fb_result.get("publish_date"),
                         }
                     else:
-                        print(f"[FB Session] ⚠️ 擷取到的內容可能是登入頁面，嘗試 fallback")
+                        print(f"[FB Session] ⚠️ 擷取內容過短 ({len(text.strip())} 字元)，嘗試 fallback")
             except Exception as e:
                 print(f"[FB Session] ❌ 錯誤: {e}")
-        
+
         # Fallback: 原來的 requests 方法
         fb_result = _extract_facebook_requests(url)
         if fb_result and fb_result.get("content"):
@@ -1170,11 +1308,15 @@ def judge_news():
     content = data.get("postText") or data.get("content", "")
     title = data.get("title", "")
     extracted: dict = {}
+    _t_request = time.perf_counter()
+    extract_ms = None
 
     # 若只有 URL 沒有內容 → 自動抓取
     if not content and url:
+        _t_extract = time.perf_counter()
         extracted = _extract_from_url(url)
-        print(f"DEBUG_EXTRACT_RESULT: {repr(extracted)}")
+        extract_ms = round((time.perf_counter() - _t_extract) * 1000, 1)
+        print(f"DEBUG_EXTRACT_RESULT: {repr(extracted)[:400]}")
         if "error" in extracted:
             return {"error": extracted["error"]}, 422
         content = extracted["content"]
@@ -1187,29 +1329,43 @@ def judge_news():
         return {"error": "請提供貼文內容或新聞網址"}, 422
 
     print(f"DEBUG_JUDGE: title={repr(title)}, content_len={len(content)}, content={repr(content[:50])}", flush=True)
-    # Prevent AI from analyzing the Facebook login wall
-    # Only block if title is exactly Facebook (or notification variants) and content is suspiciously short or strictly login text.
-    if "facebook.com" in url.lower() or not content or len(content) < 100:
-        if title == "Facebook" or title.startswith("(1) ") or title.startswith("(2) ") or "登入 Facebook" in title or len(content) < 300:
-            # 嘗試最後防線：從 Cofacts 存檔還原
-            if COFACTS_LOCAL_AVAILABLE:
-                try:
-                    print(f"[Judge Fallback] 嘗試從 Cofacts 資料庫自動還原: {url}")
-                    cf_match = get_fact_check(url)
-                    if cf_match and cf_match.get("matched_text"):
-                        t_match = cf_match.get("matched_text", "").strip()
-                        if len(t_match) >= 20:
-                            content = t_match[:4000]
-                            first_l = t_match.splitlines()[0][:80]
-                            title = first_l or "Facebook 存檔貼文"
-                            print(f"[Judge Fallback] 成功還原 FB 貼文內容 ({len(content)} 字元)")
-                except Exception as e:
-                    print(f"[Judge Fallback] 錯誤: {e}")
 
-            if title == "Facebook" or "登入 Facebook" in title or len(content) < 100:
-                return {"error": "Facebook 阻擋了自動抓取（無法精確解析，或需要不同登入權限）。\n請直接「複製貼文文字」並貼上來進行分析！"}, 422
+    # Facebook 登入牆防護（2026-09-23 重寫）
+    # 舊版把 title.startswith("(1) ") 當登入牆訊號 —— 但 FB 正常登入的頁面標題本來就帶未讀通知前綴，
+    # 導致「所有」FB 連結被誤判；接著又用 Cofacts 的短匹配覆寫已抓好的內文（2463 → 44 字），
+    # 最後必然踩 len(content)<100 → 422。使用者感受到的就是「FB 連結突然不能用」。
+    # 新版：① 只信真正的登入牆訊號 ② Cofacts 還原僅在「更長」時採用 ③ 內容足夠就直接分析。
+    if _looks_like_login_wall(title, content):
+        restored = False
+        if COFACTS_LOCAL_AVAILABLE and url:
+            try:
+                print(f"[Judge Fallback] 嘗試從 Cofacts 資料庫自動還原: {url}")
+                cf_match = get_fact_check(url)
+                t_match = ((cf_match or {}).get("matched_text") or "").strip()
+                if len(t_match) >= 20 and len(t_match) > len(content.strip()):
+                    content = t_match[:4000]
+                    first_l = t_match.splitlines()[0][:80] if t_match.splitlines() else ""
+                    title = first_l or "Facebook 存檔貼文"
+                    restored = True
+                    print(f"[Judge Fallback] 成功還原 FB 貼文內容 ({len(content)} 字元)")
+            except Exception as e:
+                print(f"[Judge Fallback] 錯誤: {e}")
+
+        if not restored:
+            return {"error": "Facebook 阻擋了自動抓取（偵測到登入牆，或需要不同登入權限）。\n請直接「複製貼文文字」並貼上來進行分析！"}, 422
+
+    if len(content.strip()) < 20:
+        return {"error": "擷取到的內容過短（<20 字），無法分析。\n請直接「複製貼文文字」並貼上來進行分析！"}, 422
+
+    # 清掉 FB 標題雜訊（未讀通知前綴 / ' | Facebook' 尾綴），避免污染搜尋詞與情緒判斷
+    if "facebook.com" in (url or "").lower():
+        title = _clean_fb_title(title) or title
 
     score = analyze_article_data(title=title, url=url, content=content, publish_date=extracted.get("publish_date"), target_url=extracted.get("source"))
+    timings = dict(score.get("timings") or {})
+    if extract_ms is not None:
+        timings["extract"] = extract_ms
+    timings["total"] = round((time.perf_counter() - _t_request) * 1000, 1)
     return {
         "rating_text": score["rating_text"],
         "final_score": score["final_score"],
@@ -1235,6 +1391,7 @@ def judge_news():
         "clamped": score.get("clamped"),
         "clamp_reason": score.get("clamp_reason"),
         "scoring_basis": score.get("scoring_basis", ""),
+        "timings": timings,
     }
 
 def generate_test_results_page():
