@@ -420,6 +420,78 @@ def _web_search_fallback(query: str, web_results: list, max_results: int = 6) ->
 
 
 # ---------------------------------------------------------------
+# 4.4c 查詢詞組裝（2026-09-24 消融定案 scripts/query_ablation.py，4 案例×7 策略）：
+# 全標題直送 A 最爛（total n_rel=3）；jieba 關鍵詞 C 最好（17，零新依賴、~2s）；
+# Qwen 改寫 G 次之（16）但單次 10-17s 且偶吐簡體，只當保留手段，預設不啟用。
+# 上線策略：C 先查，相關<3 才補 B（core 首段），合併去重，上限 6 筆（prompt 不膨脹）。
+# ---------------------------------------------------------------
+_WEB_QUERY_STOP = {"網傳", "宣稱", "真的", "請問", "消息", "影片", "圖片",
+                   "可以", "這是", "那是", "是否", "今天", "昨天", "什麼",
+                   "如何", "為何", "真的嗎", "中央社", "娛樂", "要聞",
+                   "熱門話題", "經濟日報", "即時", "快訊", "獨家", "CNA",
+                   "Medical", "News"}
+
+
+def _jieba_keywords(text: str, n: int = 5) -> list:
+    try:
+        import jieba as _jb
+    except Exception:
+        return []
+    seen, out = set(), []
+    for _t in _jb.cut(text or ""):
+        _t = _t.strip("，。、；：『』「」！？!?,. \t|｜-")
+        if (2 <= len(_t) <= 8 and _t not in seen and _t not in _WEB_QUERY_STOP
+                and any("一" <= _c <= "鿿" for _c in _t)):
+            seen.add(_t)
+            out.append(_t)
+        if len(out) >= n:
+            break
+    return out
+
+
+def _build_web_queries(title: str, content: str) -> list:
+    """回傳 [C-query, B-query]（去重、過短捨去）。"""
+    qs = []
+    _title_clean = (title or "").strip()
+    src = _title_clean if _title_clean not in ("", "N/A") else (content or "")[:80]
+    kw = _jieba_keywords(src + "。" + (content or "")[:300])
+    if kw:
+        qs.append(" ".join(kw))
+    core = _web_query_core(src)
+    short = core.split()[0] if core.split() else core
+    if short and short not in qs and len(short) >= 6:
+        qs.append(short)
+    if src and src not in qs and not qs:
+        qs.append(src)  # 關鍵詞全滅時的兜底（極短標題）
+    return qs
+
+
+def _web_search_multi(queries: list, max_results: int = 6) -> list:
+    if not (WEB_SEARCH_AVAILABLE and _wsc is not None):
+        return []
+    merged, seen = [], set()
+    for q in queries or []:
+        if not q or len(q) < 4:
+            continue
+        try:
+            res = _wsc.search(q, max_results=max_results) or []
+        except Exception as _e:
+            print(f"[judge] web search failed: {_e}")
+            continue
+        for r in res:
+            u = r.get("url")
+            if u in seen:
+                continue
+            seen.add(u)
+            merged.append(r)
+        if queries and _web_relevant_count(merged, queries[0]) >= 3:
+            break
+    print(f"[judge] web multi queries={[q[:24] for q in (queries or [])]} "
+          f"total={len(merged)}", flush=True)
+    return merged[:max_results]
+
+
+# ---------------------------------------------------------------
 # 4.5 Deep Analysis (local LLM via :8088 Qwen3.8-27B)
 #     把標題 + 網路搜尋結果摘要 + 三源查核結論餵入本機模型，
 #     產出結構化深入分析：質疑點 / 正反觀點 / 可信度分數(0-100) / 總結。
@@ -742,6 +814,9 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         _query_src = content[:80].strip()
     else:
         _query_src = _title_clean
+    # 2026-09-24：消融定案改走 tiered 查詢（jieba 關鍵詞先查，不足才補 core 首段）；
+    # _query_src 保留給 review_links 與 fallback 相關性判斷。
+    _web_queries = _build_web_queries(title, content) or [_query_src]
     web_review_query = quote_plus(_query_src)
     review_links = {
         "threads": f"https://www.threads.net/search?q={web_review_query}",
@@ -763,7 +838,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         _fu_fc = _ex.submit(_timed, get_all_fact_checks, _fc_text, timeout_api=15) \
             if MULTI_FC_AVAILABLE else None
         _fu_sim = _ex.submit(_timed, _similarity_batch, [content], refs)
-        _fu_web = _ex.submit(_timed, _wsc.search, _query_src, max_results=6) \
+        _fu_web = _ex.submit(_timed, _web_search_multi, _web_queries, 6) \
             if (WEB_SEARCH_AVAILABLE and _wsc is not None) else None
         if _fu_fc is not None:
             sources, timings["fact_check"] = _fu_fc.result()
