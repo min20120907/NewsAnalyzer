@@ -406,6 +406,10 @@ def get_fact_check(text: str, use_cache: bool = True,
     key = hashlib.sha1(snippet.encode("utf-8")).hexdigest()
     if use_cache:
         c = _cache_get(key)
+        # 2026-09-24：舊快取列若無 similarity_score（舊版寫入），命中時強制重算，
+        # 否則錨定/prompt 會把高信心命中當「未知」
+        if c and c.get("status") != "not_found" and "similarity_score" not in c:
+            c = None
         if c:
             return c
 
