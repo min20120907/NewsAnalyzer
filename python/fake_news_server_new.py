@@ -299,6 +299,23 @@ def resolve_redirects(url: str, timeout: int = 5) -> Optional[str]:
     except Exception:
         return url
 
+# 2026-09-24：舊寫法 parts[-2:] 把 cna.com.tw 切成 com.tw（分對、標錯）。
+# 以雙層後綴表還原可註冊網域，同時修 desc 與 main 比對。
+_TWO_LEVEL_SUFFIX = {
+    "com", "org", "net", "gov", "edu", "idv", "mil", "asn", "plc",
+    "co", "or", "ne", "go", "ac", "ad", "gr",
+}
+
+
+def _registrable_domain(host: str) -> str:
+    p = (host or "").lower().split(".")
+    if len(p) < 2:
+        return host or ""
+    if len(p) >= 3 and p[-2] in _TWO_LEVEL_SUFFIX and len(p[-1]) <= 3:
+        return ".".join(p[-3:])
+    return ".".join(p[-2:])
+
+
 # Newspaper helpers -----------------------------------------------------------
 if NEWSPAPER3K_AVAILABLE:
     def fetch_article(url: str) -> Optional[Article]:
@@ -664,7 +681,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         parsed = urlparse(target_url)
         host = parsed.netloc.lower().replace("www.", "")
     parts = host.split(".")
-    main = ".".join(parts[-2:]) if len(parts) >= 2 else host
+    main = _registrable_domain(host)
 
     # If domain is generic google.com aggregator or unknown, resolve media outlet from title/content
     if main in ("google.com", "unknown", "") or host == "news.google.com":
