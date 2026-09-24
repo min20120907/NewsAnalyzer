@@ -227,8 +227,22 @@ def get_mygopen(text: str, use_cache: bool = True,
         res = _empty("mygopen")
         _mcache_put("mygopen", key, res)
         return res
-    top_url = links[0]
-    top_title = titles[0] if titles else ""
+    # 相似度門控（2026-09 反向驗證抓到誤判：真實抽獎活動撞上「交通違規罰鍰詐騙簡訊」，
+    # 只因共享 交通/違規 關鍵字就被掛 inaccurate）：逐條驗證，取首條通過者。
+    # 實測同謠言家族 sim≈0.68+、無關主題≈0.33，閾值取 0.50。
+    top_url, top_title = None, ""
+    try:
+        from cofacts_local import _sbert_sim
+        for u, t in zip(links, titles):
+            if (_sbert_sim(snippet, t) or 0.0) >= 0.50:
+                top_url, top_title = u, t
+                break
+    except Exception:
+        top_url, top_title = links[0], titles[0] if titles else ""
+    if not top_url:
+        res = _empty("mygopen")
+        _mcache_put("mygopen", key, res)
+        return res
     status = _map_mygopen_title(top_title)
     res = {"source": "mygopen", "status": status,
            "feedback_count": len(links), "created_at": None,
