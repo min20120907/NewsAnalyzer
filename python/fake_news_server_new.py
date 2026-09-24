@@ -450,8 +450,15 @@ def qwen_queue_eta() -> float:
 
 _DEEP_PROMPT_TMPL = """你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字），格式：
 {{"key_points":["質疑點1","質疑點2"],"viewpoints":"正反觀點摘要(80字內)","credibility_score":0到100的整數,"analysis":"100字內總結"}}
-今天日期：{today}。你的內建知識可能已過時，人物職稱、時事現況一律以「網路搜尋結果摘要」為準，嚴禁憑內建知識斷言（例如現任首相是誰）。
-若搜尋結果皆與標題無關、且查核源皆為 not_found/disabled：不可臆斷為假訊息，credibility_score 取 55 到 65，並在 analysis 明說「無相關佐證」。
+【語言】所有欄位一律使用繁體中文完整句子，嚴禁出現英文單字或中英夾雜（外來專有名詞也譯為中文，例如勝肽、糖尿病）。
+【時間】今天日期：{today}。你的內建知識可能已過時，人物職稱、時事現況一律以「網路搜尋結果摘要」為準，嚴禁憑內建知識斷言（例如現任首相是誰）。
+【查核結論優先】「事實查核源結論」是查核機構的已驗證判定，權重高於網路搜尋片段；sim 是輸入與查核命中標題的語意相似度（1.0 最高，0.50 為命中門檻）：
+- 任一源 status 為 inaccurate 且 sim≥0.70：該新聞極可能不實。analysis 必須明確呼應此結論（點名哪家機構、命中哪篇查核文），credibility_score 取 10 到 40，不得洗白、不得寫「可信度中等」。
+- inaccurate 但 sim 在 0.50 到 0.70：屬「相鄰主題命中」（查核的是同類謠言家族、非同一指控）。analysis 必須明說命中標題與新聞主題不完全相同，credibility_score 取 40 到 60。
+- 任一源為 accurate 且 sim≥0.70：credibility_score 取 60 到 95，並在 analysis 說明查核支持點。
+- sim 顯示「未知」時：按 status 字面採信，但在 analysis 加註「相似度未知」。
+- 全部 not_found：不可臆斷為假訊息，credibility_score 取 55 到 65，並在 analysis 明說「無相關佐證」。
+【搜尋片段用法】網路搜尋結果摘要僅供補充正反觀點（viewpoints）與質疑點（key_points），不得用片段推翻上面的查核結論；若片段與查核結論矛盾，以查核結論為準並在 analysis 指出矛盾。
 新聞標題：{title}
 網路搜尋結果摘要：
 {web_summary}
@@ -475,8 +482,14 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list) -> 
     for s in sources:
         st = s.get("status", "not_found")
         nm = label_map.get(s.get("source", ""), s.get("source", ""))
-        mt = (s.get("matched_text") or "")[:60]
-        fc_lines.append(f"  - {nm}: {st}（{mt}）" if mt else f"  - {nm}: {st}")
+        mt = (s.get("matched_text") or "")[:120]
+        url = s.get("url") or ""
+        _sim = s.get("similarity_score")
+        sim_txt = f"{float(_sim):.2f}" if _sim is not None else "未知"
+        if mt:
+            fc_lines.append(f"  - {nm}: {st}（sim {sim_txt}；命中：{mt}；{url}）")
+        else:
+            fc_lines.append(f"  - {nm}: {st}（sim {sim_txt}）")
     fc_summary = "\n".join(fc_lines) or "（無查核源）"
     from datetime import date as _date
     return _DEEP_PROMPT_TMPL.format(title=title or "（無標題）",
@@ -691,7 +704,9 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         else:
             sent_pts = 5.0
     total += sent_pts
-    res["sentiment"] = {"score": sent_pts, "desc": f"{s:.2f}", "weight": DEFAULT_WEIGHTS["sentiment"]}
+    # 2026-09-24：desc 加注區間語義，免得「-0.53 卻滿分」看起來像 bug（|s|≤0.6 中性不扣分是刻意設計：負面新聞報導≠情緒操弄）
+    _sent_note = "（中性區間，不扣分）" if abs_s <= 0.6 else ""
+    res["sentiment"] = {"score": sent_pts, "desc": f"{s:.2f}{_sent_note}", "weight": DEFAULT_WEIGHTS["sentiment"]}
 
     # 2) Domain (simple rules with redirect resolution support)
     
@@ -812,7 +827,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     # 5) Similarity（已在上面並行算好）
     sim_pts = sim * DEFAULT_WEIGHTS["similarity"]
     total += sim_pts
-    res["similarity"] = {"score": sim_pts, "desc": f"{sim:.2%}", "weight": DEFAULT_WEIGHTS["similarity"]}
+    res["similarity"] = {"score": sim_pts, "desc": f"{sim:.2%}（標題—內文一致性，非真實性）", "weight": DEFAULT_WEIGHTS["similarity"]}
 
     # 6) Timeliness 寫入
     res["timeliness"] = {"score": tl_pts, "desc": tl_desc, "weight": DEFAULT_WEIGHTS["timeliness"]}
@@ -852,7 +867,8 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     # 階段三：三級動態信心度衰減錨定 (Stage 3 Dynamic Confidence Decay Clamp)
     for _s in (sources or []):
         _st = _s.get('status')
-        sim_score = float(_s.get('similarity_score') or 1.0)
+        # 2026-09-24：缺相似度一律視為 0（未知≠有信心；舊 mygopen/google 結果無此欄，曾被 or 1.0 誤判 100% 硬錨定）
+        sim_score = float(_s.get('similarity_score') or 0.0)
         if _st in ('inaccurate', 'false', 'misleading', 'fake'):
             if sim_score >= 0.85:
                 if final > 25.0:

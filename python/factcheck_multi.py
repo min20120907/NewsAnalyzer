@@ -107,7 +107,8 @@ def get_google_factcheck(text: str, use_cache: bool = True,
     if not text or len(text.strip()) < 10:
         return _empty("google")
     snippet = text[:300]
-    key = hashlib.sha1(("g:" + snippet).encode("utf-8")).hexdigest()
+    # key 前綴 g2：2026-09-24 起回傳 similarity_score（舊 g: 快取無此欄，會讓錨定誤判 100%）
+    key = hashlib.sha1(("g2:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("google", key)
         if c:
@@ -148,6 +149,13 @@ def get_google_factcheck(text: str, use_cache: bool = True,
            "article_id": None,
            "matched_text": (claim.get("text") or "")[:120],
            "url": url, "reasons": reasons}
+    # 2026-09-24：回傳輸入與命中 claim 的語意相似度，供錨定用真實信心（缺此欄會被當 100%）
+    try:
+        from cofacts_local import _sbert_sim
+        _gs = _sbert_sim(snippet, claim.get("text") or "")
+        res["similarity_score"] = round(float(_gs), 4) if _gs is not None else None
+    except Exception:
+        res["similarity_score"] = None
     _mcache_put("google", key, res)
     return res
 
@@ -171,8 +179,8 @@ def get_mygopen(text: str, use_cache: bool = True,
         return _empty("mygopen")
     # 取前兩句關鍵字做搜尋（避免整段太長抓不到）
     snippet = text[:120]
-    # key 前綴 m2：2026-09-23 起改走 Blogger feed（舊 m: 快取全是 HTML 版抓不到的 not_found，作廢）
-    key = hashlib.sha1(("m2:" + snippet).encode("utf-8")).hexdigest()
+    # key 前綴 m3：2026-09-24 起回傳 similarity_score（舊 m2: 快取無此欄，會讓錨定誤判 100%）
+    key = hashlib.sha1(("m3:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("mygopen", key)
         if c:
@@ -230,12 +238,13 @@ def get_mygopen(text: str, use_cache: bool = True,
     # 相似度門控（2026-09 反向驗證抓到誤判：真實抽獎活動撞上「交通違規罰鍰詐騙簡訊」，
     # 只因共享 交通/違規 關鍵字就被掛 inaccurate）：逐條驗證，取首條通過者。
     # 實測同謠言家族 sim≈0.68+、無關主題≈0.33，閾值取 0.50。
-    top_url, top_title = None, ""
+    top_url, top_title, win_sim = None, "", None
     try:
         from cofacts_local import _sbert_sim
         for u, t in zip(links, titles):
-            if (_sbert_sim(snippet, t) or 0.0) >= 0.50:
-                top_url, top_title = u, t
+            _s = _sbert_sim(snippet, t) or 0.0
+            if _s >= 0.50:
+                top_url, top_title, win_sim = u, t, round(float(_s), 4)
                 break
     except Exception:
         top_url, top_title = links[0], titles[0] if titles else ""
@@ -247,7 +256,7 @@ def get_mygopen(text: str, use_cache: bool = True,
     res = {"source": "mygopen", "status": status,
            "feedback_count": len(links), "created_at": None,
            "article_id": None, "matched_text": top_title[:120],
-           "url": top_url,
+           "url": top_url, "similarity_score": win_sim,
            "reasons": [{"type": "MYGOPEN_TITLE",
                         "text": top_title or top_url}]}
     _mcache_put("mygopen", key, res)
@@ -260,7 +269,7 @@ def get_mygopen(text: str, use_cache: bool = True,
 def _empty(source):
     return {"source": source, "status": "not_found", "feedback_count": 0,
             "created_at": None, "article_id": None, "matched_text": None,
-            "url": None, "reasons": []}
+            "url": None, "similarity_score": None, "reasons": []}
 
 
 def get_all_fact_checks(text: str, use_cache: bool = True,

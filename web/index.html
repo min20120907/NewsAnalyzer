@@ -561,7 +561,7 @@ function renderResult(data) {
       html += `
         <div class="pipeline-card">
           <div class="pipeline-step-title">
-            <span>階段 2：本地 AI 模型 (Gemma 12B) 動態加權融合</span>
+            <span>階段 2：本地 AI 模型 (${(data.deep_analysis && data.deep_analysis.model) || 'local-llm'}) 動態加權融合</span>
             <span class="pipeline-badge badge-normal">AI 權重: ${aiWeightPct}% ｜ 規則權重: ${ruleWeightPct}%</span>
           </div>
           <div class="pipeline-formula">
