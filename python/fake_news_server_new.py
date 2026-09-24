@@ -466,7 +466,7 @@ def _build_web_queries(title: str, content: str) -> list:
     return qs
 
 
-def _web_search_multi(queries: list, max_results: int = 6) -> list:
+def _web_search_multi(queries: list, max_results: int = 6, ref_title: str = "") -> list:
     if not (WEB_SEARCH_AVAILABLE and _wsc is not None):
         return []
     merged, seen = [], set()
@@ -486,6 +486,23 @@ def _web_search_multi(queries: list, max_results: int = 6) -> list:
             merged.append(r)
         if queries and _web_relevant_count(merged, queries[0]) >= 3:
             break
+    # 2026-09-24：SBERT 語意過濾（RSS 噪音如金世義 Newtalk sim≈0.29，
+    # 同事件正常 0.68~0.93；門檻 0.45，過濾後不足 2 筆則保留 sim 最高的 2 筆）。
+    if len(merged) > 2 and ref_title and SIMILARITY_MODEL is not None:
+        try:
+            _texts = [(r.get("title") or "") + " " + (r.get("snippet") or "")[:120]
+                      for r in merged]
+            _sims = _similarity_batch(_texts, [ref_title])
+            _ranked = sorted(zip(_sims, merged), key=lambda t: t[0], reverse=True)
+            _kept = [r for s, r in _ranked if s >= 0.45]
+            if len(_kept) < 2:
+                _kept = [r for _, r in _ranked[:2]]
+            _dropped = len(merged) - len(_kept)
+            merged = _kept
+            print(f"[judge] web sim-filter kept={len(merged)} dropped={_dropped} "
+                  f"min_sim={min([s for s, _ in _ranked[:len(merged)]] or [0]):.3f}")
+        except Exception as _e:
+            print(f"[judge] web sim-filter failed: {_e}")
     print(f"[judge] web multi queries={[q[:24] for q in (queries or [])]} "
           f"total={len(merged)}", flush=True)
     return merged[:max_results]
@@ -838,7 +855,8 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         _fu_fc = _ex.submit(_timed, get_all_fact_checks, _fc_text, timeout_api=15) \
             if MULTI_FC_AVAILABLE else None
         _fu_sim = _ex.submit(_timed, _similarity_batch, [content], refs)
-        _fu_web = _ex.submit(_timed, _web_search_multi, _web_queries, 6) \
+        _fu_web = _ex.submit(_timed, _web_search_multi, _web_queries, 6,
+                             _title_clean if _title_clean != "N/A" else "") \
             if (WEB_SEARCH_AVAILABLE and _wsc is not None) else None
         if _fu_fc is not None:
             sources, timings["fact_check"] = _fu_fc.result()
