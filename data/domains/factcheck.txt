@@ -1,0 +1,7 @@
+# 事實查核機構名單（本地策展：IFCN/Duke 無機器可讀訂閱源，維持手動維護，改此檔免重啟服務）
+# one domain per line，# 開頭為註解
+tfc-taiwan.org.tw
+mygopen.com
+cofacts.tw
+cofacts.g0v.tw
+rumtoast.com

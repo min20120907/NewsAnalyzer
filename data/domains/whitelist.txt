@@ -1,0 +1,35 @@
+# 台灣主流媒體白名單（本地策展，無現成上游可訂閱，改此檔免重啟服務）
+# one domain per line，# 開頭為註解
+cna.com.tw
+udn.com
+ltn.com.tw
+chinatimes.com
+pts.org.tw
+news.pts.org.tw
+storm.mg
+ettoday.net
+news.tvbs.com.tw
+news.cts.com.tw
+ftvnews.com.tw
+setn.com
+rti.org.tw
+bcc.com.tw
+cw.com.tw
+mirrormedia.mg
+thenewslens.com
+ttv.com.tw
+news.ttv.com.tw
+nownews.com
+upmedia.mg
+newtalk.tw
+businesstoday.com.tw
+bnext.com.tw
+tw.nextapple.com
+mnews.tw
+tw.news.yahoo.com
+technews.tw
+vogue.com.tw
+pchome.com.tw
+feitsui.com
+gamer.com.tw
+soundofhope.org

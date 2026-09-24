@@ -1,0 +1,2 @@
+# 本地黑名單覆寫（手動加料用，one domain per line；與 blocklist.remote.txt 取聯集）
+# 例如：medicalnewstw.com

@@ -215,81 +215,75 @@ except Exception as e:
 # ---------------------------------------------------------------
 # 4. Utility Functions (redirects, domain checks, etc.)
 # ---------------------------------------------------------------
-# 新增：加入台視、NOWnews、上報、新頭殼、數位時代、今周刊、鏡新聞、NextApple (壹蘋) 等
-TAIWAN_MAINSTREAM_DOMAINS = {
-    "cna.com.tw", "udn.com", "ltn.com.tw", "chinatimes.com", "pts.org.tw",
-    "news.pts.org.tw", "storm.mg", "ettoday.net", "news.tvbs.com.tw",
-    "news.cts.com.tw", "ftvnews.com.tw", "setn.com", "rti.org.tw",
-    "bcc.com.tw", "cw.com.tw", "mirrormedia.mg", "thenewslens.com",
-    "ttv.com.tw", "news.ttv.com.tw", "nownews.com", "upmedia.mg",
-    "newtalk.tw", "businesstoday.com.tw", "bnext.com.tw", "tw.nextapple.com",
-    "mnews.tw", "tw.news.yahoo.com", "technews.tw", "vogue.com.tw",
-    "pchome.com.tw", "feitsui.com", "gamer.com.tw", "soundofhope.org"
-}
-
-# 新增：加入 Mobile01、小紅書、微博、Bilibili、Medium、方格子、痞客邦等
-UGC_DOMAINS = {
-    "facebook.com", "fb.com", "fb.watch", "twitter.com", "x.com",
-    "instagram.com", "youtube.com", "youtu.be", "tiktok.com",
-    "ptt.cc", "dcard.tw", "line.me", "plurk.com", "threads.net",
-    "mobile01.com", "xiaohongshu.com", "weibo.com", "bilibili.com",
-    "medium.com", "vocus.cc", "pixnet.net", "reddit.com"
-}
-
-# 新增：事實查核機構 (最高可信度)
-FACT_CHECK_DOMAINS = {
-    "tfc-taiwan.org.tw", "mygopen.com", "cofacts.tw", "cofacts.g0v.tw",
-    "rumtoast.com"
-}
+# 名單已搬至 data/domains/*.txt（見下方 load_domain_lists），此處僅保留註解：
+# 台灣主流媒體白名單 / UGC / 查核機構 → data/domains/whitelist.txt、ugc.txt、factcheck.txt
 
 # ---------------------------------------------------------------
-# 動態開源黑名單訂閱 (Content Farm / SEO Spam Dynamic Blocklist)
-# 自動定期抓取 終結內容農場 (danny0838) 與 中文 SEO 垃圾網域 (cobaltdisco)
+# 網域名單：本地策展檔 + 社群上游訂閱（cron 每日 pull）
+#   data/domains/whitelist.txt         台灣主流媒體（本地策展，無上游）
+#   data/domains/ugc.txt               UGC 種子（本地）＋ ugc.remote.txt（StevenBlack social）
+#   data/domains/factcheck.txt         查核機構（本地策展，無上游）
+#   data/domains/blocklist.local.txt   手動加料 ＋ blocklist.remote.txt
+#     （danny0838 終結內容農場 ＋ cobaltdisco x2 ＋ StevenBlack fakenews）
+# 優先序：factcheck/whitelist > blocklist（上游誤收白名單時本地勝出）。
+# 名單改動免重啟：每請求檢查 mtime，變動才重載。
 # ---------------------------------------------------------------
-DYNAMIC_BLOCKLIST_DOMAINS: set = set()
+_DOMAIN_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "..", "data", "domains")
+_DOMAIN_MTIMES: dict = {}
 
-def fetch_dynamic_blocklists():
-    global DYNAMIC_BLOCKLIST_DOMAINS
-    import urllib.request
-    urls = [
-        "https://danny0838.github.io/content-farm-terminator/files/blocklist/content-farms.txt",
-        "https://raw.githubusercontent.com/cobaltdisco/Google-Chinese-Results-Blocklist/master/uBlacklist_subscription.txt",
-        "https://raw.githubusercontent.com/cobaltdisco/Google-Chinese-Results-Blocklist/master/uBlacklist_subscription_extra.txt"
-    ]
-    new_domains = set()
-    for url in urls:
+
+def _read_domain_file(fname: str) -> set:
+    out = set()
+    try:
+        with open(os.path.join(_DOMAIN_DIR, fname), encoding="utf-8") as f:
+            for line in f:
+                line = line.strip().lower()
+                if line and not line.startswith("#") and "." in line and "/" not in line:
+                    out.add(line)
+    except FileNotFoundError:
+        pass
+    return out
+
+
+def load_domain_lists() -> bool:
+    """mtime 變動才重載；回傳 True 表示本次有重載。"""
+    global TAIWAN_MAINSTREAM_DOMAINS, UGC_DOMAINS, FACT_CHECK_DOMAINS
+    global DYNAMIC_BLOCKLIST_DOMAINS, _DOMAIN_MTIMES
+    files = ["whitelist.txt", "ugc.txt", "ugc.remote.txt", "factcheck.txt",
+             "blocklist.local.txt", "blocklist.remote.txt"]
+    mt = {}
+    for fn in files:
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "NewsAnalyzer-Bot/1.0"})
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                raw_text = resp.read().decode("utf-8", errors="ignore")
-                for line in raw_text.splitlines():
-                    line = line.strip()
-                    if line and not line.startswith("#"):
-                        line = re.sub(r"^(127\.0\.0\.1|0\.0\.0\.0|\|\|)\s*", "", line)
-                        dom = line.replace("*://*.", "").replace("*://", "").replace("/*", "").strip("^/ ")
-                        if dom and "." in dom and not dom.startswith("*") and "/" not in dom:
-                            new_domains.add(dom.lower())
-        except Exception as e:
-            print(f"[Blocklist Warning] Failed to fetch {url}: {e}")
+            mt[fn] = os.path.getmtime(os.path.join(_DOMAIN_DIR, fn))
+        except OSError:
+            mt[fn] = -1
+    if mt == _DOMAIN_MTIMES:
+        return False
+    wl = _read_domain_file("whitelist.txt")
+    fc = _read_domain_file("factcheck.txt")
+    ugc = _read_domain_file("ugc.txt") | _read_domain_file("ugc.remote.txt")
+    blk = ((_read_domain_file("blocklist.local.txt")
+            | _read_domain_file("blocklist.remote.txt"))
+           - wl - fc)  # 本地白名單永遠勝出
+    if wl:
+        TAIWAN_MAINSTREAM_DOMAINS = wl
+    if ugc:
+        UGC_DOMAINS = ugc
+    if fc:
+        FACT_CHECK_DOMAINS = fc
+    DYNAMIC_BLOCKLIST_DOMAINS = blk
+    _DOMAIN_MTIMES = mt
+    print(f"[Domains] whitelist={len(wl)} ugc={len(ugc)} "
+          f"factcheck={len(fc)} blocklist={len(blk)}", flush=True)
+    return True
 
-    if new_domains:
-        DYNAMIC_BLOCKLIST_DOMAINS = new_domains
-        print(f"[Init] 成功更新動態內容農場與垃圾網域黑名單: 共 {len(DYNAMIC_BLOCKLIST_DOMAINS)} 筆")
 
-def _start_dynamic_blocklist_scheduler():
-    import threading
-    fetch_dynamic_blocklists()
-    def loop():
-        while True:
-            time.sleep(86400)  # 24小時更新一次
-            try:
-                fetch_dynamic_blocklists()
-            except Exception as e:
-                print(f"[Blocklist Scheduler ERR] {e}")
-    t = threading.Thread(target=loop, daemon=True)
-    t.start()
-
-_start_dynamic_blocklist_scheduler()
+TAIWAN_MAINSTREAM_DOMAINS: set = set()
+UGC_DOMAINS: set = set()
+FACT_CHECK_DOMAINS: set = set()
+DYNAMIC_BLOCKLIST_DOMAINS: set = set()
+load_domain_lists()
 
 _article_cache: Dict[str, Optional[Article]] = {}
 
@@ -1387,6 +1381,7 @@ def index():
 
 @app.route("/judge", methods=["POST"])
 def judge_news():
+    load_domain_lists()  # 名單檔變動時免重啟重載（mtime 檢查，約毫秒級）
     data = request.get_json(force=True)
     url = data.get("url", "")
     content = data.get("postText") or data.get("content", "")

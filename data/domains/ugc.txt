@@ -1,0 +1,24 @@
+# UGC / 社群平台名單（本地種子；另有 ugc.remote.txt 由 StevenBlack social 訂閱每日自動更新，兩者取聯集）
+# one domain per line，# 開頭為註解
+facebook.com
+fb.com
+fb.watch
+twitter.com
+x.com
+instagram.com
+youtube.com
+youtu.be
+tiktok.com
+ptt.cc
+dcard.tw
+line.me
+plurk.com
+threads.net
+mobile01.com
+xiaohongshu.com
+weibo.com
+bilibili.com
+medium.com
+vocus.cc
+pixnet.net
+reddit.com
