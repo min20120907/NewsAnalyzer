@@ -31,6 +31,10 @@ COFACTS_MIN_SIM = float(os.environ.get("COFACTS_MIN_SIM", "0.72"))
 # 2026-10-01：召回下界。COFACTS_MIN_SIM 仍是「硬命中」線（clamp 只認它），
 # 低於這條才真的 not_found。中間那段交給 LLM rerank 裁決。
 COFACTS_SOFT_MIN_SIM = float(os.environ.get("COFACTS_SOFT_MIN_SIM", "0.45"))
+# 交叉確認：Top-N 候選一起給 LLM 讀（同家族謠言的不同角度查核）。
+COFACTS_TOP_K = int(os.environ.get("COFACTS_TOP_K", "4"))
+# 只帶與 Top-1 差距小於此值的候選（家族內）。0.15 只排除明顯掉隊者。
+COFACTS_FAMILY_DELTA = float(os.environ.get("COFACTS_FAMILY_DELTA", "0.15"))
 
 CACHE_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                         "..", "data", "cofacts", "cofacts_cache.db")
@@ -511,17 +515,30 @@ def get_fact_check(text: str, use_cache: bool = True,
             best_sim = sim
             best_candidate = cand
 
-    # 判定與動態門檻衰減
-    # 2026-10-01：0.45～COFACTS_MIN_SIM 的「軟命中帶」不再直接 not_found，改回傳
-    # 讓下游 LLM 用 evidence_state 裁決（PFCD 標準 two-stage：高召回召回 →
-    # semantic rerank，文獻明確說單一門檻做不了 rerank）。
-    # 實測 53 則真實新聞餵 2489 筆池：≥0.72 只有 3 筆、0.45–0.72 有 49 筆，而池內
-    # 最佳命中與第 5 佳的落差中位僅 0.037 —— 相似度分佈是平的，門檻切不出東西。
-    # 真檸檬水查核 sim 0.52 被舊門檻當 not_found；「央視國慶晚會」sim 0.862 卻命中
-    # 「李登輝不姓李」——兩者都要 LLM 看內文才分得出，門檻不能。
+    # 2026-10-01：交叉確認。Top-1 只是同主題家族裡相似度最高的那筆，單靠它裁決會
+    # 錯過同家族其他角度的查核（檸檬水 →「空腹吃水果勝癌症」sim 0.648 排第一，
+    # 真正的🍋 檸檬水查核 sim 0.518 排第五）。回傳 Top-N 讓 LLM 一次看完。
+    # 只帶與 Top-1 差距小的（家族內），不帶掉出很遠的——實測柚子配優酪奶 sim 0.595
+    # 跟檸檬水毫無關係，只是池子裡碰巧排在前面。
+    # ponytail: N=4、相對落差 0.15。pool 內整體落差中位 0.037，0.15 只排除明顯掉隊者。
+    _fam = sorted(
+        (c for c in candidates if c.get("matched_text")
+         and (c.get("similarity_score") or 0) >= COFACTS_SOFT_MIN_SIM),
+        key=lambda c: -(c.get("similarity_score") or 0))
+    topn = [c for c in _fam[:COFACTS_TOP_K]
+            if (c.get("similarity_score") or 0) >= best_sim - COFACTS_FAMILY_DELTA]
+
     if best_candidate and best_sim >= COFACTS_SOFT_MIN_SIM:
         best_candidate["similarity_score"] = best_sim
         best_candidate["needs_llm_verdict"] = best_sim < COFACTS_MIN_SIM
+        # 交叉確認：把同池其餘候選的原文一併給下游 LLM。它已經能看到 Top-1 的
+        # reasons，這幾筆是同一段 fc_lines 裡的額外證據，零額外網路請求。
+        best_candidate["alternatives"] = [
+            {"status": c.get("status"), "url": c.get("url"),
+             "similarity_score": c.get("similarity_score"),
+             "reasons": (c.get("reasons") or [])[:2],
+             "matched_text": (c.get("matched_text") or "")[:300]}
+            for c in topn if c is not best_candidate]
         if use_cache:
             _cache_put(key, best_candidate)
         return best_candidate

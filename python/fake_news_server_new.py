@@ -626,6 +626,22 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
                      f"請自行判斷是否同一事件——若是則 evidence_state 為 "
                      f"full_body_evidence，若否則 unrelated_evidence］")
         fc_lines.append(head)
+        if s.get("alternatives"):
+            # 2026-10-01：交叉確認。Top-1 只是同池相似度最高那筆，同家族謠言的其他
+            # 角度查核在這裡（檸檬水的主命中是「空腹吃水果勝癌症」，真正的🍋查核排第五）。
+            # 讓它一起判相關性——若其中任一筆在查核本主張，仍算 full_body_evidence。
+            fc_lines.append("    同池其他候選（僅供交叉確認，相似度較低）：")
+            for alt in s["alternatives"]:
+                fc_lines.append(
+                    f"      · {alt.get('status')} sim={alt.get('similarity_score')}"
+                    f"（{alt.get('url') or '無連結'}）")
+                mt = (alt.get("matched_text") or "").strip().replace("\n", " ")
+                if mt:
+                    fc_lines.append(f"        內容：{mt[:260]}")
+                for item in (alt.get("reasons") or [])[:2]:
+                    txt = (item.get("text") or "").strip()
+                    if txt:
+                        fc_lines.append(f"        [{item.get('type', '回覆')}] {txt[:300]}")
         if reply:
             fc_lines.append("    查核回覆原文：\n" + reply.rstrip())
         elif st in ("inaccurate", "partial", "accurate"):
@@ -1067,9 +1083,11 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
             res["fact_check"] = {"score": DEFAULT_WEIGHTS["fact_check"] * 0.5 + _d,
                                  "desc": _worst,
                                  "weight": DEFAULT_WEIGHTS["fact_check"]}
+            # 只動 total，不動 avail。avail 是「可用權重總和」，扣分項加進分母會讓
+            # total/avail 變成負數——實測軟命中升級 + mygopen 同時命中時 total=−31
+            # （avail 被扣到負值）。clamp 後的分數本來就該被 clamp 收斂，不是被 avg 拖到負。
             total += _d
-            avail += _d
-            final = (total / avail) * 100 if avail > 0 else 0.0
+            final = max(0.0, (total / avail) * 100) if avail > 0 else 0.0
             rule_score = final
     if _ev_unrelated:
         _fc0 = res.get("fact_check") or {}
