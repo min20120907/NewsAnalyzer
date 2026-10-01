@@ -72,6 +72,16 @@ def demo():
     assert agg([]) is None
     assert agg([{"evidence_state": "x"}]) is None   # 缺 credibility_score
 
+    # 2026-10-01：deep 模式不能退回 n=1。上一版靠 systemd override 設
+    # DEEP_ANALYZE_SAMPLES=3，override 一拿掉 deep 就靜默變 n=1（實測踩到）。
+    import fake_news_server_new as F
+    assert F._samples_for("fast") == 1, F._samples_for("fast")
+    assert F._samples_for("deep") >= 2, f"deep 退回 n=1：{F._samples_for('deep')}"
+    for bad in ("", None, "quick", "深度", "deepest"):
+        assert F._samples_for(bad) == 1, f"非法 mode {bad!r} 應退回 fast"
+    assert F._samples_for("Deep") >= 2, "大小寫不敏感"
+    assert F._samples_for("DEEP") >= 2, "全大寫也要認"
+
     print("ALL PASS — 跨次不一致就 abstain，一致才給分")
 
 

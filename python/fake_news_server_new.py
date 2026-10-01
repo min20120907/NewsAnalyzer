@@ -874,6 +874,14 @@ DEFAULT_WEIGHTS = {
 }
 
 
+def _samples_for(mode: str) -> int:
+    """模式 → 取樣數。deep 的 3 不靠 systemd override（拿掉就會靜默退回 n=1）。"""
+    mode = (mode or "fast").lower()
+    if mode not in ("fast", "deep"):
+        mode = "fast"
+    return 1 if mode == "fast" else int(os.environ.get("DEEP_ANALYZE_SAMPLES", "3"))
+
+
 def _score_single(title: str, url: str, content: str, refs: List[str], publish_date=None, target_url: str = None, mode: str = "fast") -> Dict:
     """Return full metric dict for one article (fast, GPU‑ready).
 
@@ -1106,13 +1114,13 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     mode = (mode or "fast").lower()
     if mode not in ("fast", "deep"):
         mode = "fast"
+    n_samples = _samples_for(mode)
     deep = {}
     if web_results or sources:
         try:
             _t = time.perf_counter()
             deep = deep_analyze_ensemble(_title_clean or content[:60], web_results, sources,
-                                         content=content,
-                                         samples=1 if mode == "fast" else None)
+                                         content=content, samples=n_samples)
             timings["deep_analyze"] = round((time.perf_counter() - _t) * 1000, 1)
         except Exception as _e:
             print(f"[judge] deep_analyze failed: {_e}", flush=True)

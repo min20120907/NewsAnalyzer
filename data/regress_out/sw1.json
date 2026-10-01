@@ -4,26 +4,25 @@
  "clamped": false,
  "deep_analysis": {
   "abstain": true,
-  "analysis": "Cofacts提供的查核原文為投資詐騙手法說明，與本主張之ETF績效數據無關，屬於無關證據。雖然Yahoo股市新聞內文詳細描述了0052的報酬率與規模數據，但缺乏獨立查核機構對這些具體數字的屬實判定。目前無法確認該財經數據是否經過獨立查核機構驗證，需補充針對該ETF績效數據的獨立查核原文方可判定。",
+  "analysis": "Cofacts查核條目內容為投資詐騙手法說明，與本主張之ETF績效數據無關，屬於無關證據。目前僅有新聞報導提及相關數據，缺乏獨立查核機構對該財務數據屬實性的判定。需補充針對0052 ETF具體績效數據之查核原文或官方公告方可判定。",
   "claim": "富邦科技ETF（0052）掛牌20年累積報酬率超過2400%且資產規模突破1600億元",
   "credibility_score": 60,
   "evidence_state": "unrelated_evidence",
   "evidence_state_consistent": true,
   "evidence_state_disputed": false,
   "evidence_used": [
-   "Cofacts",
-   "Yahoo股市新聞內文"
+   "Cofacts"
   ],
   "is_provisional": true,
   "key_points": [
-   "Cofacts查核條目內容為投資詐騙集團手法說明，與本主張之ETF績效事實無關",
-   "Yahoo股市新聞內文提及0052掛牌20年、報酬率超2400%及規模破1600億，但屬單一媒體報導而非獨立查核判定",
-   "缺乏獨立第三方查核機構對該ETF具體數據的屬實或不實判定原文"
+   "Cofacts查核條目內容為投資詐騙集團手法說明，與本主張之ETF績效數據無關",
+   "鉅亨網新聞內文雖提及報酬翻24倍及規模逾1600億元，但缺乏獨立第三方查核機構對該數據屬實性的判定",
+   "Google查核與MyGoPen均顯示未找到相關查核結果，無法確認該財務數據之真實性"
   ],
   "model": "qwen3.8-27b-fastmtp",
   "samples": 3,
   "score_std": 0.0,
-  "viewpoints": "新聞報導方依據富邦投信與證交所發言稱0052報酬翻24倍且規模逾1600億；查核機構Cofacts僅提供詐騙手法宣導，未針對此財經數據進行事實查核，故無正反雙方針對該數據的查核立場對照"
+  "viewpoints": "新聞來源（鉅亨網）主張0052報酬翻24倍且規模破1600億；查核機構（Cofacts）僅提供詐騙手法說明，未對該ETF績效數據進行屬實或不實之判定，故無正反雙方針對此數據之查核立場"
  },
  "evidence_state": "unrelated_evidence",
  "final_score": 64.17942476272583,
@@ -116,14 +115,14 @@
   }
  ],
  "timings": {
-  "deep_analyze": 31942.6,
-  "extract": 8396.6,
-  "fact_check": 4521.4,
-  "scoring": 31943.1,
-  "sentiment": 373.8,
-  "similarity": 374.1,
-  "total": 45236.0,
-  "web_search": 2298.7999999999997
+  "deep_analyze": 30536.7,
+  "extract": 8609.7,
+  "fact_check": 3667.0,
+  "scoring": 30537.0,
+  "sentiment": 776.6,
+  "similarity": 340.0,
+  "total": 43591.5,
+  "web_search": 2199.0
  },
  "title": "「小台積」0052見證台灣科技黃金20年 報酬翻24倍、規模逾1600億元 - Yahoo股市",
  "total_raw_score": 64.17942476272583,

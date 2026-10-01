@@ -4,29 +4,28 @@
  "clamped": false,
  "deep_analysis": {
   "abstain": true,
-  "analysis": "財訊新聞提供了具體的發布日期、機構（國發會）、數據（41分、連9紅）及原因分析（AI產業），與網路搜尋結果摘要高度一致，證據鏈完整。Cofacts的查核結果雖為負面，但經比對內文，其針對的是投資詐騙手法，與本主張的宏觀經濟事實無關，故不影響本主張的可信度。綜合判斷，該主張屬實。",
+  "analysis": "提供的Cofacts查核原文內容為投資詐騙手法說明，與本主張的景氣燈號經濟數據無關，屬於無關證據。Google查核與MyGoPen查核均未找到相關結果。由於缺乏查核機構針對此特定經濟數據的判定原文，目前無法依據查核證據確認或否決該主張，需補充查核機構針對景氣燈號數據的正式判定原文方可判定。",
   "claim": "2026年8月台灣景氣燈號連續第9個月亮紅燈，追平史上最長連紅紀錄，且AI發展使經濟維持穩健成長。",
   "credibility_score": 60,
-  "evidence_state": "full_body_evidence",
+  "evidence_state": "unrelated_evidence",
   "evidence_state_consistent": false,
   "evidence_state_disputed": true,
   "evidence_used": [
-   "財訊新聞",
    "Cofacts"
   ],
   "is_provisional": true,
   "key_points": [
-   "財訊新聞報導指出，國發會於2026年9月29日發布的2026年8月景氣對策信號顯示，綜合判斷分數為41分，燈號續呈紅燈，連續第9個月，追平史上最長紀錄。",
-   "財訊新聞引述國發會觀點，指出AI與雲端產業資本支出增加、伺服器新品量產等因素，將維繫出口成長動能並增添民間投資與消費動能，支持經濟穩健成長的主張。",
-   "Cofacts查核結果判定相關資訊為「不準確」，但其查核內容聚焦於「LINE投資群組詐騙手法」，涉及低成本高報酬話術，與本主張的宏觀經濟指標及景氣燈號無關，屬於無關證據。",
-   "網路搜尋結果摘要（經濟日報、MoneyDJ等）均提及8月景氣燈號連9紅並創最長紀錄，與財訊報導內容一致，進一步佐證該事實。"
+   "Cofacts查核條目內容為LINE投資詐騙手法說明，與景氣燈號或經濟數據完全無關。",
+   "Google查核與MyGoPen查核結果均為未找到，缺乏針對此特定經濟數據的查核機構判定。",
+   "雖然網路搜尋摘要顯示多家媒體報導相同事實，但缺乏查核機構的正式判定原文作為證據接地。",
+   "現有查核證據（Cofacts）屬於防詐宣導文，根據規則屬於無關證據，不能用於確認或否決本主張。"
   ],
   "model": "qwen3.8-27b-fastmtp",
   "samples": 3,
   "score_std": 16.5,
-  "viewpoints": "財訊新聞及多家媒體報導支持景氣燈號連9紅及AI帶動經濟成長的說法；Cofacts雖判定相關關鍵字為不準確，但其針對的是投資詐騙手法，並非本主張的經濟數據，故不構成對本主張的反駁。"
+  "viewpoints": "主張方依據國發會發布的數據稱景氣燈號連9紅並歸因於AI發展；查核方（Cofacts）提供的證據僅涉及投資詐騙手法，未對景氣燈號數據進行查核，故無正反雙方針對此經濟數據的查核立場對照。"
  },
- "evidence_state": "full_body_evidence",
+ "evidence_state": "unrelated_evidence",
  "final_score": 60.92431914806365,
  "fusion_weight": 0.0,
  "is_provisional": true,
@@ -117,14 +116,14 @@
   }
  ],
  "timings": {
-  "deep_analyze": 32548.4,
-  "extract": 8095.5,
-  "fact_check": 3711.8,
-  "scoring": 32548.8,
-  "sentiment": 132.0,
-  "similarity": 121.8,
-  "total": 44489.0,
-  "web_search": 1035.5
+  "deep_analyze": 32868.1,
+  "extract": 19012.7,
+  "fact_check": 3372.7,
+  "scoring": 32868.4,
+  "sentiment": 465.4,
+  "similarity": 345.1,
+  "total": 55720.0,
+  "web_search": 766.3
  },
  "title": "景氣燈號連9紅！追平史上最長連紅紀錄 AI發展使台灣經濟維持穩健成長 - 財訊",
  "total_raw_score": 60.92431914806366,
