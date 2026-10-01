@@ -804,6 +804,11 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
     results = []
     if n == 1:
         results = [_one()]
+    elif "8088" in QWEN_URL:
+        # 2026-10-01：:8088 是 --parallel 1 單槽，併發只會讓後兩次被排隊感知跳過
+        # （QWEN_BUSY_ETA_SKIP=5s）→ 樣本數看運氣。串行才拿得到 n 個真結果。
+        # 延遲 n× 單次，這是單槽的必然代價。
+        results = [_one() for _ in range(n)]
     else:
         with _cf.ThreadPoolExecutor(max_workers=n) as ex:
             for fut in _cf.as_completed([ex.submit(_one) for _ in range(n)]):
@@ -817,21 +822,41 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
     scores = [float(r["credibility_score"]) for r in valid]
     avg = sum(scores) / len(scores)
     std = (sum((s - avg) ** 2 for s in scores) / len(scores)) ** 0.5
-    # 取最靠近平均的那次作為質化內容（key_points/viewpoints/analysis），保持一致性
-    best = min(valid, key=lambda r: abs(float(r["credibility_score"]) - avg))
+
+    # 2026-10-01：跨次一致性當選擇訊號（selective prediction）。
+    # 文獻（arXiv 2602.11619）：多步驟 agent 的多數決只有 +0~2pp，因為錯誤是系統性的；
+    # 改用「不一致就 abstain」有 +6~14pp。本流程是多步驟（召回→門控→排序→裁決），
+    # 錯法會重複發生，所以 majority vote 救不了，只能在分歧時不給結論。
+    # 實測未取樣時（n=1）sw0 擺動 23.83~81.37，evidence_state 在 unrelated/full_body
+    # 之間跳 —— 那正是需要 abstain 的訊號。
+    states = [str(r.get("evidence_state") or "") for r in valid]
+    state = max(set(states), key=states.count)      # 多數決（類別變數，不是分數）
+    consistent = (states.count(state) == len(states))
+    # 單次執行沒有「一致性」資訊可判，不強制 abstain（否則 n=1 會全部變暫時分數）
+    disputed = len(valid) > 1 and not consistent
+    if disputed:
+        print(f"[judge] deep_analyze inconsistent across {len(valid)} samples: "
+              f"{dict((s, states.count(s)) for s in set(states))} → abstain", flush=True)
+
+    # 質化內容取 state 與平均分都最接近的那次，保持內部一致
+    best = min(valid, key=lambda r: (str(r.get("evidence_state") or "") != state,
+                                     abs(float(r["credibility_score"]) - avg)))
+    abst = bool(best.get("abstain")) or disputed
     return {
         "claim": best.get("claim", ""),
-        "evidence_state": best.get("evidence_state", ""),
+        "evidence_state": state,
         "evidence_used": best.get("evidence_used", []),
         "key_points": best.get("key_points", []),
         "viewpoints": best.get("viewpoints", ""),
-        "credibility_score": int(round(avg)),
-        "abstain": bool(best.get("abstain")),
-        "is_provisional": bool(best.get("abstain")),
+        "credibility_score": 60 if abst else int(round(avg)),
+        "abstain": abst,
+        "is_provisional": abst,
         "analysis": best.get("analysis", ""),
         "model": best.get("model", OLLAMA_MODEL),
         "samples": len(valid),
         "score_std": round(std, 1),
+        "evidence_state_consistent": consistent,
+        "evidence_state_disputed": disputed,
     }
 
 
@@ -1208,6 +1233,11 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     elif ai_abstain and deep:
         basis = ("AI 模型判定證據不足，本次為暫時分數（非查核結論）："
                  f"{(deep.get('evidence_state') or '未載入正文')}")
+        if deep.get("evidence_state_disputed"):
+            # 2026-10-01：跨次取樣對證據狀態不一致 → 不給結論（selective prediction）。
+            # 擺動本身就是「模型不確定」的訊號，比它自報的分數可靠。
+            basis = (f"AI 模型 {deep.get('samples')} 次取樣對證據狀態不一致"
+                     f"（{deep.get('evidence_state')}），判定不確定，本次為暫時分數")
     elif deep and deep.get('credibility_score') is not None:
         basis = f"無查核證據，由本機 AI 模型補位評分（{deep.get('samples','?')}次取樣）"
     else:

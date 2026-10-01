@@ -4,28 +4,30 @@
  "clamped": false,
  "deep_analysis": {
   "abstain": false,
-  "analysis": "Cofacts 與 MyGoPen 均明確判定檸檬水治療癌症的主張為不準確或不實。衛福部官方聲明指出無醫學研究支持檸檬水可治療癌症或取代化療。查核機構回覆原文直接駁斥了該主張的核心事實，因此可信度極低。",
+  "analysis": "Cofacts 明確判定該主張為不準確，並引用衛福部說明無醫學研究證實檸檬水可治療癌症。新聞內文與查核結果一致指出此為網路流言，醫師與官方均否認其治療功效。因此，該主張與事實嚴重不符，可信度極低。",
   "claim": "檸檬水可以治療癌症甚至取代化學治療",
-  "credibility_score": 15,
+  "credibility_score": 22,
   "evidence_state": "full_body_evidence",
+  "evidence_state_consistent": true,
+  "evidence_state_disputed": false,
   "evidence_used": [
    "Cofacts",
-   "MyGoPen",
-   "衛福部"
+   "MyGoPen"
   ],
   "is_provisional": false,
   "key_points": [
-   "Cofacts 判定該主張為不準確，並指出目前沒有任何醫學研究證實檸檬水能治療癌症。",
-   "衛福部提醒民眾，檸檬水無法取代化學治療，許多癌患者因信以為真而停藥是錯誤行為。",
-   "MyGoPen 查核相關食物抗癌謠言時，強調缺乏科學證據支持食物能直接殺死癌細胞或取代正規醫療。"
+   "Cofacts 判定該主張為不準確，並指出衛福部提醒目前沒有任何醫學研究證實檸檬水能治療癌症。",
+   "新聞內文提及許多癌患者因信以為真而停藥，但官方與查核機構均否認檸檬水具有治療或取代化療的功效。",
+   "MyGoPen 雖主要查核地瓜與茄子，但其對類似食物抗癌謠言的查核邏輯支持「食物無法直接殺死癌細胞或取代醫療」的觀點，與本主張的錯誤性質一致。",
+   "網路搜尋結果顯示多來源（如自由健康網、台灣事實查核中心）均將檸檬抗癌說法歸類為謠言或誤導，強調其僅有預防或健康輔助效果，非治療手段。"
   ],
   "model": "qwen3.8-27b-fastmtp",
-  "samples": 1,
-  "score_std": 0.0,
-  "viewpoints": "支持方認為檸檬水具有抗癌功效甚至可取代化療；反對方（衛福部、Cofacts、MyGoPen）依據醫學研究指出此說法不實，檸檬水僅具一般營養價值，無法治療癌症或替代正規治療。"
+  "samples": 3,
+  "score_std": 4.7,
+  "viewpoints": "主張方認為檸檬水具有強大的抗癌能力，可治療癌症或取代化學治療；反方（衛福部、Cofacts、醫師）依據醫學研究指出無證據支持檸檬水能治療癌症，僅建議均衡飲食，並警告患者勿因此停藥。"
  },
  "evidence_state": "full_body_evidence",
- "final_score": 1.5,
+ "final_score": 2.2,
  "fusion_weight": 0.1,
  "is_provisional": false,
  "metrics": {
@@ -60,7 +62,7 @@
    "weight": 10.0
   }
  },
- "post_fusion_score": 1.5,
+ "post_fusion_score": 2.2,
  "rating_text": "高度可疑",
  "review_links": {
   "duckduckgo": "https://duckduckgo.com/?q=%E6%AA%B8%E6%AA%AC%E6%B0%B4%E5%8F%AF%E4%BB%A5%E6%B2%BB%E7%99%82%E7%99%8C%E7%97%87%EF%BC%9F%E9%86%AB%E5%B8%AB%E8%AD%89%E5%AF%A6%EF%BC%9A%E5%96%9D%E6%AA%B8%E6%AA%AC%E6%B0%B4%E5%B0%B1%E8%83%BD%E6%8A%97%E7%99%8C%EF%BC%8C%E6%98%AF%E7%9C%9F%E7%9A%84%E5%97%8E+評論+討論",
@@ -152,13 +154,13 @@
   }
  ],
  "timings": {
-  "deep_analyze": 7947.1,
-  "fact_check": 3587.3,
-  "scoring": 7947.5,
-  "sentiment": 46.3,
-  "similarity": 76.7,
-  "total": 11581.8,
-  "web_search": 2284.4
+  "deep_analyze": 29317.1,
+  "fact_check": 3682.7,
+  "scoring": 29317.4,
+  "sentiment": 63.5,
+  "similarity": 77.0,
+  "total": 33064.5,
+  "web_search": 1914.3
  },
  "title": "檸檬水可以治療癌症？醫師證實：喝檸檬水就能抗癌，是真的嗎",
  "total_raw_score": -20.573517084121704,

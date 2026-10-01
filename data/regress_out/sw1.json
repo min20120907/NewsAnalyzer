@@ -4,23 +4,26 @@
  "clamped": false,
  "deep_analysis": {
   "abstain": true,
-  "analysis": "Cofacts查核原文內容為投資詐騙手法說明，與本主張之ETF績效數據無關，屬於無關證據。目前僅有財經新聞報導支持該數據，缺乏獨立查核機構對「報酬翻24倍」及「規模逾1600億元」之屬實性判定。需補充針對該ETF具體績效數據之查核原文方可判定。",
-  "claim": "富邦科技ETF（0052）掛牌20年累計報酬率超過2400%且資產規模突破1600億元",
+  "analysis": "Cofacts查核結果為詐騙手法說明，與本主張之ETF績效數據無關，屬於無關證據。雖然Yahoo股市新聞內文詳細描述了0052的報酬與規模，但缺乏獨立查核機構對該數據的核實判定。目前無法確認該數據之準確性，需補充獨立查核來源方可判定。",
+  "claim": "富邦科技ETF（0052）掛牌20年累積報酬率超過2400%且資產規模突破1600億元",
   "credibility_score": 60,
   "evidence_state": "unrelated_evidence",
+  "evidence_state_consistent": true,
+  "evidence_state_disputed": false,
   "evidence_used": [
-   "Cofacts"
+   "Cofacts",
+   "Yahoo股市新聞內文"
   ],
   "is_provisional": true,
   "key_points": [
-   "Cofacts查核內容針對投資詐騙集團手法，與本主張之ETF績效無關",
-   "新聞內文雖提及報酬與規模，但缺乏獨立查核機構對該數據屬實性的判定",
-   "搜尋結果僅為財經新聞報導，非事實查核結果"
+   "Cofacts查核條目內容為投資詐騙集團手法說明，與本主張之ETF績效事實查核無關",
+   "Yahoo股市新聞內文提及0052掛牌20年、報酬率超2400%、規模破1600億，但屬單一媒體報導而非獨立查核判定",
+   "缺乏獨立第三方查核機構對該ETF具體數據之核實結果"
   ],
   "model": "qwen3.8-27b-fastmtp",
-  "samples": 1,
+  "samples": 3,
   "score_std": 0.0,
-  "viewpoints": "新聞報導方主張0052報酬翻24倍且規模逾1600億；查核機構Cofacts僅針對詐騙手法進行查核，未對本主張之數據進行屬實或虛構之判定"
+  "viewpoints": "新聞報導方依據富邦投信與證交所發言稱0052報酬翻24倍且規模逾1600億；查核機構Cofacts僅提供詐騙手法說明，未對該ETF數據進行核實，故無正反雙方針對此數據之查核立場"
  },
  "evidence_state": "unrelated_evidence",
  "final_score": 64.17942476272583,
@@ -112,14 +115,14 @@
   }
  ],
  "timings": {
-  "deep_analyze": 11185.5,
-  "extract": 7792.4,
-  "fact_check": 3364.4,
-  "scoring": 11186.0,
-  "sentiment": 303.0,
-  "similarity": 201.7,
-  "total": 22646.8,
-  "web_search": 1778.3999999999999
+  "deep_analyze": 28764.9,
+  "extract": 8580.2,
+  "fact_check": 3808.3,
+  "scoring": 28765.4,
+  "sentiment": 153.1,
+  "similarity": 113.4,
+  "total": 41308.2,
+  "web_search": 2045.1
  },
  "title": "「小台積」0052見證台灣科技黃金20年 報酬翻24倍、規模逾1600億元 - Yahoo股市",
  "total_raw_score": 64.17942476272583,
@@ -146,6 +149,12 @@
   {
    "snippet": "",
    "source": "google_news",
+   "title": "0052累積報酬率狂飆24倍！規模破千億還能買？經理人給答案 - TVBS新聞網",
+   "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE5VYkp2NV9ob3BQY2JuWVN4akNjcEhyTTRQZVRSS24zSnhDM3pXV1FGM3NWTHFLWTRWNnI5YnBSS0hlZ0NKWFBjVkloRjF5ZWM?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
    "title": "小台積20年翻24倍！富邦科技ETF（0052） 通吃科技生態系紅利 - 三立新聞網SETN.com",
    "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE1RZkkyRGdlQkh0eGtJaVVPR185UWJXclh6dHdZaDZTdXZzVEhmSUZDNF9iNWt5ZExUbjZrQXJSWWRob2NzaTJtNVpZcw?oc=5"
   },
@@ -154,12 +163,6 @@
    "source": "google_news",
    "title": "「小台積」0052掛牌20周年 累計報酬飆2,427 - 工商時報",
    "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE1Jbm9SbDB6SEJ0cGRBejVGWjlFWERYcUlyUVdXMktGSDcxVkRhRTFlblVzazNSZWwyaXNtTXQwdWxIejlaaUNlOEl0OTNhSDkxVmtYeDFYUU55ZGxjRnZz?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "0052掛牌20周年！累計報酬率2427% 富邦投信曝展望 - 蕃新聞",
-   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE80M3VmeXdsNk1pYmkwQ0hqc1ZGR0NUeVEtUG15cWdISGM1V1dPTTRMd3NkNHJfdWV2N1hrZjNoakZhcFF2RE9NTlNSNmdyTDNGUFE?oc=5"
   }
  ]
 }

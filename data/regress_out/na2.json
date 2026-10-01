@@ -4,21 +4,23 @@
  "clamped": false,
  "deep_analysis": {
   "abstain": true,
-  "analysis": "由於Cofacts、Google查核及MyGoPen等查核來源均顯示未找到相關結果，且提供的網路搜尋結果僅為新聞標題摘要，未載入任何查核正文或回覆原文，因此無法確認該主張的真實性。目前缺乏查核機構對志祺七七父親身份及持股市值的具體判定依據，必須補全查核原文或官方財報數據方可判定。",
-  "claim": "YouTuber志祺七七的父親是上市公司欣銓科技的創辦人之一，且持股市值超過十億元。",
+  "analysis": "由於Cofacts、Google查核及MyGoPen等查核來源均顯示未找到相關記錄，且提供的網路搜尋結果僅為媒體新聞標題，未載入任何查核機構的判定正文或回覆原文，屬於無證據狀態。目前無法確認該主張是否經過事實查核，需補充查核機構的完整判定內容方可評分。",
+  "claim": "YouTuber志祺七七的父親張季明是上市公司欣銓科技的創辦人之一，且持股市值超過十億元。",
   "credibility_score": 60,
   "evidence_state": "no_evidence",
+  "evidence_state_consistent": true,
+  "evidence_state_disputed": false,
   "evidence_used": [],
   "is_provisional": true,
   "key_points": [
-   "提供的查核結果顯示Cofacts、Google查核及MyGoPen均為not_found，缺乏查核機構的判定文字或回覆原文。",
-   "雖然網路搜尋結果摘要提及多家媒體報導志祺七七父親為欣銓科技創辦人且持股市值破十億，但這些僅為新聞標題摘要，未載入具體查核正文或事實核對細節。",
-   "依據規則，僅有搜尋結果摘要而無查核正文載入，屬於證據不足，無法進行實質的事實比對與評分。"
+   "提供的查核來源（Cofacts、Google查核、MyGoPen）均顯示未找到相關查核結果，缺乏事實查核機構的判定文字。",
+   "網路搜尋結果僅為多家媒體（鏡週刊、三立、自由娛樂等）的新聞標題與摘要，屬於原始新聞報導而非獨立的事實查核結論。",
+   "由於缺乏查核機構對該主張真偽的具體分析或回覆原文，無法依據證據接地原則進行可信度評分。"
   ],
   "model": "qwen3.8-27b-fastmtp",
-  "samples": 1,
+  "samples": 3,
   "score_std": 0.0,
-  "viewpoints": "目前僅有媒體報導主張志祺七七父親為欣銓科技創辦人且資產破十億，但缺乏查核機構對該主張的正面或負面判定依據，正反雙方立場無法基於提供的查核材料進行完整摘要。"
+  "viewpoints": "目前僅有媒體報導指出志祺七七父親為欣銓科技創辦人且資產過億，但無查核機構提供正反雙方的驗證立場或事實確認，故無法摘要正反雙方依據。"
  },
  "evidence_state": "no_evidence",
  "final_score": 64.26251244544983,
@@ -100,13 +102,13 @@
   }
  ],
  "timings": {
-  "deep_analyze": 9839.2,
-  "fact_check": 2937.5,
-  "scoring": 9839.6,
-  "sentiment": 62.5,
-  "similarity": 129.6,
-  "total": 12840.3,
-  "web_search": 1109.5
+  "deep_analyze": 26594.8,
+  "fact_check": 2906.5,
+  "scoring": 26595.1,
+  "sentiment": 62.2,
+  "similarity": 217.7,
+  "total": 29564.6,
+  "web_search": 988.6
  },
  "title": "志祺七七超狂家世曝光！爸是半導體公司創辦人「持股逾4千張」 市值破10億",
  "total_raw_score": 64.26251244544983,

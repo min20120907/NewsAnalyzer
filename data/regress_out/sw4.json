@@ -4,25 +4,27 @@
  "clamped": false,
  "deep_analysis": {
   "abstain": true,
-  "analysis": "本次查核命中的Cofacts內容為投資詐騙防範宣導，與小笠原欣幸拜會新北市長候選人的政治事件無關，屬於證據錯配。雖然Newtalk新聞提供了詳細的事件描述，但缺乏獨立事實查核機構的判定原文。因此，目前無法依據查核標準確認該主張的真實性，需補充針對該特定政治事件的查核原文方可判定。",
-  "claim": "日本籍國立清華大學榮譽講座教授小笠原欣幸於2026年9月30日拜會新北市長候選人李四川與蘇巧慧，並討論「洋流」等選情議題。",
+  "analysis": "提供的Cofacts查核原文內容為投資詐騙宣導，與本主張的政治拜會事件無關，故證據狀態判定為無關證據。雖然Newtalk新聞提供了詳細的事件描述與時間，但依據規則，在缺乏直接對應的查核機構判定原文時，無法給出高於60分的可信度分數。目前僅能確認媒體有相關報導，但無法透過查核機構的判定來確認其絕對真實性，需補充針對該政治事件的獨立查核原文方可判定。",
+  "claim": "日本籍清華大學榮譽講座教授小笠原欣幸於2026年9月30日拜會新北市長候選人李四川與蘇巧慧，並討論洋流等選情議題。",
   "credibility_score": 60,
   "evidence_state": "unrelated_evidence",
+  "evidence_state_consistent": false,
+  "evidence_state_disputed": true,
   "evidence_used": [
    "Cofacts",
    "Newtalk新聞"
   ],
   "is_provisional": true,
   "key_points": [
-   "Cofacts提供的查核原文內容為投資詐騙手法說明，涉及短網址、LINE群組及虛擬貨幣詐騙，與本主張所述的政治人物拜會及選舉議題完全無關。",
-   "Newtalk新聞報導明確記載小笠原欣幸於2026年9月30日拜會李四川與蘇巧慧，並提及討論「洋流」議題，此為新聞事實報導而非查核判定。",
-   "Google查核與MyGoPen查核結果均為未找到，缺乏獨立事實查核機構對該事件真實性的判定文字。",
-   "現有查核來源（Cofacts）屬於領域錯配，無法作為判定該政治事件真偽的依據。"
+   "Cofacts提供的查核原文內容為投資詐騙手法說明，與本主張涉及的政治人物拜會事件完全無關，屬於領域相同但事件無關的誤判。",
+   "Newtalk新聞報導明確記載小笠原欣幸於2026年9月30日拜會李四川與蘇巧慧，並提及討論洋流影響，與主張內容相符。",
+   "Google查核與MyGoPen查核結果均為未找到，缺乏獨立第三方查核機構對該特定政治事件的直接判定。",
+   "雖然新聞來源具體且細節完整，但依據規則，當查核來源被判定為無關且無其他有效查核正文時，證據狀態視為無關證據。"
   ],
   "model": "qwen3.8-27b-fastmtp",
-  "samples": 1,
-  "score_std": 0.0,
-  "viewpoints": "正方依據Newtalk新聞報導，指出小笠原欣幸確實拜會兩位候選人並討論選情；反方或質疑方目前無具體查核證據指出該報導為虛構，但缺乏獨立查核機構的屬實判定，僅有媒體單方報導。"
+  "samples": 3,
+  "score_std": 16.5,
+  "viewpoints": "支持方依據Newtalk新聞報導，指出小笠原欣幸確實拜會兩位候選人並討論選情；反方或質疑方目前無具體反駁證據，但缺乏獨立查核機構對該事件真實性的直接認定，僅有媒體單方報導。"
  },
  "evidence_state": "unrelated_evidence",
  "final_score": 72.71476596593857,
@@ -122,14 +124,14 @@
   }
  ],
  "timings": {
-  "deep_analyze": 15191.0,
-  "extract": 7720.0,
-  "fact_check": 3557.5,
-  "scoring": 15191.4,
-  "sentiment": 153.8,
-  "similarity": 126.9,
-  "total": 26623.6,
-  "web_search": 1612.1999999999998
+  "deep_analyze": 36789.7,
+  "extract": 8296.3,
+  "fact_check": 3455.7,
+  "scoring": 36790.0,
+  "sentiment": 135.2,
+  "similarity": 341.4,
+  "total": 48678.2,
+  "web_search": 2361.2999999999997
  },
  "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題| 政治 - Newtalk新聞",
  "total_raw_score": 72.71476596593857,
@@ -152,6 +154,12 @@
    "source": "google_news",
    "title": "被張淑娟點名是幫兇江怡臻籲蘇巧慧正面回應| 政治 - Newtalk新聞",
    "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBEQmxpTGh2WE9HY2JwTmZOaVZ5UEJDT1RkejFQN0lTLW54NDhENWpQemtfMmw5UEJsQXI4NUR2b0ZoVDlTbXp4X3RBQ0g1akJ3VVVhLVJwMVZmUE0?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "朱助選稱巧川「選情冷」？ 綠議員：歹勢我們很熱 | 華視新聞 - LINE TODAY",
+   "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE5iTVBwdmZ6QnJpVDVGV1UxOU9JanlQd1E4TkdLeERleVQtZk1vSnUzZ3ZzcmNCTFRIRmZDendaQ01Jd3hpazZRa2s0TTB5YzRzZExIM2tn?oc=5"
   },
   {
    "snippet": "",

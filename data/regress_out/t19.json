@@ -4,21 +4,27 @@
  "clamped": false,
  "deep_analysis": {
   "abstain": true,
-  "analysis": "由於Cofacts、Google查核及MyGoPen均顯示未找到相關查核結果，且網路搜尋僅命中新聞原文而非查核文章，證據狀態為無證據。目前無法確認該新聞中關於候選人定位、選情分析或政治影響的陳述是否屬實，需補充獨立查核機構的判定或至少兩家以上獨立媒體的交叉報導方可判定。",
-  "claim": "2026年新竹縣長選舉由現任竹北市長鄭朝方與國民黨參選人徐欣瑩雙強爭霸，選戰結果將牽動北台灣政治版圖及科技移入人口的幸福感。",
+  "analysis": "因所有查核來源均顯示未找到相關紀錄，且網路搜尋僅提供新聞摘要而無查核正文，目前無法確認該主張的真實性。需補充查核機構的判定原文或官方選舉資料方可判定，故標記為無法查證。",
+  "claim": "2026年新竹縣長選舉由現任竹北市長鄭朝方與國民黨參選人徐欣瑩雙強爭霸，選情牽動北台灣政治版圖。",
   "credibility_score": 60,
   "evidence_state": "no_evidence",
-  "evidence_used": [],
+  "evidence_state_consistent": true,
+  "evidence_state_disputed": false,
+  "evidence_used": [
+   "Cofacts",
+   "Google查核",
+   "MyGoPen"
+  ],
   "is_provisional": true,
   "key_points": [
-   "事實查核機構（Cofacts、Google查核、MyGoPen）均未找到針對此特定新聞內容或主張的查核結果。",
-   "網路搜尋結果僅顯示該新聞標題與摘要存在於台灣新聞雲等媒體，但缺乏獨立第三方對其內容真實性的驗證或反駁。",
-   "目前僅有單一來源（台灣新聞雲）報導此選情分析，無其他獨立來源交叉比對候選人背景或選情描述的準確性。"
+   "所有指定查核來源（Cofacts、Google查核、MyGoPen）均顯示未找到相關查核紀錄，缺乏獨立第三方對該選舉局勢的驗證。",
+   "提供的網路搜尋結果僅為新聞標題與摘要重複，未載入任何查核機構的判定文字或回覆原文，無法確認事實準確性。",
+   "由於缺乏查核正文，無法驗證鄭朝方與徐欣瑩是否為該次選舉的主要候選人，亦無法確認「雙強爭霸」的選情描述是否屬實。"
   ],
   "model": "qwen3.8-27b-fastmtp",
-  "samples": 1,
+  "samples": 3,
   "score_std": 0.0,
-  "viewpoints": "目前僅有台灣新聞雲報導稱鄭朝方與徐欣瑩為雙強爭霸，並預測選戰影響北台灣政治版圖與幸福感；因缺乏查核機構或獨立媒體的交叉驗證，正反雙方立場無法確認，僅能視為單一媒體觀點。"
+  "viewpoints": "目前僅有新聞報導主張該選舉為雙強爭霸，但無查核機構提供正反雙方的驗證立場或依據，故無法呈現經查核的正反觀點。"
  },
  "evidence_state": "no_evidence",
  "final_score": 54.02485799789428,
@@ -100,14 +106,14 @@
   }
  ],
  "timings": {
-  "deep_analyze": 10066.5,
-  "extract": 7450.6,
-  "fact_check": 3246.6,
-  "scoring": 10066.7,
-  "sentiment": 117.2,
-  "similarity": 102.7,
-  "total": 21596.2,
-  "web_search": 3960.0
+  "deep_analyze": 29204.2,
+  "extract": 7696.2,
+  "fact_check": 3282.8,
+  "scoring": 29204.5,
+  "sentiment": 130.3,
+  "similarity": 113.0,
+  "total": 40314.7,
+  "web_search": 3192.6
  },
  "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖 誰能點亮幸福感？ - 台灣新聞雲",
  "total_raw_score": 54.02485799789429,
@@ -117,19 +123,13 @@
    "snippet": "4 天前 — 2026年新竹縣長選舉進入白熱化階段，不僅是地方政治版圖的重新洗牌，選戰結果，將直接決定未來青年就業環境，以及龐大科技移入人口的生活品質與幸福感。",
    "source": "browser_google",
    "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖誰能點亮幸福感？",
-   "url": "https://www.google.com.tw/goto?url=CAESWwHrOzAVza4C7KWoUxJSP8ZwlhhoP0czFFpltb7k-BDmGtoDC9B-kAlt_mFRlVIH7F0qS_BBIeRsB9eChMq4kbSXnx1buw5kdAJhdisdsBQGnjM0W6YcZ_pF8oE"
+   "url": "https://www.google.com.tw/goto?url=CAESmgEB6zswFczeszLqLWtSSPZDgybkMKPm8S1j5byRwp1NrJoN87D0lpIP062gYKhkctTPylpHwdoa_6UAOlrGdZKiSRAHLpixUXRJEmjc_DKWEHqUYkP4C5lTsRhmiB5uzvmmV37PF_2LkRpegu5k2Tmlfp7GHwW_rfl8Hr3LykXa7BVJHu_Jcg-Wwlkkl7oIxUHveRrSEaCs8iVg"
   },
   {
    "snippet": "4 天前 — 2026年新竹縣長選舉進入白熱化階段，不僅是地方政治版圖的重新洗牌，選戰結果，將直接決定未來青年就業環境，以及龐大科技移入人口的生活品質與幸福感。",
    "source": "browser_google",
    "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖誰能點亮幸福感？",
-   "url": "https://www.google.com.tw/goto?url=CAESmgEB6zswFWHk9Q0cD8Pf1gtEL298IFYMoPSY8TMyKd0nfNxi2xfVo9hOAXz2uPEpZqz4XZjK2WyvScJkkXadKCOxKm71Glz5IVcPNszAZFeo7SCW8-K1AyLg1ud5iUKVj3DHLh0XvmBHtqQJeI-LQfkFnRZglvKFZI0Wnu8O3WTR1rKCfWLLMp6cfd-lJnaKqJh3K6LyaOBt60-x"
-  },
-  {
-   "snippet": "3 天前 — 決戰新竹縣：雙強爭霸牽動北台灣政治版圖誰能點亮幸福感？ - 台灣新聞雲. 發布時間：2026/09/28 04:24 新聞出處：台灣新聞雲(Google News).",
-   "source": "browser_google",
-   "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖誰能點亮幸福感？",
-   "url": "https://www.google.com.tw/goto?url=CAESYQHrOzAVOMQ00Xkv6QESOXH4BpsPHQas89NdnLekq_4K3T2sRCDe_QrgvetHq7azni8l2UD4o1U4qSHpBUoAdMiCAKtqxWxBkLpAHmF3zYFOMUj1tDf2TSUfxBK6hTdAWvw"
+   "url": "https://www.google.com.tw/goto?url=CAESWwHrOzAVbSh4KZ2kYGaGgyetXREc5vlp6ydWreEu3mBwKw3tUNSymDpsmmV0xaGHxT3fFzPEwgiJCrKUZt9UgLGiBB5W6Z5LEev6qvAZ-gaJhiiW4B_IB8kH1GM"
   },
   {
    "snippet": "",
