@@ -45,6 +45,19 @@ def demo():
         con.commit()
         con.close()
 
+    # 2026-10-01：NOT_ARTICLE 的「無從判斷」型不算判定（只說長度 >=15 就放行會造出假 accurate）
+    hedge = _node("資料來源：中時新聞網\nhttps://share.google/IKVx9fe2bGHsuNfTi", [
+        _reply("NOT_ARTICLE", "訊息內容就是「資料來源：中時新聞網」加上一條 Google 分享轉址，"
+                              "既沒寫是哪則新聞，也沒提出任何說法，因此這裡無從判斷真假。")])
+    assert _classify_candidate(hedge) is None, "『無從判斷』的 NOT_ARTICLE 不該算查核判定"
+
+    # 但機構真的查了並確認的 NOT_ARTICLE 仍是 accurate
+    verified = _node("宣稱某活動存在", [
+        _reply("NOT_ARTICLE", "經查證該活動確實於 2026 年 9 月 30 日舉行，"
+                              "現場照片與主辦單位公告一致，內容屬實。")])
+    got = _classify_candidate(verified)
+    assert got and got["status"] == "accurate", "真查證的 NOT_ARTICLE 應維持 accurate"
+
     print("ALL PASS — 無回覆文章不會再變成查核判定")
 
 

@@ -561,6 +561,13 @@ _DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只
 - search_hit_body_missing：搜尋結果或查核條目看起來相關，但查核正文／回覆原文沒有載入。
 - no_evidence：沒有任何查核來源命中。
 - unrelated_evidence：命中的查核是別的事件、對象或時間。
+  常見誤判（實測兩則正當財經新聞被鎖死 21～27 分，必須主動排除）：
+  a) 查核原文是「防詐宣導／詐騙集團手法說明／檢舉獎金」這類宣導文，
+     而本主張只是提到同領域的一般事物（如「ETF 報酬翻倍」命中投資詐騙宣導）。
+     宣導文在查核「騙徒怎麼騙」，不是在查核「這檔 ETF 報酬多少」→ 無關。
+  b) 查核原文是別人的 App 介面截圖／ATM 明細／UI OCR，跟本主張無關。
+  c) 只是同一產業或同一類詞（ETF、報酬、投資、癌症），但事件、對象、時間都不對應。
+  判無關看的是「是否在查核這一件特定的事」，不是「是否同一領域」。
 
 【第二步：依 evidence_state 決定 abstain 與分數】
 - search_hit_body_missing、no_evidence、unrelated_evidence：abstain 必須為 true，credibility_score 固定填 60，analysis 必須寫清楚缺什麼、目前不能確定什麼、要補哪一份原文才可判定。

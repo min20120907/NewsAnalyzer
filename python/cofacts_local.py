@@ -227,6 +227,20 @@ def _is_bare_url(text: str) -> bool:
     return cjk < 10
 
 
+_HEDGE_ONLY = ("無從判斷", "無法判斷", "查不到", "未載明", "不完整",
+               "沒有附上", "無從確認", "不確定", "請點開", "點開連結")
+
+
+def _is_hedge_only(text: str) -> bool:
+    """Cofacts 的 NOT_ARTICLE 回覆若只是說「我無從判斷」，就不算一次查核。
+
+    2026-10-01 regression：實測「小笠原欣辛拜會新北市長」（正當選情新聞）命中
+    一篇 matched_text 只有「資料來源：中時新聞網 + Google 轉址」的文章，回覆明說
+    「無從判斷真假」卻被判 accurate → 87.99 高度可信。舊邏輯只看字數 >=15 就放行。
+    """
+    return any(n in text for n in _HEDGE_ONLY)
+
+
 def _classify_candidate(node) -> "dict | None":
     """從 GraphQL node 解析查核結構。"""
     replies = node.get("articleReplies") or []
@@ -240,15 +254,23 @@ def _classify_candidate(node) -> "dict | None":
         rtext = (ar.get("reply") or {}).get("text") or ""
         if rtype in ("FALSE", "RUMOR", "TRUE", "NOT_RUMOR", "OPINIONATED", "NOT_ARTICLE"):
             if rtext.strip():
-                reasons.append({"type": rtype, "text": rtext.strip()[:200]})
+                # NOT_ARTICLE 的「無從判斷」型回覆不是判定，不進 reasons——
+                # 否則 reasons 非空會讓後面的 `if not reasons: return None` 閘門放行。
+                if rtype != "NOT_ARTICLE" or not _is_hedge_only(rtext):
+                    reasons.append({"type": rtype, "text": rtext.strip()[:200]})
         if rtype in ("FALSE", "RUMOR"):
             has_false = True
         elif rtype in ("TRUE", "NOT_RUMOR"):
             has_true = True
         elif rtype == "OPINIONATED":
             has_opinion = True
-        elif rtype == "NOT_ARTICLE" and len(rtext.strip()) >= 15:
-            has_verified_link = True
+        elif rtype == "NOT_ARTICLE":
+            # 2026-10-01：NOT_ARTICLE 有兩種，必須分開：
+            #  a) 機構真的查了 → 「這則內容雖非事實查核對象，但已確認 X 存在」→ accurate。
+            #  b) 機構只是說「這是轉發連結／沒寫主張，我無從判斷」→ **不算任何判定**。
+            # 見 _is_hedge_only 的 regression 說明。
+            if len(rtext.strip()) >= 15 and not _is_hedge_only(rtext):
+                has_verified_link = True
     if has_false:
         status = "inaccurate"
     elif has_true:
