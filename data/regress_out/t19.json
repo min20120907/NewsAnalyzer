@@ -3,33 +3,32 @@
  "clamp_reason": "",
  "clamped": false,
  "deep_analysis": {
-  "abstain": true,
-  "analysis": "因所有查核來源均顯示未找到相關紀錄，且網路搜尋僅提供新聞摘要而無查核正文，目前無法確認該主張的真實性。需補充查核機構的判定原文或官方選舉資料方可判定，故標記為無法查證。",
-  "claim": "2026年新竹縣長選舉由現任竹北市長鄭朝方與國民黨參選人徐欣瑩雙強爭霸，選情牽動北台灣政治版圖。",
-  "credibility_score": 60,
-  "evidence_state": "no_evidence",
+  "abstain": false,
+  "analysis": "根據提供的「台灣新聞雲」新聞內文，該報導詳細描述了2026年新竹縣長選舉中鄭朝方與徐欣瑩的競選策略及選情現狀，與待查核主張在人物、時間、事件及影響範圍上完全吻合。由於查核機構（Cofacts、MyGoPen等）均顯示未找到相關查核結果，無法確認是否有其他媒體或事實查核單位對該報導提出反駁或修正。然而，原始報導內文完整且具體，非僅為標題或摘要，故判定為大致屬實，但缺乏多源交叉驗證，故給分75。",
+  "claim": "2026年新竹縣長選舉中，現任竹北市長鄭朝方與國民黨參選人徐欣瑩展開雙強爭霸，選戰結果將影響北台灣政治版圖及科技移入人口的幸福感。",
+  "credibility_score": 75,
+  "evidence_state": "full_body_evidence",
   "evidence_state_consistent": true,
   "evidence_state_disputed": false,
   "evidence_used": [
-   "Cofacts",
-   "Google查核",
-   "MyGoPen"
+   "台灣新聞雲"
   ],
-  "is_provisional": true,
+  "is_provisional": false,
   "key_points": [
-   "所有指定查核來源（Cofacts、Google查核、MyGoPen）均顯示未找到相關查核紀錄，缺乏獨立第三方對該選舉局勢的驗證。",
-   "提供的網路搜尋結果僅為新聞標題與摘要重複，未載入任何查核機構的判定文字或回覆原文，無法確認事實準確性。",
-   "由於缺乏查核正文，無法驗證鄭朝方與徐欣瑩是否為該次選舉的主要候選人，亦無法確認「雙強爭霸」的選情描述是否屬實。"
+   "來源「台灣新聞雲」於2026年9月27日發布的新聞內文明確指出，2026年新竹縣長選舉進入白熱化階段，並描述為「雙強爭霸」。",
+   "內文具體點名現任竹北市長鄭朝方主打「新世代治理」，以及國民黨參選人徐欣瑩主打「工程專業、理性務實」，與主張中的人物及競選路線相符。",
+   "內文提及選戰結果將決定未來青年就業環境及科技移入人口的生活品質與幸福感，並牽動北台灣政治版圖，與主張內容一致。",
+   "雖然無獨立第三方查核機構（如Cofacts、MyGoPen）的判定，但提供的原始新聞內文完整載入且與主張事件、對象、時間完全對應，屬於同一事件的報導。"
   ],
   "model": "qwen3.8-27b-fastmtp",
   "samples": 3,
   "score_std": 0.0,
-  "viewpoints": "目前僅有新聞報導主張該選舉為雙強爭霸，但無查核機構提供正反雙方的驗證立場或依據，故無法呈現經查核的正反觀點。"
+  "viewpoints": "主張方依據「台灣新聞雲」的報導，認為鄭朝方與徐欣瑩的對決是2026年新竹縣長選舉的核心，並強調其對北台灣政治及科技族群幸福感的影響。目前材料中未出現反方觀點或查核機構對該報導真實性的質疑，僅有單一來源的正面描述。"
  },
- "evidence_state": "no_evidence",
- "final_score": 54.02485799789428,
- "fusion_weight": 0.0,
- "is_provisional": true,
+ "evidence_state": "full_body_evidence",
+ "final_score": 66.60994319915771,
+ "fusion_weight": 0.6,
+ "is_provisional": false,
  "metrics": {
   "domain": {
    "desc": "tnews.com.tw",
@@ -62,14 +61,15 @@
    "weight": 10.0
   }
  },
- "post_fusion_score": 54.02485799789428,
- "rating_text": "待查證",
+ "mode": "deep",
+ "post_fusion_score": 66.60994319915771,
+ "rating_text": "大致可信",
  "review_links": {
   "duckduckgo": "https://duckduckgo.com/?q=%E6%B1%BA%E6%88%B0%E6%96%B0%E7%AB%B9%E7%B8%A3%EF%BC%9A%E9%9B%99%E5%BC%B7%E7%88%AD%E9%9C%B8%E7%89%BD%E5%8B%95%E5%8C%97%E5%8F%B0%E7%81%A3%E6%94%BF%E6%B2%BB%E7%89%88%E5%9C%96+%E8%AA%B0%E8%83%BD%E9%BB%9E%E4%BA%AE%E5%B9%B8%E7%A6%8F%E6%84%9F%EF%BC%9F+-+%E5%8F%B0%E7%81%A3%E6%96%B0%E8%81%9E%E9%9B%B2+評論+討論",
   "threads": "https://www.threads.net/search?q=%E6%B1%BA%E6%88%B0%E6%96%B0%E7%AB%B9%E7%B8%A3%EF%BC%9A%E9%9B%99%E5%BC%B7%E7%88%AD%E9%9C%B8%E7%89%BD%E5%8B%95%E5%8C%97%E5%8F%B0%E7%81%A3%E6%94%BF%E6%B2%BB%E7%89%88%E5%9C%96+%E8%AA%B0%E8%83%BD%E9%BB%9E%E4%BA%AE%E5%B9%B8%E7%A6%8F%E6%84%9F%EF%BC%9F+-+%E5%8F%B0%E7%81%A3%E6%96%B0%E8%81%9E%E9%9B%B2"
  },
  "rule_score": 54.02485799789428,
- "scoring_basis": "AI 模型判定證據不足，本次為暫時分數（非查核結論）：no_evidence",
+ "scoring_basis": "無查核證據，由本機 AI 模型補位評分（3次取樣）",
  "sources": [
   {
    "article_id": null,
@@ -106,47 +106,47 @@
   }
  ],
  "timings": {
-  "deep_analyze": 29204.2,
-  "extract": 7696.2,
-  "fact_check": 3282.8,
-  "scoring": 29204.5,
-  "sentiment": 130.3,
-  "similarity": 113.0,
-  "total": 40314.7,
-  "web_search": 3192.6
+  "deep_analyze": 47573.9,
+  "extract": 8745.4,
+  "fact_check": 3187.0,
+  "scoring": 47574.2,
+  "sentiment": 218.6,
+  "similarity": 150.3,
+  "total": 61252.5,
+  "web_search": 4709.8
  },
  "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖 誰能點亮幸福感？ - 台灣新聞雲",
  "total_raw_score": 54.02485799789429,
  "url": "https://news.google.com/rss/articles/CBMiR0FVX3lxTFBpelNSSFJudG9zX0k2aUVqS1ZzR2dCYWxLbEppYm9lRUtEeWRBWDZvdVNKRmFsZExtQWhGd24wOXpUNG9vdGxz?oc=5",
  "web_results": [
   {
-   "snippet": "4 天前 — 2026年新竹縣長選舉進入白熱化階段，不僅是地方政治版圖的重新洗牌，選戰結果，將直接決定未來青年就業環境，以及龐大科技移入人口的生活品質與幸福感。",
-   "source": "browser_google",
-   "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖誰能點亮幸福感？",
-   "url": "https://www.google.com.tw/goto?url=CAESmgEB6zswFczeszLqLWtSSPZDgybkMKPm8S1j5byRwp1NrJoN87D0lpIP062gYKhkctTPylpHwdoa_6UAOlrGdZKiSRAHLpixUXRJEmjc_DKWEHqUYkP4C5lTsRhmiB5uzvmmV37PF_2LkRpegu5k2Tmlfp7GHwW_rfl8Hr3LykXa7BVJHu_Jcg-Wwlkkl7oIxUHveRrSEaCs8iVg"
-  },
-  {
-   "snippet": "4 天前 — 2026年新竹縣長選舉進入白熱化階段，不僅是地方政治版圖的重新洗牌，選戰結果，將直接決定未來青年就業環境，以及龐大科技移入人口的生活品質與幸福感。",
-   "source": "browser_google",
-   "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖誰能點亮幸福感？",
-   "url": "https://www.google.com.tw/goto?url=CAESWwHrOzAVbSh4KZ2kYGaGgyetXREc5vlp6ydWreEu3mBwKw3tUNSymDpsmmV0xaGHxT3fFzPEwgiJCrKUZt9UgLGiBB5W6Z5LEev6qvAZ-gaJhiiW4B_IB8kH1GM"
-  },
-  {
    "snippet": "",
    "source": "google_news",
-   "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖 誰能點亮幸福感？ - 886.news",
+   "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖 誰能點亮幸福感？ - 台灣新聞雲",
    "url": "https://news.google.com/rss/articles/CBMiR0FVX3lxTFBpelNSSFJudG9zX0k2aUVqS1ZzR2dCYWxLbEppYm9lRUtEeWRBWDZvdVNKRmFsZExtQWhGd24wOXpUNG9vdGxz?oc=5"
   },
   {
+   "snippet": "4 天前 — 2026年新竹縣長選舉進入白熱化階段，不僅是地方政治版圖的重新洗牌，選戰結果，將直接決定未來青年就業環境，以及龐大科技移入人口的生活品質與幸福感。",
+   "source": "browser_google",
+   "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖誰能點亮幸福感？",
+   "url": "https://www.google.com.tw/goto?url=CAESmgEB6zswFfp-gPnxBDZ0tBbQDz322fhluihUrrf6uqR9mGvFa1fVJ7UMvzb4uoE5TfGiCkuHHyFY4o-XljuAoCxL-CAVkg1VavkJud_UO4D9uPrYrpi_8hQKo5D7Igtz7lboaCtiBi0mnZedwvWYe3Yv2XZgo3NLSHUZVyp3GgZfCPtq8Pd-T9ArY3-7xVQtsDTSNqzOi_ppAqPG"
+  },
+  {
+   "snippet": "4 天前 — 2026年新竹縣長選舉進入白熱化階段，不僅是地方政治版圖的重新洗牌，選戰結果，將直接決定未來青年就業環境，以及龐大科技移入人口的生活品質與幸福感。",
+   "source": "browser_google",
+   "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖誰能點亮幸福感？",
+   "url": "https://www.google.com.tw/goto?url=CAESWwHrOzAVg1L8N5uUIc-HqTJ3OhYfkgvEf3v2D03BWWcQs8TIsJL4YygpycvIQcY3vYOzFcJo5W-GYa5ixEXYQ3LiJkwA6gy9vV1K_0KSYfHwxLCdV1cWgh7rLF0"
+  },
+  {
    "snippet": "",
    "source": "google_news",
-   "title": "桃市金門同鄉會舉辦兒福宣導活動 張市長：攜手守護弱勢兒童 - 886.news",
+   "title": "桃市金門同鄉會舉辦兒福宣導活動 張市長：攜手守護弱勢兒童 - 台灣新聞雲",
    "url": "https://news.google.com/rss/articles/CBMiR0FVX3lxTFBWSktkXzkyWDU2dmQ5RjJFSl9ENXl3d195MEJYak1xalpqT1RhTlpLdm83Vnl3Y2FpU2pFYlBwOFFTd2lFVldF?oc=5"
   },
   {
    "snippet": "",
    "source": "google_news",
-   "title": "昇恆昌、金坊國際股份有限公司持續投入公益捐贈中元物資支持金門縣脆弱家庭 - 886.news",
+   "title": "昇恆昌、金坊國際股份有限公司持續投入公益捐贈中元物資支持金門縣脆弱家庭 - 台灣新聞雲",
    "url": "https://news.google.com/rss/articles/CBMiR0FVX3lxTE1pcFNBZWd2OTMzdmh5emdTV2ZaTVZtNTFSbDBwMHA0YzdfZ3dyYmRsSDFsdjdFUXQwVXQ5b19rR2I1ZkNDRnlr?oc=5"
   }
  ]

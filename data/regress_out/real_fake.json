@@ -4,30 +4,31 @@
  "clamped": false,
  "deep_analysis": {
   "abstain": false,
-  "analysis": "Cofacts 明確判定該主張為不準確，並引用衛福部說明無醫學研究證實檸檬水可治療癌症。新聞內文與查核結果一致指出此為網路流言，醫師與官方均否認其治療功效。因此，該主張與事實嚴重不符，可信度極低。",
-  "claim": "檸檬水可以治療癌症甚至取代化學治療",
-  "credibility_score": 22,
+  "analysis": "Cofacts 明確判定該主張為不準確，並引用衛福部聲明指出無醫學研究支持檸檬水治療癌症。MyGoPen 亦查核類似食物抗癌謠言為誤導。綜合多方查核來源，該主張與科學事實及官方醫療指引直接衝突，屬虛構或嚴重誇大的醫療謠言，可信度極低。",
+  "claim": "每天喝檸檬水可以治療癌症甚至取代化學治療",
+  "credibility_score": 18,
   "evidence_state": "full_body_evidence",
   "evidence_state_consistent": true,
   "evidence_state_disputed": false,
   "evidence_used": [
    "Cofacts",
-   "MyGoPen"
+   "MyGoPen",
+   "衛福部"
   ],
   "is_provisional": false,
   "key_points": [
-   "Cofacts 判定該主張為不準確，並指出衛福部提醒目前沒有任何醫學研究證實檸檬水能治療癌症。",
-   "新聞內文提及許多癌患者因信以為真而停藥，但官方與查核機構均否認檸檬水具有治療或取代化療的功效。",
-   "MyGoPen 雖主要查核地瓜與茄子，但其對類似食物抗癌謠言的查核邏輯支持「食物無法直接殺死癌細胞或取代醫療」的觀點，與本主張的錯誤性質一致。",
-   "網路搜尋結果顯示多來源（如自由健康網、台灣事實查核中心）均將檸檬抗癌說法歸類為謠言或誤導，強調其僅有預防或健康輔助效果，非治療手段。"
+   "Cofacts 判定該主張為不準確，並指出目前沒有任何醫學研究證實檸檬水能治療癌症。",
+   "衛福部提醒民眾，檸檬水無法取代化學治療，許多癌患者因信以為真而停藥是危險行為。",
+   "MyGoPen 查核指出類似「食物殺死癌細胞」的說法為誤導，營養師詳解相關研究後確認此類宣稱錯誤。",
+   "網路搜尋結果顯示多起查核均指出檸檬抗癌效果被誇大，且無法高於化療或取代正規醫療。"
   ],
   "model": "qwen3.8-27b-fastmtp",
   "samples": 3,
   "score_std": 4.7,
-  "viewpoints": "主張方認為檸檬水具有強大的抗癌能力，可治療癌症或取代化學治療；反方（衛福部、Cofacts、醫師）依據醫學研究指出無證據支持檸檬水能治療癌症，僅建議均衡飲食，並警告患者勿因此停藥。"
+  "viewpoints": "主張方認為檸檬水具有抗癌功效甚至可取代化療；查核方（Cofacts、MyGoPen、衛福部）依據醫學研究與官方聲明，指出此說法缺乏科學證據且屬誤導，檸檬水僅具一般營養價值，無法治療癌症。"
  },
  "evidence_state": "full_body_evidence",
- "final_score": 2.2,
+ "final_score": 1.8,
  "fusion_weight": 0.1,
  "is_provisional": false,
  "metrics": {
@@ -62,7 +63,8 @@
    "weight": 10.0
   }
  },
- "post_fusion_score": 2.2,
+ "mode": "deep",
+ "post_fusion_score": 1.8,
  "rating_text": "高度可疑",
  "review_links": {
   "duckduckgo": "https://duckduckgo.com/?q=%E6%AA%B8%E6%AA%AC%E6%B0%B4%E5%8F%AF%E4%BB%A5%E6%B2%BB%E7%99%82%E7%99%8C%E7%97%87%EF%BC%9F%E9%86%AB%E5%B8%AB%E8%AD%89%E5%AF%A6%EF%BC%9A%E5%96%9D%E6%AA%B8%E6%AA%AC%E6%B0%B4%E5%B0%B1%E8%83%BD%E6%8A%97%E7%99%8C%EF%BC%8C%E6%98%AF%E7%9C%9F%E7%9A%84%E5%97%8E+評論+討論",
@@ -154,13 +156,13 @@
   }
  ],
  "timings": {
-  "deep_analyze": 29317.1,
-  "fact_check": 3682.7,
-  "scoring": 29317.4,
-  "sentiment": 63.5,
-  "similarity": 77.0,
-  "total": 33064.5,
-  "web_search": 1914.3
+  "deep_analyze": 33138.3,
+  "fact_check": 4833.0,
+  "scoring": 33138.7,
+  "sentiment": 62.6,
+  "similarity": 159.5,
+  "total": 38035.1,
+  "web_search": 2750.2
  },
  "title": "檸檬水可以治療癌症？醫師證實：喝檸檬水就能抗癌，是真的嗎",
  "total_raw_score": -20.573517084121704,
@@ -175,12 +177,6 @@
   {
    "snippet": "",
    "source": "google_news",
-   "title": "喝熱檸檬水可抗癌？ 營養師曝真相：2種族群飲用需注意！ - 元氣網",
-   "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE9JTzhDczRDY1FObFQzZW9YdV9hV2FxdGwxSTI4anRCWTJjZUl3RFJvQTBnaTVnUzJXR0dVb2ZYa0JLcjRueEF0SXR5MEFVeE56ckdPcnFTVklJY3VD0gFiQVVfeXFMT3NXTzluR0swVDNVNUhZUjNGVURXem5sd1ZBZ3oyc1g2VWNGenhPd1VaU0JvWWVnMnA5RTBVVjd2bVQxT0JfcmU5NHNnQjBvaWpaRWFnSXRBNDN3eHM5SWZBR0E?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
    "title": "謠言終結站》檸檬抗癌效果高於化療1萬倍？ 查核中心：舊謠言勿信 - 自由健康網",
    "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE1tQWVJeVgyNEgzZHg2Mk1JaDdpNmg5bzBQUmZ0Q3BGeGJGMHNkNUVCVG82SEg1Y1dEY0dMNW5aRXpzcXc4VGZvLTVFTGRpTUl0LWdZTmlaSFpvckxhNlgtbGstYnfSAWpBVV95cUxNYkxITUFqZTlCOTdpc2pvdGdHQUc4bVV4djFIM0NWcjVHaVlMRVdodnNBdUdaOGp6RllfSVozZHBXcnYzc0VYdlp3Q2cyVUpqNmpqVU9ubktNamxFeVc2NVFjN1BZcVpyUmZR?oc=5"
   },
@@ -189,6 +185,12 @@
    "source": "google_news",
    "title": "朱芯儀抗癌成功後養成1習慣！每天喝「排毒水」防復發 檸檬水、黑咖啡也能補水 - TVBS 健康2.0",
    "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE5udjFXdk1vcDdSY3lZY3A3YlBEMXdVNDBmWUF1QlRFdE9sQ2JUeGxDVlpTMC12b0hJcHpCMG1jeFpWaDJTY2FxXzIyTzIxNHhNWEE?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "喝熱檸檬水可抗癌？ 營養師曝真相：2種族群飲用需注意！ - health.udn.com",
+   "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE9JTzhDczRDY1FObFQzZW9YdV9hV2FxdGwxSTI4anRCWTJjZUl3RFJvQTBnaTVnUzJXR0dVb2ZYa0JLcjRueEF0SXR5MEFVeE56ckdPcnFTVklJY3VD0gFiQVVfeXFMT3NXTzluR0swVDNVNUhZUjNGVURXem5sd1ZBZ3oyc1g2VWNGenhPd1VaU0JvWWVnMnA5RTBVVjd2bVQxT0JfcmU5NHNnQjBvaWpaRWFnSXRBNDN3eHM5SWZBR0E?oc=5"
   },
   {
    "snippet": "",

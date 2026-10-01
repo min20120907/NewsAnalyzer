@@ -23,7 +23,10 @@ def main(timeout_each=200):
     cases = json.load(open(CASES, encoding="utf-8"))
     bad = []
     for c in cases:
-        body = json.dumps(c["request"]).encode()
+        # 2026-10-01：回歸集一律用 deep 模式。fast（n=1）有 58 分擺動（實測 sw0
+        # 23.83 vs 81.37），會偶發誤報；回歸集要驗的是「修好的東西沒被弄壞」，
+        # 那只有在穩定模式下才測得到。deep 的延遲由串行取樣換來。
+        body = json.dumps({**c["request"], "mode": "deep"}).encode()
         req = urllib.request.Request(JUDGE, data=body,
                                      headers={"Content-Type": "application/json"})
         t0 = time.perf_counter()

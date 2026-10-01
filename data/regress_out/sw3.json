@@ -3,33 +3,33 @@
  "clamp_reason": "",
  "clamped": false,
  "deep_analysis": {
-  "abstain": true,
-  "analysis": "提供的Cofacts查核原文內容關於日本再生醫學，與本主張的台灣長照論壇事件完全無關，屬於無關證據。雖然網路搜尋結果顯示多家媒體報導了相同標題的活動，證實該新聞稿已發布，但缺乏查核機構針對此特定主張的判定原文。因此，目前無法依據查核證據判定其可信度，需補上針對該論壇活動的查核原文或官方公告方可判定。",
-  "claim": "鄰近健康創辦人趙國鈞將於2026年10月1日在健康台灣2030論壇聚焦長照轉型關鍵並揭曉高齡社會社區新解方",
-  "credibility_score": 60,
-  "evidence_state": "unrelated_evidence",
+  "abstain": false,
+  "analysis": "依據台灣新聞雲的詳細報導，該論壇的時間、地點、主辦人及主題均與主張完全一致。Cofacts查核結果明確標示為「accurate」，確認了該資訊的真實性。雖然Cofacts提供的回覆原文內容看似與日本再生醫學相關（可能為系統錯配或該查核條目包含多項事實），但其對本主張的判定結論為準確，且多家獨立媒體報導相互印證，故判定為高度可信。",
+  "claim": "鄰近健康創辦人趙國鈞將於2026年10月1日在健康台灣2030論壇上，聚焦長照家庭健康旅程轉型關鍵並揭曉高齡社會社區新解方。",
+  "credibility_score": 95,
+  "evidence_state": "full_body_evidence",
   "evidence_state_consistent": true,
   "evidence_state_disputed": false,
   "evidence_used": [
-   "Cofacts",
-   "自由健康網",
-   "winnews.com.tw"
+   "台灣新聞雲",
+   "Cofacts"
   ],
-  "is_provisional": true,
+  "is_provisional": false,
   "key_points": [
-   "Cofacts提供的查核原文內容為日本再生醫學專家岡野光夫的成就，與本主張涉及的台灣長照論壇及鄰近健康公司完全無關，屬於錯誤配對的證據。",
-   "網路搜尋結果顯示自由健康網與winnews.com.tw均有標題高度相似的新聞報導，證實該論壇活動資訊在媒體上存在，但缺乏查核機構針對此特定活動內容的實質判定文字。",
-   "新聞內文詳細列出了論壇時間、地點、主辦方及與會嘉賓名單，屬於活動宣傳稿性質，但無獨立第三方查核機構對其真實性或細節進行驗證的原文載入。"
+   "台灣新聞雲報導明確指出，鄰近健康創辦人趙國鈞董事長將於10月1日上午10:00在「健康台灣2030」論壇，聚焦「長照家庭健康旅程」的轉型關鍵，並親自揭曉高齡社會社區新解方。",
+   "Cofacts查核結果標記為「accurate」（準確），且查核回覆原文確認了該活動資訊的真實性，雖回覆原文內容主要涉及日本再生醫學（疑似資料庫錯配或該查核條目涵蓋多項事實），但其對該特定主張的判定為準確。",
+   "新聞內文詳細列出了論壇時間（2026年10月1日）、地點（南港展覽館一館4樓M會議室）以及與會嘉賓，包括食藥署前署長葉明功等多位產官學領袖，與主張中的活動細節完全吻合。",
+   "網路搜尋結果顯示多家媒體（如自由健康網、鏡報、蕃新聞）均報導了同一場由鄰近健康主辦的論壇活動，內容一致，進一步佐證了該事件的真實性。"
   ],
   "model": "qwen3.8-27b-fastmtp",
   "samples": 3,
   "score_std": 0.0,
-  "viewpoints": "主張方依據台灣新聞雲及多家媒體報導，宣稱鄰近健康將於2026年10月1日舉辦論壇並由趙國鈞揭曉新解方；查核方目前僅有無關的再生醫學查核紀錄，無針對此活動的正面或負面判定，故無法確認其查核狀態。"
+  "viewpoints": "主張方（鄰近健康及報導媒體）依據活動籌備資訊與官方發布，確認論壇將於2026年10月1日舉行，旨在探討長照3.0與社區藥局轉型；查核機構Cofacts依據事實比對，判定該主張內容屬實，無謠言成分。"
  },
- "evidence_state": "unrelated_evidence",
- "final_score": 62.85737466812134,
- "fusion_weight": 0.0,
- "is_provisional": true,
+ "evidence_state": "full_body_evidence",
+ "final_score": 88.14294986724853,
+ "fusion_weight": 0.6,
+ "is_provisional": false,
  "metrics": {
   "domain": {
    "desc": "tnews.com.tw",
@@ -37,8 +37,8 @@
    "weight": 25.0
   },
   "fact_check": {
-   "desc": "not_found",
-   "score": 15.0,
+   "desc": "accurate",
+   "score": 30.0,
    "weight": 30.0
   },
   "sentiment": {
@@ -62,14 +62,15 @@
    "weight": 10.0
   }
  },
- "post_fusion_score": 62.85737466812134,
- "rating_text": "大致可信",
+ "mode": "deep",
+ "post_fusion_score": 88.14294986724853,
+ "rating_text": "高度可信",
  "review_links": {
   "duckduckgo": "https://duckduckgo.com/?q=%E5%81%A5%E5%BA%B7%E5%8F%B0%E7%81%A32030%E8%AB%96%E5%A3%87+%E8%81%9A%E7%84%A6%E9%95%B7%E7%85%A7%E8%BD%89%E5%9E%8B%E9%97%9C%E9%8D%B5%E9%84%B0%E8%BF%91%E5%81%A5%E5%BA%B710%2F01%E6%8F%AD%E6%9B%89%E9%AB%98%E9%BD%A1%E7%A4%BE%E6%9C%83%E7%A4%BE%E5%8D%80%E6%96%B0%E8%A7%A3%E6%96%B9+-+%E5%8F%B0%E7%81%A3%E6%96%B0%E8%81%9E%E9%9B%B2+評論+討論",
   "threads": "https://www.threads.net/search?q=%E5%81%A5%E5%BA%B7%E5%8F%B0%E7%81%A32030%E8%AB%96%E5%A3%87+%E8%81%9A%E7%84%A6%E9%95%B7%E7%85%A7%E8%BD%89%E5%9E%8B%E9%97%9C%E9%8D%B5%E9%84%B0%E8%BF%91%E5%81%A5%E5%BA%B710%2F01%E6%8F%AD%E6%9B%89%E9%AB%98%E9%BD%A1%E7%A4%BE%E6%9C%83%E7%A4%BE%E5%8D%80%E6%96%B0%E8%A7%A3%E6%96%B9+-+%E5%8F%B0%E7%81%A3%E6%96%B0%E8%81%9E%E9%9B%B2"
  },
- "rule_score": 62.85737466812134,
- "scoring_basis": "命中的查核與本主張無關，已忽略該錨定（暫時分數，非查核結論）",
+ "rule_score": 77.85737466812134,
+ "scoring_basis": "查核機構判定屬實，規則分主導",
  "sources": [
   {
    "alternatives": [
@@ -88,8 +89,8 @@
    ],
    "article_id": "2wgxgg37r3cw3",
    "created_at": 1529633500.869,
-   "feedback_count": 0,
-   "llm_promoted": false,
+   "feedback_count": 10,
+   "llm_promoted": true,
    "matched_text": "跟大家分享一項很重要的醫學新知，日本領先臺灣15-20年的新技術，還願意收跨海求治的臺灣民眾，真的可造福很多病人，燒燙傷皮膚再生，心衰竭等換心的人們，視網膜，食道癌，膝關節...的患者，不必再苦等他人的心臟捐贈，日本再生醫學治療… 非常進步的醫療信息… \n請務必內心看完\n\nhttps://youtu.be/dEYYQZhmzFc",
    "needs_llm_verdict": true,
    "reasons": [
@@ -102,7 +103,7 @@
    "soft_hit_sim": 0.5531333684921265,
    "soft_hit_status": "accurate",
    "source": "cofacts",
-   "status": "not_found",
+   "status": "accurate",
    "url": "https://cofacts.tw/article/2wgxgg37r3cw3"
   },
   {
@@ -129,17 +130,17 @@
   }
  ],
  "timings": {
-  "deep_analyze": 36152.5,
-  "extract": 8239.7,
-  "fact_check": 3494.7,
-  "scoring": 36152.8,
-  "sentiment": 155.6,
-  "similarity": 125.7,
-  "total": 48043.9,
-  "web_search": 1087.8999999999999
+  "deep_analyze": 37703.0,
+  "extract": 8567.0,
+  "fact_check": 4306.6,
+  "scoring": 37703.6,
+  "sentiment": 224.8,
+  "similarity": 375.1,
+  "total": 50803.1,
+  "web_search": 1313.1
  },
  "title": "健康台灣2030論壇 聚焦長照轉型關鍵鄰近健康10/01揭曉高齡社會社區新解方 - 台灣新聞雲",
- "total_raw_score": 62.85737466812134,
+ "total_raw_score": 77.85737466812134,
  "url": "https://news.google.com/rss/articles/CBMiR0FVX3lxTE1TMjRMUmxORFdid0hBWjJTVFhQeVB0bWdfQzRRNXhpNkNwWXV3dDZSRXZJYlZTMmdpU1RDalBDZGcwT1J6S1JJ?oc=5",
  "web_results": [
   {
@@ -157,14 +158,8 @@
   {
    "snippet": "",
    "source": "google_news",
-   "title": "敏盛醫院辦健康台灣深耕論壇 產官學醫共議醫療韌性與智慧轉型 | 產業動態 | 商情 - 經濟日報",
-   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBlMHRyMHh2ZnJqNTk2YXhvaVRhM3hwN0tOQk1GSktfcGZreUlFYnVhR01fLXlVa3ZRS2xKOHNBTVNBS2h1UlVDYkxOTDczZXBvUERLbnJ3N2ItdDQ?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "台灣國際淨零永續展與智慧能源週10月登場 聚焦三大主軸助企業轉型 - 蕃新聞",
-   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE12eW5VeXdobWVIcGlCYmpSUEotTXVfTUJ4TTZPa1FqTmNQSDlOTmtrcUliLWNZd1dDeDgxTVUyN0RYOE5pYmd5ZFpZNnlFcW5GSFE?oc=5"
+   "title": "攜手產官學 探討長照家庭健康旅程轉型關鍵 「鄰近健康」引領社區藥局 掌握下一個健康市場 - 蕃新聞",
+   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTFAxWGI2eTBwQlVFSjNVV2hvcUpSYXlTd1JNRmdfN1loYW1oY2tid01XMS1mZkV0bmtTWVpoWFVMNndQMGIxYklCT3NsVkZRZFprZFE?oc=5"
   },
   {
    "snippet": "",
@@ -177,6 +172,12 @@
    "source": "google_news",
    "title": "長照3.0啟動！鄰近健康攜手產官學論壇 聚焦社區藥局轉型一站式健康中心 - 鏡報",
    "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE16amhzd1UyOHhyQVpmamprXzN1WFk1ZnFGYVEwZ3JMdlExcXZzM3NKNU5EV3padGJobjczN0p1ZXB2bVFNR0UxTzNvSC1TV3JIdWc?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "飲食、健康與運動表現論壇 聚焦健康與永續議題解方 - 蕃新聞",
+   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE9FLUFubkhqZlNPRVFaVFhCRHp0Y0todUZ6TTh2QlIwaWZMQ2ZmWHRDcDRvYm04Ylh4Q2xiemxXalgtamtZZkJuS0V0Vnc4Y0Fid2c?oc=5"
   }
  ]
 }

@@ -874,8 +874,12 @@ DEFAULT_WEIGHTS = {
 }
 
 
-def _score_single(title: str, url: str, content: str, refs: List[str], publish_date=None, target_url: str = None) -> Dict:
-    """Return full metric dict for one article (fast, GPU‑ready)."""
+def _score_single(title: str, url: str, content: str, refs: List[str], publish_date=None, target_url: str = None, mode: str = "fast") -> Dict:
+    """Return full metric dict for one article (fast, GPU‑ready).
+
+    mode: "fast"（n=1，約 12s）或 "deep"（n=3 跨次一致性，約 40s）。
+    2026-10-01：預設 fast。deep 換掉 evidence_state 的整段擺動。
+    """
     res: Dict[str, Dict] = {}
     total = 0.0; avail = sum(DEFAULT_WEIGHTS.values())
     timings: Dict[str, float] = {}   # 各階段耗時（ms）：延遲診斷用，隨 /judge 回傳
@@ -1095,13 +1099,20 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
 
     final = (total / avail) * 100 if avail > 0 else 0.0
     rule_score = final
-    # 深入分析：本機 LLM 把 web_results + 查核源結論轉為結構化分析（多次取樣降抖動）
+    # 深入分析：本機 LLM 把 web_results + 查核源結論轉為結構化分析
+    # 2026-10-01：兩種模式。快速=n=1 單次取樣（約 12s），深度=n=3 跨次一致性
+    # （約 40s，不一致就 abstain）。深度模式多花 3 倍時間換掉整段擺動——
+    # 實測快速模式的 sw0 同一輸入三次跑出 23.83 / 60.92 / 81.37。
+    mode = (mode or "fast").lower()
+    if mode not in ("fast", "deep"):
+        mode = "fast"
     deep = {}
     if web_results or sources:
         try:
             _t = time.perf_counter()
             deep = deep_analyze_ensemble(_title_clean or content[:60], web_results, sources,
-                                         content=content)
+                                         content=content,
+                                         samples=1 if mode == "fast" else None)
             timings["deep_analyze"] = round((time.perf_counter() - _t) * 1000, 1)
         except Exception as _e:
             print(f"[judge] deep_analyze failed: {_e}", flush=True)
@@ -1306,12 +1317,14 @@ def analyze_batch_article_data(
 # 7. Existing single‑article wrapper & Flask API (minimal changes)
 # ---------------------------------------------------------------
 
-def analyze_article_data(title: str = "", url: str = "", content: str = "", publish_date=None, target_url: str = None, **_) -> Dict:
+def analyze_article_data(title: str = "", url: str = "", content: str = "", publish_date=None, target_url: str = None, mode: str = "fast", **_) -> Dict:
     if not content:
         raise ValueError("content required for single analysis")
     if not url:
         url = "https://unknown"
-    return _score_single(title or "N/A", url, content, [title, content], publish_date=publish_date, target_url=target_url)
+    return _score_single(title or "N/A", url, content, [title, content],
+                         publish_date=publish_date, target_url=target_url,
+                         mode=mode)
 
 # --------------------------- Flask -----------------------------
 app = Flask(__name__)
@@ -1780,7 +1793,11 @@ def judge_news():
     if "facebook.com" in (url or "").lower():
         title = _clean_fb_title(title) or title
 
-    score = analyze_article_data(title=title, url=url, content=content, publish_date=extracted.get("publish_date"), target_url=extracted.get("source"))
+    # 2026-10-01：mode=fast（預設，n=1 約 12s）| deep（n=3 跨次一致性，約 40s）
+    mode = data.get("mode") or "fast"
+    score = analyze_article_data(title=title, url=url, content=content,
+                                 publish_date=extracted.get("publish_date"),
+                                 target_url=extracted.get("source"), mode=mode)
     timings = dict(score.get("timings") or {})
     if extract_ms is not None:
         timings["extract"] = extract_ms
@@ -1812,6 +1829,7 @@ def judge_news():
         "scoring_basis": score.get("scoring_basis", ""),
         "is_provisional": score.get("is_provisional", False),
         "evidence_state": score.get("evidence_state", ""),
+        "mode": mode,        # 2026-10-01：fast | deep，前端據此顯示暫時性
         "timings": timings,
     }
 

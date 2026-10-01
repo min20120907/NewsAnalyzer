@@ -4,27 +4,27 @@
  "clamped": false,
  "deep_analysis": {
   "abstain": true,
-  "analysis": "提供的Cofacts查核原文內容為投資詐騙宣導，與本主張的政治拜會事件無關，故證據狀態判定為無關證據。雖然Newtalk新聞提供了詳細的事件描述與時間，但依據規則，在缺乏直接對應的查核機構判定原文時，無法給出高於60分的可信度分數。目前僅能確認媒體有相關報導，但無法透過查核機構的判定來確認其絕對真實性，需補充針對該政治事件的獨立查核原文方可判定。",
-  "claim": "日本籍清華大學榮譽講座教授小笠原欣幸於2026年9月30日拜會新北市長候選人李四川與蘇巧慧，並討論洋流等選情議題。",
+  "analysis": "本次查核命中的Cofacts內容為投資詐騙宣導，與小笠原欣幸拜會新北市長候選人的政治事件無關，故判定為無關證據。雖然Newtalk新聞提供了詳細的報導內文，包含時間、人物與對話內容，但依據規則，在查核來源無關或缺失的情況下，必須標記為棄權（abstain）並給予固定分數60。目前無法依據查核機構的判定來確認該事件的真實性，僅能依據新聞報導推斷其發生，但缺乏獨立查核背書。",
+  "claim": "日本籍國立清華大學榮譽講座教授小笠原欣幸於2026年9月30日拜會新北市長候選人李四川與蘇巧慧，並討論洋流等選情議題。",
   "credibility_score": 60,
   "evidence_state": "unrelated_evidence",
-  "evidence_state_consistent": false,
-  "evidence_state_disputed": true,
+  "evidence_state_consistent": true,
+  "evidence_state_disputed": false,
   "evidence_used": [
    "Cofacts",
    "Newtalk新聞"
   ],
   "is_provisional": true,
   "key_points": [
-   "Cofacts提供的查核原文內容為投資詐騙手法說明，與本主張涉及的政治人物拜會事件完全無關，屬於領域相同但事件無關的誤判。",
-   "Newtalk新聞報導明確記載小笠原欣幸於2026年9月30日拜會李四川與蘇巧慧，並提及討論洋流影響，與主張內容相符。",
-   "Google查核與MyGoPen查核結果均為未找到，缺乏獨立第三方查核機構對該特定政治事件的直接判定。",
-   "雖然新聞來源具體且細節完整，但依據規則，當查核來源被判定為無關且無其他有效查核正文時，證據狀態視為無關證據。"
+   "Cofacts提供的查核原文內容為投資詐騙手法說明，與本主張之政治人物拜會事件完全無關，屬於無關證據。",
+   "Newtalk新聞內文明確記載小笠原欣幸於9月30日拜會李四川與蘇巧慧，並提及討論洋流議題，與主張內容相符。",
+   "Google查核與MyGoPen均顯示未找到相關查核結果，缺乏獨立第三方事實查核機構的判定。",
+   "雖然新聞來源具體且細節完整，但依據規則，當查核來源為無關證據時，必須判定為無關證據狀態。"
   ],
   "model": "qwen3.8-27b-fastmtp",
   "samples": 3,
-  "score_std": 16.5,
-  "viewpoints": "支持方依據Newtalk新聞報導，指出小笠原欣幸確實拜會兩位候選人並討論選情；反方或質疑方目前無具體反駁證據，但缺乏獨立查核機構對該事件真實性的直接認定，僅有媒體單方報導。"
+  "score_std": 0.0,
+  "viewpoints": "支持方依據Newtalk新聞報導，指出小笠原欣幸確實拜會兩位候選人並討論選情；反方或質疑方目前無具體反駁證據，僅因缺乏獨立查核機構的正式判定而無法完全確認其查核狀態，但新聞細節具體。"
  },
  "evidence_state": "unrelated_evidence",
  "final_score": 72.71476596593857,
@@ -62,6 +62,7 @@
    "weight": 10.0
   }
  },
+ "mode": "deep",
  "post_fusion_score": 72.71476596593857,
  "rating_text": "大致可信",
  "review_links": {
@@ -124,14 +125,14 @@
   }
  ],
  "timings": {
-  "deep_analyze": 36789.7,
-  "extract": 8296.3,
-  "fact_check": 3455.7,
-  "scoring": 36790.0,
-  "sentiment": 135.2,
-  "similarity": 341.4,
-  "total": 48678.2,
-  "web_search": 2361.2999999999997
+  "deep_analyze": 35401.5,
+  "extract": 8323.8,
+  "fact_check": 4556.8,
+  "scoring": 35401.9,
+  "sentiment": 232.2,
+  "similarity": 363.8,
+  "total": 48515.6,
+  "web_search": 2138.7
  },
  "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題| 政治 - Newtalk新聞",
  "total_raw_score": 72.71476596593857,
@@ -140,14 +141,20 @@
   {
    "snippet": "",
    "source": "google_news",
-   "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題 - Yahoo新聞",
-   "url": "https://news.google.com/rss/articles/CBMigwNBVV95cUxNQ3VITXFWdHVGNk02M1J6bWtYbDlteHFKZzcyYkZQS2RJRUdaNms3am9HVXdad2JQRTJ5Rl9YQk94MTl0SUhfYVFXRWF0SUZiRWFwazJwczRjWTFJZXREXzd5S0habXhYTzFYbGVmRjFGeGJwbkpLMHg5N29ITVJleUdUZDQ4Yk5hWGY4TVlRR004MVhBQUNFMHk0M01KcE9GSzFZTVVmeG1iV3lTYXYwR3VYUkphUkNCMTNmUmdaMm9tdUh6WTlXeWJJNXE5LVd4ckdEbWhHcDU2UlRtWlFaek8wQ3pndWJzOXlOTFlGT0p2NVRmQ0JMU0tCNXhtdHFoTTZfZnlISE1fLWx1S3hhSEhnNDJRLUxwQmJHNGlsZ1ZoRXFIT1dYWDJDd2R5cE9SM2tpZmZVMzkwZW42aTY5MndqQjNCTnAxdVM5TE9ZekZMbF9KZzlfcmI2U3MwbUsybkZwcTVGRE5rdG9udDc1ZVBMMFJSdFJ3OEx0TXZnbmpXWTA?oc=5"
+   "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題| 政治 - Newtalk新聞",
+   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE8zakJ6dGRXYlFrWWtubW9PRnlPZFZkc3VXSVRQaWxmWWdFNlZLT2lxT04zRmEzdWg3bU5uMHE3UG8tTVdOeGx5UFoxdEIzaHYwZXlJR2hQQjhrTE0?oc=5"
   },
   {
    "snippet": "",
    "source": "google_news",
    "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題 | Newtalk - LINE TODAY",
-   "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTFAzOFdtcjBicmp5cG94V0dkVHBRYi1IUU5Ca2swNi1XNUtMWWpXS0NkLXRKUWJ6cjU2WW5KWExDa3lxM0FIeVB2UExKb0I0RnZaY2JvRWVB?oc=5"
+   "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxQSHNyZDQxSkNSV3pHS0xXdGlHcEpfc1k4TVQ0djZHRG00cVV6WW9kWnhCcFMzMHRMckZQU19vemZuc2dPaW42c3dESE1adFdHTWJNdXNPei1ZVGcyZmc3UnYyYjJsd2E4M1BPZjc2WWdDTXZDdkUxcmljbkY3UHVLd3lqSzY?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "小笠原欣幸直言新北市長選戰藍綠勝負未定 侯友宜有最新回應！ - Newtalk新聞",
+   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBkSnljc1R6TERkVm8zOWhRZ2dTQnRlN2UyYlVmcFRicU9pNzREWGdrdFJySTJrSXR1ZFJsT1poOGI1WW1PN05jR1VNb1lnVDg1Q0hxZXJ5OGhwSTQ?oc=5"
   },
   {
    "snippet": "",
@@ -158,20 +165,8 @@
   {
    "snippet": "",
    "source": "google_news",
-   "title": "朱助選稱巧川「選情冷」？ 綠議員：歹勢我們很熱 | 華視新聞 - LINE TODAY",
-   "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE5iTVBwdmZ6QnJpVDVGV1UxOU9JanlQd1E4TkdLeERleVQtZk1vSnUzZ3ZzcmNCTFRIRmZDendaQ01Jd3hpazZRa2s0TTB5YzRzZExIM2tn?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
    "title": "小笠原欣幸拜會蘇巧慧、李四川談洋流 揭新北是年底選舉最大決戰地 - Yahoo新聞",
    "url": "https://news.google.com/rss/articles/CBMisgNBVV95cUxQeFNkdm11WWo4eFFCMWRFUXMzYU1QVmwyY0tKb1hiSEx4LWxMRDRfT1RucVc3ZnY0RUY3R0lhM1NVYlI1V0pQQl9QVDVkTXdiQy1OUUFhOVFzS19IUmhKOWlRbXhsRkN0eXUtanpvS2pYemtkN19oNzF2YUVaaE9HS2NnaGhKODBlVnl5R1JhSVVRQU1kOTI5ektfRmJsb0VXN2J2QjEwNHhGeFdmck84aEdJZG5UZVNObGlJWHJucUE4WG9scTJPZlhQMHZXWm04dFBObjdRX1pJUlU5SndlMUxMdDl3NmJvc2lDWm1TNkltcTY3OHhmNUp1aWxwZUZseUI1RVFENjFpUDZCY08wdTY1aXRWRGlXcDE5aEdEOGJNYmJndWcxdzM0R1FkZWhrLTJ4NWtRMnBYN0s4TVlBQ0xnR0tXRlYtbS1iV0NQS2dTQzBvNmJSUkkzaW9ieEVEdnhRZVFnbV9ZWXJxanA5Um9CQXExby1PNlYyeVIzSDFmQXVtRF83aWN5YUp2OHQzSFBRYmFERHJ2elh4Q1QyOU5TVzZ5dFFJQkM1Mm5DS2hPQQ?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "判刑回來繼續標？林月琴爆苗栗市代會主席「換殼」拿破億政府標案| 政治 - Newtalk新聞",
-   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE1fTkowQ09zb2FRclNnX3dHS1llVWhWMTJrV3pVaDE5OG0zaFlPdlJoNUx1R3FUSXJYRnBiMDZudDVWYXlqVmswbDI3RHFfeDVGd2sxb1VMVmJDaUU?oc=5"
   }
  ]
 }
