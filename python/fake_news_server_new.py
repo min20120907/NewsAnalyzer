@@ -668,6 +668,29 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
                                     today=_date.today().isoformat())
 
 
+def _evidence_is_unrelated(deep) -> bool:
+    """LLM 的 evidence_state 與它自己的分析文字矛盾時，以分析為準。
+
+    2026-10-01 regression：實測「景氣燈號連9紅」命中一篇投資詐騙宣導文
+    （sim 0.468），LLM 的 evidence_state 填 `full_body_evidence`、但 analysis 明寫
+    「Cofacts 的查核結果因針對不同事件而被判定為無關證據，不影響本主張的可信度」
+    —— 判斷完全正確，狀態欄卻填錯，結果 promo=True 鎖死 23.83 疑似不實。
+    程式只讀狀態欄會被這個矛盾騙過去。
+
+    狀態說有證據、但分析自己說「無關／不影響本主張」→ 視為 unrelated。
+    呼叫端（軟命中降級、clamp 錨定）都必須讀同一個判定，否則又會兩處不一致。
+    """
+    if not isinstance(deep, dict):
+        return False
+    if deep.get("evidence_state") == "unrelated_evidence":
+        return True
+    if deep.get("evidence_state") != "full_body_evidence":
+        return False
+    txt = f"{deep.get('analysis') or ''} {deep.get('viewpoints') or ''}"
+    return any(w in txt for w in ("無關證據", "判定為無關", "與本主張無關",
+                                  "不影響本主張", "不同事件", "非同一事件"))
+
+
 def deep_analyze(title: str, web_results: list, sources: list,
                  timeout: "float | None" = None, content: str = "") -> dict:
     """呼叫 LLM（預設 deep-proxy DeepSeek，QWEN_URL 指到 :8088 則走本機 Qwen3.8-27B）做深入分析。回傳 dict 或空 dict（失敗）。"""
@@ -1068,8 +1091,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     # 2026-10-01：模型判 unrelated_evidence 時回捋該次命中的全部處置。deep 在 fact_check
     # 之後才算得出來，閘門只能事後生效：扣回 fact_check 的 -30、把 total 補回來，
     # 下方 clamp/basis 各自讀同一個 _ev_unrelated。
-    _ev_unrelated = (isinstance(deep, dict)
-                     and deep.get("evidence_state") == "unrelated_evidence")
+    _ev_unrelated = _evidence_is_unrelated(deep)
     # 2026-10-01：軟命中帶（0.45～COFACTS_MIN_SIM）降級成 not_found，但保留原始 status
     # 到 soft_hit_status —— prompt 組裝（fc_lines）會把它顯示成「軟命中待裁決」餵給
     # LLM，讓 LLM 用 evidence_state 判相關性（PFCD two-stage：召回放寬 → semantic
@@ -1079,8 +1101,11 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     if _soft:
         # LLM 判「證據完整且相關」就升為硬命中：此時 similarity_score 仍低於 0.72，
         # clamp 的 0.72 條件不會觸發（clamp 另有 unrelated 閘門擋反向誤判），只吃 -30。
+        # 必須同時通過 _evidence_is_unrelated 的一致性檢查：實測 LLM 的狀態欄填
+        # full_body_evidence、analysis 卻說「與本主張無關」，只看狀態欄會鎖死真新聞。
         _promote = (isinstance(deep, dict)
-                    and deep.get("evidence_state") == "full_body_evidence")
+                    and deep.get("evidence_state") == "full_body_evidence"
+                    and not _evidence_is_unrelated(deep))
         for _s in _soft:
             _s["soft_hit_status"] = _s.get("status")
             _s["soft_hit_sim"] = _s.get("similarity_score")
@@ -1136,8 +1161,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     # 2026-10-01：模型判 unrelated_evidence 時跳過錨定。模型看的是查核機構回覆原文，
     # 比 SBERT 分數可靠——實測 Cofacts 對「黃安國慶表態」召回一篇「一頁式廣告詐騙」，
     # matched_text 純網址卻算 sim 0.912，若照錨定真新聞直接鎖死 25 分。
-    _ev_unrelated = (isinstance(deep, dict)
-                     and deep.get("evidence_state") == "unrelated_evidence")
+    _ev_unrelated = _evidence_is_unrelated(deep)
     for _s in (sources or []):
         _st = _s.get('status')
         # 2026-09-24：缺相似度一律視為 0（未知≠有信心；舊 mygopen/google 結果無此欄，曾被 or 1.0 誤判 100% 硬錨定）
