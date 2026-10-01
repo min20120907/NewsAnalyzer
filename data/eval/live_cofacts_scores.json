@@ -1,0 +1,270 @@
+{
+ "fake": [
+  {
+   "id": "1kijmhyx80xfw",
+   "title": "https://youtube.com/shorts/Oudl-3cgHIM?si=J-daZQJw1uB0Za9E",
+   "score": 70.0,
+   "rating": "大致可信",
+   "basis": "AI 模型判定證據不足，本次為暫時分數（非查核結論）：no_evidence",
+   "state": "no_evidence",
+   "fc": "not_found",
+   "sim": 0,
+   "secs": 94.5
+  },
+  {
+   "id": "107mow23ukin",
+   "title": "https://youtu.be/-7r-gdO_9GY?si=F__dBd8QQ7aKeb5C",
+   "score": 69.99999731779099,
+   "rating": "大致可信",
+   "basis": "AI 模型判定證據不足，本次為暫時分數（非查核結論）：no_evidence",
+   "state": "no_evidence",
+   "fc": "not_found",
+   "sim": 0,
+   "secs": 103.7
+  },
+  {
+   "id": "3DFD9qABEY7yIwhp_QWz",
+   "title": "2:16\n柿民福利站\n2 庫存緊張 限時下殺:22:38:54\n衛福部與台大聯合推出\n智能檢測儀\n智能手錶\n憲哥親測推薦\n守護家人健康\n血糖監測\n即時掌握\n心跳監測\n健康監測中\n0",
+   "score": 25.0,
+   "rating": "疑似不實",
+   "basis": "查核機構判定不實，已錨定低分",
+   "state": "full_body_evidence",
+   "fc": "inaccurate",
+   "sim": 0.871,
+   "secs": 113.5
+  },
+  {
+   "id": "wer6ky2kve80",
+   "title": "https://youtu.be/cpCVoQWcY6I?si=ir4R4ddLo031cP-S",
+   "score": 70.0,
+   "rating": "大致可信",
+   "basis": "AI 模型判定證據不足，本次為暫時分數（非查核結論）：no_evidence",
+   "state": "no_evidence",
+   "fc": "not_found",
+   "sim": 0,
+   "secs": 69.9
+  },
+  {
+   "id": "104l1dbr1k0y2",
+   "title": "https://youtube.com/shorts/4t2_M8exK1s?si=DaioTvSCZYVaWlKn",
+   "score": 69.99999910593033,
+   "rating": "大致可信",
+   "basis": "AI 模型判定證據不足，本次為暫時分數（非查核結論）：no_evidence",
+   "state": "no_evidence",
+   "fc": "not_found",
+   "sim": 0,
+   "secs": 67.4
+  },
+  {
+   "id": "3nt3yiopqfv2u",
+   "title": "https://www.fdsgdfgh1s.online/v0cabjh0u800?fbclid=IwdGRjcAUp09pleHRuA2FlbQEwAHBkb2YFZmRpZB",
+   "score": 25.0,
+   "rating": "疑似不實",
+   "basis": "查核機構判定不實，已錨定低分",
+   "state": "full_body_evidence",
+   "fc": "inaccurate",
+   "sim": 0.983,
+   "secs": 65.7
+  },
+  {
+   "id": "uDDV8aABEY7yIwhp8_8B",
+   "title": "步驟\n丷\n1 點擊\n算力操作\n要開始囉\n世界級交易體驗\n專業・安全・高效的全球金融交易平台\n跟著趨勢\n輕鬆佈局\n開啟你的財富之路\n外匯\n商品\n指數\n數字貨幣\n立即開始▶\n24/7\n",
+   "score": 25.0,
+   "rating": "疑似不實",
+   "basis": "查核機構判定不實，已錨定低分",
+   "state": "full_body_evidence",
+   "fc": "inaccurate",
+   "sim": 0.877,
+   "secs": 88.9
+  },
+  {
+   "id": "1bbinz8k0pzwt",
+   "title": "準備開啟WTI/USD操作📢\n\n操作時間 18:00\n選擇項目：WTI西德州原油\n\n📌 請登入網址進行\n\n分流優化： 為減少卡頓，請各位使用新的網址登入\n\n📌 操作步驟：\n⃣  登",
+   "score": 25.0,
+   "rating": "疑似不實",
+   "basis": "查核機構判定不實，已錨定低分",
+   "state": "full_body_evidence",
+   "fc": "inaccurate",
+   "sim": 0.946,
+   "secs": 92.2
+  },
+  {
+   "id": "9gqwp1armp5f",
+   "title": "我們這邊可以幫你申辦到一筆創業補助貸款    我們可以用我們公司的名義幫你擔保包裝  用公司的名義去幫你申請這個創業補助金貸款 每個客戶過審可申請10-400萬台幣以上   這是全",
+   "score": 25.0,
+   "rating": "疑似不實",
+   "basis": "查核機構判定不實，已錨定低分",
+   "state": "full_body_evidence",
+   "fc": "inaccurate",
+   "sim": 0.951,
+   "secs": 94.0
+  },
+  {
+   "id": "11l6uxva0csuh",
+   "title": "我們幫你包裝申請的就是這份政府的創業補助金貸款，用公司的名義幫你申請下來是很容易過件下款的  我們也盡量幫你申請最多的額度   全程幫你辦理也不會收取你任何費用  條件是下款到帳的",
+   "score": 25.0,
+   "rating": "疑似不實",
+   "basis": "查核機構判定不實，已錨定低分",
+   "state": "full_body_evidence",
+   "fc": "inaccurate",
+   "sim": 0.966,
+   "secs": 92.9
+  },
+  {
+   "id": "10t9fzw615bq",
+   "title": "https://youtu.be/WbH6aCS8p-c",
+   "score": 70.0,
+   "rating": "大致可信",
+   "basis": "AI 模型 3 次取樣對證據狀態不一致（search_hit_body_missing），判定不確定，本次為暫時分數",
+   "state": "search_hit_body_missing",
+   "fc": "not_found",
+   "sim": 0,
+   "secs": 93.4
+  },
+  {
+   "id": "117rlf47ak0c",
+   "title": "【Omron全球大促】日本進口高精準度無創血糖儀，免扎針不傷膚，告別恐針怕痛，限量下殺5折，數量有限-www.pjgfup.shop https://share.google/b7",
+   "score": 25.0,
+   "rating": "疑似不實",
+   "basis": "查核機構判定不實，已錨定低分",
+   "state": "full_body_evidence",
+   "fc": "inaccurate",
+   "sim": 0.864,
+   "secs": 94.6
+  }
+ ],
+ "real": [
+  {
+   "id": "n9iwpiqlk9x0",
+   "title": "病毒太狠！8歲日本偶像流感引發心肌炎　深夜搶救不治 | 中天電視台 | LINE TODAY\n\nhttps://liff.line.me/1454987169-1WAXAP3K/v",
+   "score": 94.80000333434364,
+   "rating": "高度可信",
+   "basis": "查核機構判定屬實，規則分主導",
+   "state": "full_body_evidence",
+   "fc": "accurate",
+   "sim": 0.906,
+   "secs": 79.1
+  },
+  {
+   "id": "1q0rixp0wl0m8",
+   "title": "https://tw.news.yahoo.com/share/0912dd1c-08e5-3754-8f38-03a956de8b4a",
+   "score": 70.0,
+   "rating": "大致可信",
+   "basis": "AI 模型判定證據不足，本次為暫時分數（非查核結論）：no_evidence",
+   "state": "no_evidence",
+   "fc": "not_found",
+   "sim": 0,
+   "secs": 75.9
+  },
+  {
+   "id": "6jD35qABEY7yIwhpiPH2",
+   "title": "f 打馬悍將粉絲團|\n蔣萬安:民進黨造謠\n金華國中食物中毒\n金華國中校長\n今發公開信:\n學生真的食物中毒",
+   "score": 95.78208296294233,
+   "rating": "高度可信",
+   "basis": "查核機構判定屬實，規則分主導",
+   "state": "full_body_evidence",
+   "fc": "accurate",
+   "sim": 0.879,
+   "secs": 73.2
+  },
+  {
+   "id": "3sxixslggfyft",
+   "title": "把對的人放在對的位置有多重要‼️\n一個\n「當過選手的部長」，跟一般官員做的事有多不一樣？\n李洋直接把日本一整所小學租下來，改成台灣選手的基地。連高蛋白珍奶都準備好了。\n\n這一屆名古",
+   "score": 96.71838318137435,
+   "rating": "高度可信",
+   "basis": "查核機構判定屬實，規則分主導",
+   "state": "full_body_evidence",
+   "fc": "accurate",
+   "sim": 0.905,
+   "secs": 103.3
+  },
+  {
+   "id": "27j7astpbyfdx",
+   "title": "2026年9月24日，川普在白宮設國宴款待習近平。習近平致詞談到中美民間交流時，特別提到20多年前，一位來自賓州匹茲堡的社會科老師，名叫「賽考斯」，曾經資助中國治沙人殷玉珍種樹。\n",
+   "score": 95.66085786738518,
+   "rating": "高度可信",
+   "basis": "查核機構判定屬實，規則分主導",
+   "state": "full_body_evidence",
+   "fc": "accurate",
+   "sim": 0.934,
+   "secs": 106.6
+  },
+  {
+   "id": "16bnhh3rmisu0",
+   "title": "【連假交通大崩潰】本來是不想寫的，直到塞到我差點尿在褲子上。\n\n今年中秋連假，台灣無論鐵路、高鐵、高速公路，私家車上路或公共運輸，全線大崩潰。而交通部長 陳世凱 、鐵道局長 楊正君",
+   "score": 83.49559534992352,
+   "rating": "高度可信",
+   "basis": "查核機構判定屬實，規則分主導",
+   "state": "full_body_evidence",
+   "fc": "accurate",
+   "sim": 0.884,
+   "secs": 112.5
+  },
+  {
+   "id": "sbuqa8wpvlkz",
+   "title": "許多人常吃麵包，但錯誤吃法可能超傷身。\n\n一名30多歲上班族女生，沒慢性病，腎功能卻惡化，一追查，原來她每天早上只吃全麥吐司，且連任何果醬都不抹外，還將吐司烤到焦黑。醫師說，麵包經",
+   "score": 95.74221030584324,
+   "rating": "高度可信",
+   "basis": "查核機構判定屬實，規則分主導",
+   "state": "full_body_evidence",
+   "fc": "accurate",
+   "sim": 0.985,
+   "secs": 120.1
+  },
+  {
+   "id": "ujCh1qABEY7yIwhp3NzX",
+   "title": "中秋節吃柚子，千萬要小心。很多人以為，吃藥跟吃柚子，只要間隔兩小時就沒事，這其實是錯誤觀念。柚子和葡萄柚中，含有一種成分叫呋喃香豆素，它會抑制肝臟內的代謝酵素CYP3A4，導致藥物",
+   "score": 41.82686864437769,
+   "rating": "待查證",
+   "basis": "查核機構判定不實，已錨定低分",
+   "state": "full_body_evidence",
+   "fc": "inaccurate",
+   "sim": 0.926,
+   "secs": 124.4
+  },
+  {
+   "id": "2otpaj91qxy5",
+   "title": "（獨家）「台灣花枝丸」原料超過九成進口，多以低價魷魚「化學脫酸」混充，恐重金屬殘留 | 上下游新聞 https://share.google/0PO5pmXe0UM8YG4sE",
+   "score": 90.96452302453042,
+   "rating": "高度可信",
+   "basis": "查核機構判定屬實，規則分主導",
+   "state": "full_body_evidence",
+   "fc": "accurate",
+   "sim": 0.935,
+   "secs": 123.1
+  },
+  {
+   "id": "jTCd1KABEY7yIwhp2tp1",
+   "title": "中秋節提醒\n邵禹豪中醫師\n柚子會影響藥物代謝,\n而且可以長達三天\n葡萄柚、柚子、文旦都算\n隔一小時吃藥也沒用,\n隔兩小時吃藥還是沒用,\n隔三小時吃藥依舊沒用。\n這類水果含呋喃香豆素",
+   "score": 95.73823663536109,
+   "rating": "高度可信",
+   "basis": "查核機構判定屬實，規則分主導",
+   "state": "full_body_evidence",
+   "fc": "accurate",
+   "sim": 0.983,
+   "secs": 113.7
+  },
+  {
+   "id": "HzB406ABEY7yIwhpN9mb",
+   "title": "士兵保衛國家,而國家再聘僱保全來保護\n士兵?\n軍人站哨不就是軍人的訓練項目之一嗎?\n當你們在罵他的時候,綠友友已經註冊好\n保全公司了!\n九處軍事\n院校營區\n將從九月\n起,分兩\n階段",
+   "score": 96.92077158833526,
+   "rating": "高度可信",
+   "basis": "查核機構判定屬實，規則分主導",
+   "state": "full_body_evidence",
+   "fc": "accurate",
+   "sim": 0.981,
+   "secs": 110.9
+  },
+  {
+   "id": "WjD60KABEY7yIwhpkdMA",
+   "title": "中秋節不能吃柚子的人,\n是完全都不能吃!\n除非你有本錢停藥三天!\n1 不是藥物常見的間隔兩小時!絕對不是!\n哪些不行?我分成7大類\n1\n降血脂藥\n立普妥 Lipitor\n2\n降血壓",
+   "score": 41.152735129730715,
+   "rating": "待查證",
+   "basis": "查核機構判定不實，已錨定低分",
+   "state": "full_body_evidence",
+   "fc": "inaccurate",
+   "sim": 0.922,
+   "secs": 114.0
+  }
+ ]
+}
