@@ -201,7 +201,7 @@ def _is_bare_url(text: str) -> bool:
     return cjk < 10
 
 
-def _classify_candidate(node) -> dict:
+def _classify_candidate(node) -> "dict | None":
     """從 GraphQL node 解析查核結構。"""
     replies = node.get("articleReplies") or []
     has_false = has_true = has_opinion = False
@@ -241,6 +241,11 @@ def _classify_candidate(node) -> dict:
         created_at = None
     article_id = node.get("id")
     url = f"https://cofacts.tw/article/{article_id}" if article_id else None
+    # 2026-10-01：無回覆＝查核機構沒給任何理由，那篇只是「貼了內容、沒人查」。
+    # 帶 status 進下游會讓 fact_check=-30 並觸發 clamp，實測兩則主流媒體新聞因此被鎖死
+    # 19～25 分（命中一篇 Telegram 社群公告垃圾文／一頁式廣告詐騙文）。
+    if not reasons:
+        return None
     raw_text = node.get("text") or ""
     if _is_bare_url(raw_text) and reasons:
         # 純連結文：用最長的回覆內文當比對文本（內文本體是 URL，SBERT 無法比）
@@ -284,6 +289,11 @@ def local_match_candidates(query: str, top_k: int = 5) -> list:
                 reasons = json.loads(row[5]) if row[5] else []
             except Exception:
                 reasons = []
+            # 2026-10-01：無回覆的語料不構成查核判定。seed 早期寫進 corpus 時 reasons
+            # 幾乎全空（實測 2469 筆有 2468 筆是空），帶著 inaccurate 進下游會讓
+            # fact_check=-30 鎖死真新聞。過濾掉，讓它們退回 not_found。
+            if not reasons:
+                continue
             results.append({
                 "status": row[0], "feedback_count": row[1],
                 "created_at": row[2], "article_id": row[3],
@@ -417,7 +427,9 @@ def get_fact_check(text: str, use_cache: bool = True,
 
     # 1. 階段一召回：Cofacts GraphQL API（主查＋短查備援合併）
     for node in _graphql_recall(snippet, timeout_api):
-        candidates.append(_classify_candidate(node))
+        c = _classify_candidate(node)
+        if c:
+            candidates.append(c)
 
     # 2. 階段一召回：本地 SBERT Top-K
     local_cands = local_match_candidates(snippet, top_k=5)

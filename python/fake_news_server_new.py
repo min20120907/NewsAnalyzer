@@ -548,25 +548,50 @@ def qwen_queue_eta() -> float:
         pass
     return 0.0
 
-_DEEP_PROMPT_TMPL = """你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字），格式：
-{{"key_points":["質疑點1","質疑點2"],"viewpoints":"正反觀點摘要(80字內)","credibility_score":0到100的整數,"analysis":"100字內總結"}}
-【語言】所有欄位一律使用繁體中文完整句子，嚴禁出現英文單字或中英夾雜（外來專有名詞也譯為中文，例如勝肽、糖尿病）。
-【時間】今天日期：{today}。你的內建知識可能已過時，人物職稱、時事現況一律以「網路搜尋結果摘要」為準，嚴禁憑內建知識斷言（例如現任首相是誰）。
-【查核結論優先】「事實查核源結論」是查核機構的已驗證判定，權重高於網路搜尋片段；sim 是輸入與查核命中標題的語意相似度（1.0 最高，0.50 為命中門檻）：
-- 任一源 status 為 inaccurate 且 sim≥0.70：該新聞極可能不實。analysis 必須明確呼應此結論（點名哪家機構、命中哪篇查核文），credibility_score 取 10 到 40，不得洗白、不得寫「可信度中等」。
-- inaccurate 但 sim 在 0.50 到 0.70：屬「相鄰主題命中」（查核的是同類謠言家族、非同一指控）。analysis 必須明說命中標題與新聞主題不完全相同，credibility_score 取 40 到 60。
-- 任一源為 accurate 且 sim≥0.70：credibility_score 取 60 到 95，並在 analysis 說明查核支持點。
-- sim 顯示「未知」時：按 status 字面採信，但在 analysis 加註「相似度未知」。
-- 全部 not_found：不可臆斷為假訊息，credibility_score 取 55 到 65，並在 analysis 明說「無相關佐證」。
-【搜尋片段用法】網路搜尋結果摘要僅供補充正反觀點（viewpoints）與質疑點（key_points），不得用片段推翻上面的查核結論；若片段與查核結論矛盾，以查核結論為準並在 analysis 指出矛盾。
+_DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只能使用下方實際提供的材料判斷，不得使用內建知識補當前事實或人物職稱。
+
+輸出規則：只輸出一個 JSON 物件，不要任何其他文字：
+{{"claim":"把本次要查核的主張濃縮成一句話","evidence_state":"full_body_evidence | search_hit_body_missing | no_evidence | unrelated_evidence","evidence_used":["實際引用的來源名稱"],"key_points":["2 到 4 條具體質疑或確認點，每條須指明來源或內文依據"],"viewpoints":"正反雙方立場摘要，須指明各方依據，不得只寫單方","credibility_score":0到100的整數,"analysis":"2 到 4 句完整結論，必須點名來源、指出關鍵事實、給出明確可信或可疑理由","abstain":true 或 false}}
+
+【語言】所有欄位一律使用繁體中文完整句子，嚴禁出現英文單字或中英夾雜（外來專有名詞也譯為中文）。
+【時間】今天日期：{today}。人物職稱、時事現況一律以下方實際提供的材料為準，嚴禁憑內建知識斷言。
+
+【第一步：先判斷證據狀態 evidence_state】
+- full_body_evidence：至少一個查核來源的判定文字或回覆原文已載入，且與本主張同一事件、同一對象、同一時間。
+- search_hit_body_missing：搜尋結果或查核條目看起來相關，但查核正文／回覆原文沒有載入。
+- no_evidence：沒有任何查核來源命中。
+- unrelated_evidence：命中的查核是別的事件、對象或時間。
+
+【第二步：依 evidence_state 決定 abstain 與分數】
+- search_hit_body_missing、no_evidence、unrelated_evidence：abstain 必須為 true，credibility_score 固定填 60，analysis 必須寫清楚缺什麼、目前不能確定什麼、要補哪一份原文才可判定。
+- full_body_evidence：abstain 為 false，依下方證據強度落點評分。
+
+【評分尺度（僅 full_body_evidence 時使用，依你實際讀到的證據落點）】
+- 90 以上：查核機構明確判定屬實，且內文與主張逐項對得上。
+- 75 到 89：查核機構判定大致屬實，或有具名官方／研究來源直接支持主張關鍵部分。
+- 60 到 74：有可追溯來源支持主要說法，但關鍵細節缺證或僅部分對應。
+- 40 到 59：查核判定部分不實，或來源只支持部分主張，或證據之間互相衝突。
+- 20 到 39：查核機構明確判定不實且與本主張直接對應。
+- 20 以下：查核機構判定不實，且內文明示關鍵事實為虛構。
+
+【禁止事項】
+- 不得只寫「無相關佐證」「無法確認」「僅依摘要判斷」「建議查閱完整原文」這類空話；每條結論都要指名來源或內文依據。
+- 不得因為「查不到」就給低分；查不到只能以 abstain 為 true 表現。
+- 內文若只有網址、幾個字或無實質陳述，不得據此給高分；此時應視為證據不足並 abstain。
+
 新聞標題：{title}
+新聞內文：
+{body}
+
+事實查核結果（含查核機構回覆原文）：
+{fc_block}
+
 網路搜尋結果摘要：
-{web_summary}
-事實查核源結論：
-{fc_summary}"""
+{web_summary}"""
 
 
-def _deep_analyze_build_prompt(title: str, web_results: list, sources: list) -> str:
+def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
+                              content: str = "", facts: "Optional[list]" = None) -> str:
     # 網路搜尋摘要：最多取 5 筆，每筆 title + snippet 截短
     lines = []
     for i, r in enumerate(web_results[:5], 1):
@@ -576,34 +601,49 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list) -> 
             s = s[:120] + "…"
         lines.append(f"{i}. {t} — {s}" if (t or s) else "")
     web_summary = "\n".join(l for l in lines if l) or "（無網路搜尋結果）"
-    # 查核源摘要
+    # 查核源摘要：把機構回覆原文（reasons）一起給模型，否則它只能讀到 status 標籤，
+    # 輸出就退化成「把 status 翻譯成分數」，這是分數沒有鑑別力與敘述模糊的根因。
     fc_lines = []
     label_map = {"cofacts": "Cofacts", "google": "Google查核", "mygopen": "MyGoPen"}
     for s in sources:
         st = s.get("status", "not_found")
         nm = label_map.get(s.get("source", ""), s.get("source", ""))
-        mt = (s.get("matched_text") or "")[:120]
         url = s.get("url") or ""
-        _sim = s.get("similarity_score")
-        sim_txt = f"{float(_sim):.2f}" if _sim is not None else "未知"
-        if mt:
-            fc_lines.append(f"  - {nm}: {st}（sim {sim_txt}；命中：{mt}；{url}）")
-        else:
-            fc_lines.append(f"  - {nm}: {st}（sim {sim_txt}）")
+        reasons = s.get("reasons") or []
+        reply = ""
+        for item in reasons[:3]:
+            txt = (item.get("text") or "").strip()
+            if txt:
+                reply += f"　[{item.get('type', '回覆')}] {txt[:400]}\n"
+        head = f"  - {nm}: {st}"
+        if url:
+            head += f"（{url}）"
+        fc_lines.append(head)
+        if reply:
+            fc_lines.append("    查核回覆原文：\n" + reply.rstrip())
+        elif st in ("inaccurate", "partial", "accurate"):
+            fc_lines.append("    查核回覆原文：未載入（只有狀態標籤，無正文）")
     fc_summary = "\n".join(fc_lines) or "（無查核源）"
+    body = (content or "").strip()
+    if not body:
+        body = "（本次未提供內文）"
+    # 內文上限：避免撐爆單槽 :8088 的 prompt 預算（約 10.6s/筆的延遲不能再往上）
+    if len(body) > 1800:
+        body = body[:1800] + "…"
     from datetime import date as _date
     return _DEEP_PROMPT_TMPL.format(title=title or "（無標題）",
+                                    body=body,
                                     web_summary=web_summary,
-                                    fc_summary=fc_summary,
+                                    fc_block=fc_summary,
                                     today=_date.today().isoformat())
 
 
 def deep_analyze(title: str, web_results: list, sources: list,
-                 timeout: "float | None" = None) -> dict:
+                 timeout: "float | None" = None, content: str = "") -> dict:
     """呼叫 LLM（預設 deep-proxy DeepSeek，QWEN_URL 指到 :8088 則走本機 Qwen3.8-27B）做深入分析。回傳 dict 或空 dict（失敗）。"""
     if not REQUESTS_AVAILABLE:
         return {}
-    prompt = _deep_analyze_build_prompt(title, web_results, sources)
+    prompt = _deep_analyze_build_prompt(title, web_results, sources, content=content)
     payload = {
         "model": QWEN_MODEL,
         "messages": [
@@ -612,7 +652,7 @@ def deep_analyze(title: str, web_results: list, sources: list,
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.2,
-        "max_tokens": 400,
+        "max_tokens": 900,
         "stream": False,
         "response_format": {"type": "json_object"},
         "chat_template_kwargs": {"enable_thinking": False},
@@ -657,11 +697,25 @@ def deep_analyze(title: str, web_results: list, sources: list,
             score = int(score)
         except (TypeError, ValueError):
             score = 0
+        # abstain 語意：模型自己宣告證據不足時，該分數只是暫時值，不是查核結論。
+        abstain = parsed.get("abstain")
+        abstain = bool(abstain) if isinstance(abstain, bool) else None
+        kp = parsed.get("key_points", [])
+        if not isinstance(kp, list):
+            kp = [kp] if kp else []
+        used = parsed.get("evidence_used", [])
+        if not isinstance(used, list):
+            used = [used] if used else []
         return {
-            "key_points": parsed.get("key_points", []),
-            "viewpoints": parsed.get("viewpoints", ""),
+            "claim": str(parsed.get("claim") or "")[:200],
+            "evidence_state": str(parsed.get("evidence_state") or ""),
+            "evidence_used": [str(x)[:80] for x in used][:4],
+            "key_points": [str(x) for x in kp][:4],
+            "viewpoints": str(parsed.get("viewpoints") or ""),
             "credibility_score": max(0, min(100, score)),
-            "analysis": parsed.get("analysis", ""),
+            "abstain": abstain,
+            "is_provisional": bool(abstain),
+            "analysis": str(parsed.get("analysis") or ""),
             "model": QWEN_MODEL,
         }
     except Exception as _e:
@@ -670,7 +724,8 @@ def deep_analyze(title: str, web_results: list, sources: list,
 
 
 def deep_analyze_ensemble(title: str, web_results: list, sources: list,
-                          samples: int = None, timeout: float = None) -> dict:
+                          samples: int = None, timeout: float = None,
+                          content: str = "") -> dict:
     """多次取樣本機 LLM 以降低 7B 模型分數抖動；並回傳 std / 樣本數供前端說明。
     並發呼叫（ThreadPoolExecutor）控制總延遲約等於單次。
     註：27B 單次即穩定，預設單樣本（:8088 單槽下多樣本會互相排隊超時）。"""
@@ -691,7 +746,7 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
             return {"skipped": "qwen_busy", "queue_eta_s": round(eta, 1)}
 
     def _one():
-        return deep_analyze(title, web_results, sources, timeout=to)
+        return deep_analyze(title, web_results, sources, timeout=to, content=content)
 
     results = []
     if n == 1:
@@ -712,9 +767,14 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
     # 取最靠近平均的那次作為質化內容（key_points/viewpoints/analysis），保持一致性
     best = min(valid, key=lambda r: abs(float(r["credibility_score"]) - avg))
     return {
+        "claim": best.get("claim", ""),
+        "evidence_state": best.get("evidence_state", ""),
+        "evidence_used": best.get("evidence_used", []),
         "key_points": best.get("key_points", []),
         "viewpoints": best.get("viewpoints", ""),
         "credibility_score": int(round(avg)),
+        "abstain": bool(best.get("abstain")),
+        "is_provisional": bool(best.get("abstain")),
         "analysis": best.get("analysis", ""),
         "model": best.get("model", OLLAMA_MODEL),
         "samples": len(valid),
@@ -945,7 +1005,8 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     if web_results or sources:
         try:
             _t = time.perf_counter()
-            deep = deep_analyze_ensemble(_title_clean or content[:60], web_results, sources)
+            deep = deep_analyze_ensemble(_title_clean or content[:60], web_results, sources,
+                                         content=content)
             timings["deep_analyze"] = round((time.perf_counter() - _t) * 1000, 1)
         except Exception as _e:
             print(f"[judge] deep_analyze failed: {_e}", flush=True)
@@ -953,12 +1014,32 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     # 融合：LLM 可信度分動態加權進總評
     # - 查核命中：規則已強證據，LLM 僅微調 (w=0.10)
     # - 查核全 not_found：規則維度無信號，LLM 成主要依據 (w=0.60)
+    # 2026-09-25：模型自己宣告 abstain 時，該分數只是暫時值，不拿來改寫查核結論。
+    # 否則「正文未載入」會被當成低分證據，正是先前 TFC 截圖那種誤導來源。
     ai_cs = deep.get('credibility_score') if isinstance(deep, dict) else None
+    ai_abstain = bool(deep.get('abstain')) if isinstance(deep, dict) else False
+    # 2026-10-01：模型判 unrelated_evidence 時回捋該次命中的全部處置。deep 在 fact_check
+    # 之後才算得出來，閘門只能事後生效：扣回 fact_check 的 -30、把 total 補回來，
+    # 下方 clamp/basis 各自讀同一個 _ev_unrelated。
+    _ev_unrelated = (isinstance(deep, dict)
+                     and deep.get("evidence_state") == "unrelated_evidence")
+    if _ev_unrelated:
+        _fc0 = res.get("fact_check") or {}
+        if _fc0.get("desc") == "inaccurate":
+            # fact_check 從 -30 改回 not_found 的中性基準 15：total 與 avail 同額位移，
+            # final=(total/avail)*100 才會真的變高（只改 total 會被 avg 稀釋掉）。
+            _d = DEFAULT_WEIGHTS["fact_check"] * 0.5 - (_fc0.get("score") or 0.0)
+            total += _d
+            avail += _d
+            res["fact_check"] = {**_fc0, "score": DEFAULT_WEIGHTS["fact_check"] * 0.5,
+                                 "desc": "not_found"}
+            final = (total / avail) * 100 if avail > 0 else 0.0
+            rule_score = final
     fusion_weight = 0.0
     post_fusion_score = final
     clamped = False
     clamp_reason = ""
-    if ai_cs is not None:
+    if ai_cs is not None and not ai_abstain:
         try:
             cs = float(ai_cs)
             fc_hit = any((s.get('status') in ('hit', 'ok', 'inaccurate', 'partial'))
@@ -969,6 +1050,11 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         except (TypeError, ValueError):
             pass
     # 階段三：三級動態信心度衰減錨定 (Stage 3 Dynamic Confidence Decay Clamp)
+    # 2026-10-01：模型判 unrelated_evidence 時跳過錨定。模型看的是查核機構回覆原文，
+    # 比 SBERT 分數可靠——實測 Cofacts 對「黃安國慶表態」召回一篇「一頁式廣告詐騙」，
+    # matched_text 純網址卻算 sim 0.912，若照錨定真新聞直接鎖死 25 分。
+    _ev_unrelated = (isinstance(deep, dict)
+                     and deep.get("evidence_state") == "unrelated_evidence")
     for _s in (sources or []):
         _st = _s.get('status')
         # 2026-09-24：缺相似度一律視為 0（未知≠有信心；舊 mygopen/google 結果無此欄，曾被 or 1.0 誤判 100% 硬錨定）
@@ -1004,12 +1090,17 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         rating = "高度可疑"
     # 評分依據說明（前端展示「為什麼給這個等級」）
     fc_statuses = [s.get('status') for s in (sources or [])]
-    if any(st in ('inaccurate', 'false', 'misleading', 'fake') for st in fc_statuses):
+    if _ev_unrelated:
+        basis = "命中的查核與本主張無關，已忽略該錨定（暫時分數，非查核結論）"
+    elif any(st in ('inaccurate', 'false', 'misleading', 'fake') for st in fc_statuses):
         basis = "查核機構判定不實，已錨定低分"
     elif any(st == 'partial' for st in fc_statuses):
         basis = "查核機構判定部分不實，已錨定上限"
     elif any(st in ('hit', 'ok', 'accurate', 'true') for st in fc_statuses):
         basis = "查核機構判定屬實，規則分主導"
+    elif ai_abstain and deep:
+        basis = ("AI 模型判定證據不足，本次為暫時分數（非查核結論）："
+                 f"{(deep.get('evidence_state') or '未載入正文')}")
     elif deep and deep.get('credibility_score') is not None:
         basis = f"無查核證據，由本機 AI 模型補位評分（{deep.get('samples','?')}次取樣）"
     else:
@@ -1026,6 +1117,8 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         "clamp_reason": clamp_reason,
         "rating_text": rating,
         "scoring_basis": basis,
+        "is_provisional": bool(ai_abstain),
+        "evidence_state": (deep.get("evidence_state") or "") if isinstance(deep, dict) else "",
         "sources": sources,
         "review_links": review_links,
         "web_results": web_results,
@@ -1580,6 +1673,8 @@ def judge_news():
         "clamped": score.get("clamped"),
         "clamp_reason": score.get("clamp_reason"),
         "scoring_basis": score.get("scoring_basis", ""),
+        "is_provisional": score.get("is_provisional", False),
+        "evidence_state": score.get("evidence_state", ""),
         "timings": timings,
     }
 

@@ -128,7 +128,11 @@
     padding-bottom:22px; border-bottom:1px solid var(--card-border);
   }
   .gauge-wrap { position:relative; width:150px; height:150px; flex-shrink:0; }
-  .gauge-wrap svg { transform: rotate(-90deg); display:block; }
+  /* The SVG carries an explicit width/height attribute, so shrinking the wrapper
+     alone left the ring 30px wider than its box on phones — it visibly spilled
+     to the right of its centred container. width/height:100% + viewBox makes it
+     scale with the wrapper. */
+  .gauge-wrap svg { transform: rotate(-90deg); display:block; width:100%; height:100%; }
   .gauge-bg { fill:none; stroke:rgba(255,255,255,0.08); stroke-width:12; }
   .gauge-fg {
     fill:none; stroke-width:12; stroke-linecap:round;
@@ -200,6 +204,9 @@
   .deep-viewpoints, .deep-analysis-text { font-size:12.5px; line-height:1.6; color:var(--text); background:rgba(255,255,255,0.04); padding:10px 12px; border-radius:8px; }
   .deep-basis { margin-top:12px; font-size:12px; line-height:1.5; color:var(--text-dim); background:rgba(56,189,248,0.07); border-left:3px solid rgba(56,189,248,0.4); padding:8px 12px; border-radius:0 8px 8px 0; }
   .deep-model { font-size:10px; color:#6b7280; margin-top:10px; }
+  .deep-claim { font-size:13.5px; color:#c7d2fe; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.35); border-radius:8px; padding:8px 11px; margin-top:10px; line-height:1.6; }
+  .deep-provisional { font-size:13px; color:#fcd34d; background:rgba(251,191,36,0.10); border:1px solid rgba(251,191,36,0.40); border-radius:8px; padding:8px 11px; margin-top:10px; line-height:1.6; }
+  .deep-evidence-used { font-size:11.5px; color:#94a3b8; margin-top:8px; line-height:1.6; }
   .source-reason { font-size:12px; color:var(--text-dim); margin-top:3px; line-height:1.5; word-break:break-word; }
   .source-link { font-size:12px; color:var(--accent); text-decoration:none; word-break:break-all; display:inline-block; margin-top:3px; }
   .source-link:hover { text-decoration:underline; }
@@ -342,6 +349,10 @@
       </div>
       <div class="deep-section-label">關鍵質疑點</div>
       <ul class="deep-key-points" id="deepKeyPoints"></ul>
+
+      <div class="deep-claim" id="deepClaim" style="display:none;"></div>
+      <div class="deep-provisional" id="deepProvisional" style="display:none;"></div>
+      <div class="deep-evidence-used" id="deepEvidenceUsed" style="display:none;"></div>
       
       <button id="toggleDeepDetailsBtn" type="button" style="margin-top: 10px; padding: 6px 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #cbd5e1; cursor: pointer; font-size: 12.5px; display: none; width: 100%; text-align: center; transition: background 0.2s;">
         🔍 查看進階分析細節 (AI 觀點與總結) ▾
@@ -704,6 +715,39 @@ function renderResult(data) {
     });
     $('deepViewpoints').textContent = da.viewpoints || '—';
     $('deepAnalysisText').textContent = da.analysis || '—';
+
+    // 主張摘要：讓使用者先看到「這次到底在查什麼」，而不是先看到一個分數
+    const claimEl = $('deepClaim');
+    if (da.claim) {
+      claimEl.textContent = '查核主張：' + da.claim;
+      claimEl.style.display = 'block';
+    } else {
+      claimEl.style.display = 'none';
+    }
+    // 暫時分數警示：正文未載入時不得看起來像已完成查核
+    const provEl = $('deepProvisional');
+    if (da.abstain === true || data.is_provisional) {
+      const st = da.evidence_state || data.evidence_state || '';
+      const labelMap = {
+        full_body_evidence: '已載入查核正文',
+        search_hit_body_missing: '搜尋命中但正文未載入',
+        no_evidence: '查無相關證據',
+        unrelated_evidence: '命中的查核不屬同一事件',
+      };
+      provEl.textContent = '⚠️ 本次為暫時分數，非查核結論｜證據狀態：'
+        + (labelMap[st] || st || '未載入正文') + '｜此時不應把分數當成真偽判定';
+      provEl.style.display = 'block';
+    } else {
+      provEl.style.display = 'none';
+    }
+    // 實際引用來源
+    const usedEl = $('deepEvidenceUsed');
+    if (Array.isArray(da.evidence_used) && da.evidence_used.length) {
+      usedEl.textContent = '引用來源：' + da.evidence_used.join('、');
+      usedEl.style.display = 'block';
+    } else {
+      usedEl.style.display = 'none';
+    }
     
     // 判斷是否有進階細節可顯示
     const hasDetails = (da.viewpoints && da.viewpoints !== '—') || (da.analysis && da.analysis !== '—');
