@@ -1,0 +1,92 @@
+{
+  "protocol": {
+    "model": "typesafe/jev-1.13",
+    "endpoint": "https://openrouter.ai/api/alpha/decisions",
+    "probe": "data/eval/metrics_500.jsonl",
+    "text_limit": 2000,
+    "gate": "ABSTAIN if evidence_sufficiency >= 0.50; otherwise use verdict REAL/FAKE",
+    "no_truth_leakage": "true labels and final scores were not included in JEV state"
+  },
+  "arms": {
+    "text_only": {
+      "n": 500,
+      "n_decided": 2,
+      "n_abstain": 498,
+      "coverage": 0.004,
+      "TP": 1,
+      "FP": 0,
+      "FN": 0,
+      "TN": 1,
+      "accuracy_decided": 1.0,
+      "accuracy_all_abstain_wrong": 0.004,
+      "balanced_accuracy_decided": 1.0,
+      "recall_fake": 1.0,
+      "recall_credible": 1.0,
+      "verdict_counts": {
+        "INSUFFICIENT": 498,
+        "FAKE": 1,
+        "REAL": 1
+      },
+      "gate_counts": {
+        "no_verdict": 498,
+        "verdict": 2
+      },
+      "avg_latency_s": 0.7858230591434986,
+      "api_errors": 0,
+      "total_cost": 0.021454775999999984,
+      "path": "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/data/eval/jev_text_only_498.jsonl"
+    },
+    "evidence": {
+      "n": 500,
+      "n_decided": 164,
+      "n_abstain": 336,
+      "coverage": 0.328,
+      "TP": 161,
+      "FP": 0,
+      "FN": 0,
+      "TN": 3,
+      "accuracy_decided": 1.0,
+      "accuracy_all_abstain_wrong": 0.328,
+      "balanced_accuracy_decided": 1.0,
+      "recall_fake": 1.0,
+      "recall_credible": 1.0,
+      "verdict_counts": {
+        "FAKE": 161,
+        "INSUFFICIENT": 336,
+        "REAL": 3
+      },
+      "gate_counts": {
+        "verdict": 164,
+        "no_verdict": 336
+      },
+      "avg_latency_s": 0.7713646377089899,
+      "api_errors": 0,
+      "total_cost": 0.022801926000000004,
+      "path": "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/data/eval/jev_evidence_498.jsonl"
+    }
+  },
+  "comparators": {
+    "newsanalyzer": {
+      "n": 498,
+      "TP": 442,
+      "FP": 4,
+      "FN": 1,
+      "TN": 51,
+      "acc": 0.99,
+      "precision_fake": 0.991,
+      "recall_fake": 0.9977,
+      "f1_fake": 0.9944
+    },
+    "zeroshot_qwen27": {
+      "n": 498,
+      "TP": 406,
+      "FP": 22,
+      "FN": 37,
+      "TN": 33,
+      "acc": 0.8815,
+      "precision_fake": 0.9486,
+      "recall_fake": 0.9165,
+      "f1_fake": 0.9323
+    }
+  }
+}

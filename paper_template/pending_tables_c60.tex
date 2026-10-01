@@ -1,0 +1,101 @@
+% =====================================================================
+% PENDING TABLES (cutoff-60 unified protocol) — Table F 已整合進 main.tex（2026-09-25）；
+% 此檔續存 A/C/CAL 三表（ablation / clamp / calibration），待整合。
+% Binarization convention applied to BOTH sides: REAL iff S_final >= 60
+% (= entry point of the system's own "Likely credible" band). n=500 probe
+% set (mild perturbation, seed 42); paired intersection n=498.
+% Run metadata: clamp_ablation_500 (production tau=25), metrics_500,
+% tauhigh_sweep_c60, component_ablation_c60, paired_baseline_c60,
+% calibration.json. All artifacts reproducible via scripts/.
+% =====================================================================
+
+% -------- TABLE F: Paired fair baseline (Qwen3.8-27B equal-capacity) --------
+% Proposed subsection: "Paired Comparison Against an Equal-Capacity Zero-Shot LLM"
+% Text: To isolate the contribution of the architecture (census retrieval +
+% multi-signal fusion + safety clamping) from raw model capacity, we run the
+% identical probe set through a pure zero-shot Qwen3.8-27B baseline (the same
+% model as the system's auxiliary engine, with retrieval, metadata, and fusion
+% disabled) and binarize both systems' final scores at the 60-point
+% ``Likely credible'' boundary. Table~\ref{tab:fair} reports the paired result.
+\begin{table}[!htbp]
+\caption{Paired comparison against an equal-capacity zero-shot LLM on the same 500-claim probe set (mild perturbation). Both sides are binarized with the identical rule: REAL iff score $\ge 60$. $\Delta$Acc = paired accuracy difference; CI = 10{,}000-sample bootstrap 95\% CI; McNemar exact two-sided test on discordant pairs.}
+\label{tab:fair}
+\centering
+\begin{tabular}{lccccc}
+\toprule
+\textbf{System} & \textbf{Acc.} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F1} & \textbf{TP/FP/FN/TN} \\
+\midrule
+NewsAnalyzer (hybrid) & \textbf{99.0\%} & 99.1\% & 99.8\% & 0.994 & 442/4/1/51 \\
+Zero-shot Qwen3.8-27B & 88.2\% & 94.9\% & 91.7\% & 0.932 & 406/22/37/33 \\
+\midrule
+\multicolumn{6}{l}{$\Delta$Acc $= +10.85$\,pp, 95\% CI $[8.03, 13.65]$, McNemar $p = 1.2\times10^{-14}$ ($n=498$)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% -------- TABLE A: Component ablation --------
+% Proposed subsection: "Ablation: Safety Clamping and Signal Components"
+% Text: We recompute the fused verdict offline from the collected per-signal
+% scores (n=500) under seven configurations, holding the decision rule fixed.
+% Table~\ref{tab:ablation}: removing Stage-3 clamping costs 2.8\,pp, the
+% largest single degradation; the metadata signals are individually minor
+% (sentiment volatility slightly hurts precision), while the census evidence
+% path alone already recovers 98.8\%.
+\begin{table}[!htbp]
+\caption{Component ablation under the fixed decision rule ($n=500$, offline recomputation from collected per-signal scores; $\Delta$Acc relative to the full system). ``Evidence'' = fact-check census + community signal; ``Metadata'' = domain, sentiment, similarity, timeliness.}
+\label{tab:ablation}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Configuration} & \textbf{Acc.} & \textbf{$\Delta$Acc} & \textbf{Prec.} & \textbf{Rec.} \\
+\midrule
+Full system            & 98.6\% & ---      & 98.7\% & 99.8\% \\
+Evidence-only          & 98.8\% & $+0.2$\,pp & 98.9\% & 99.8\% \\
+Metadata-only          & 98.2\% & $-0.4$\,pp & 99.3\% & 98.7\% \\
+w/o domain reputation  & 98.6\% & $\pm0.0$\,pp & 98.7\% & 99.8\% \\
+w/o sentiment volatility & 98.8\% & $+0.2$\,pp & 98.9\% & 99.8\% \\
+w/o temporal decay     & 98.6\% & $\pm0.0$\,pp & 98.7\% & 99.8\% \\
+w/o safety clamping    & 95.8\% & $-2.8$\,pp & 98.6\% & 96.6\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% -------- TABLE C: Stage-3 clamp on/off (dev/test) --------
+\begin{table}[!htbp]
+\caption{Safety clamping (Stage~3) on/off under the fixed decision rule, stratified dev/test split (seed 42). With clamping enabled, all $\tau_{\text{high}} \in [25, 50]$ yield identical decisions; $\tau_{\text{high}} = 25$ is the deployed configuration.}
+\label{tab:clamp}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{\textbf{Dev ($n=250$)}} & \multicolumn{2}{c}{\textbf{Test ($n=250$)}} \\
+\textbf{Configuration} & Acc. & TP/FP/FN/TN & Acc. & TP/FP/FN/TN \\
+\midrule
+No clamping (Stage 3 off) & 95.2\% & 212/2/10/26 & 97.2\% & 217/2/5/26 \\
+Full clamp ($\tau_{\text{high}}{=}25$) & \textbf{99.2\%} & 222/2/0/26 & \textbf{98.8\%} & 221/2/1/26 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% -------- TABLE CAL: Score calibration --------
+% Proposed subsection: "Score Calibration"
+% Text: Table~\ref{tab:calibration} reports the empirical fake rate per score
+% band. Sub-60 scores are 98-100\% associated with misinformation; scores
+% $\ge 75$ contain no fake claims. The sample carries the corpus's natural
+% skew (88.8\% FAKE), so the bands should be read as indicative orderings
+% rather than calibrated probabilities at this sample size.
+\begin{table}[!htbp]
+\caption{Empirical fake rate per final-score band ($n=500$; sample composition 444 FAKE / 56 REAL). Bands correspond to the deployed rating vocabulary; the first band includes one raw fused score of $-4.5$ (below zero).}
+\label{tab:calibration}
+\centering
+\begin{tabular}{lccc}
+\toprule
+\textbf{Score band} & \textbf{Rating} & \textbf{$n$} & \textbf{P(FAKE $\mid$ band)} \\
+\midrule
+$<20$   & Highly suspicious & 283 & .993 \\
+20--40  & Suspected fake    & 118 & .983 \\
+40--60  & Unverified        & 46  & 1.000 \\
+60--75  & Likely credible   & 3   & .333 \\
+75--100 & Highly credible   & 50  & .000 \\
+\bottomrule
+\end{tabular}
+\end{table}

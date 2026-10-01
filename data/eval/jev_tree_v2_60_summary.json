@@ -1,0 +1,74 @@
+{
+  "model": "typesafe/jev-1.13",
+  "endpoint": "https://openrouter.ai/api/alpha/decisions",
+  "sample_n": 60,
+  "label_counts": {
+    "REAL": 30,
+    "FAKE": 30
+  },
+  "strict_body_tree": {
+    "n": 60,
+    "decided": 0,
+    "abstain": 60,
+    "coverage": 0.0,
+    "TP": 0,
+    "FP": 0,
+    "FN": 0,
+    "TN": 0,
+    "accuracy_decided": null,
+    "balanced_accuracy_decided": null,
+    "recall_fake": 0.0,
+    "recall_credible": 0.0
+  },
+  "status_only_tree": {
+    "n": 60,
+    "decided": 6,
+    "abstain": 54,
+    "coverage": 0.1,
+    "TP": 0,
+    "FP": 0,
+    "FN": 0,
+    "TN": 6,
+    "accuracy_decided": 1.0,
+    "balanced_accuracy_decided": 0.5,
+    "recall_fake": 0.0,
+    "recall_credible": 1.0
+  },
+  "strict_branches": {
+    "L0_insufficient_verdict": 21,
+    "L0_body_not_full": 39
+  },
+  "status_branches": {
+    "L0_insufficient_verdict": 21,
+    "L0_source_reliability": 22,
+    "L1_supported_authoritative_or_corroborated": 6,
+    "L0_alignment": 10,
+    "L1_support_without_corroboration": 1
+  },
+  "jiev_verdicts": {
+    "INSUFFICIENT": 21,
+    "SUPPORTED": 16,
+    "REFUTED": 20,
+    "PARTIAL": 3
+  },
+  "body_status": {
+    "PARTIAL_BODY": 51,
+    "TITLE_SNIPPET_ONLY": 9
+  },
+  "api_errors": 0,
+  "avg_latency_s": 0.8866306508153987,
+  "total_cost": 0.0035156519999999993,
+  "thresholds": {
+    "min_alignment": 2.5,
+    "min_reliability": 2.0,
+    "min_corroboration_search": 0.6,
+    "max_contradiction": 0.65,
+    "partial_maps_to": "FAKE"
+  },
+  "interpretation": {
+    "strict_tree": "The expanded tree is intentionally conservative: because the current evidence bundle contains compact status summaries rather than full fact-check bodies, 60/60 correctly abstained.",
+    "status_only_tree": "If body completeness is ignored, only 6/60 were decided and all 6 were REAL; this is not a competitive accuracy result.",
+    "root_cause": "The bottleneck is missing full TFC/Cofacts fact-check bodies, not a lack of decision-tree branches.",
+    "next_required_input": "Fetch and pass full fact-check article bodies, then rerun the same 60-row sample without changing thresholds."
+  }
+}

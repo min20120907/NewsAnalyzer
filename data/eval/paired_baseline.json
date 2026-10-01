@@ -1,0 +1,36 @@
+{
+ "n_common": 492,
+ "n_excluded": 8,
+ "newsanalyzer": {
+  "n": 492,
+  "TP": 436,
+  "FP": 4,
+  "FN": 1,
+  "TN": 51,
+  "acc": 0.9898,
+  "precision_fake": 0.9909,
+  "recall_fake": 0.9977,
+  "f1_fake": 0.9943
+ },
+ "zeroshot_qwen27": {
+  "n": 492,
+  "TP": 384,
+  "FP": 19,
+  "FN": 53,
+  "TN": 36,
+  "acc": 0.8537,
+  "precision_fake": 0.9529,
+  "recall_fake": 0.8787,
+  "f1_fake": 0.9143
+ },
+ "paired_acc_diff": 0.1361,
+ "mcnemar_b": 69,
+ "mcnemar_c": 2,
+ "mcnemar_exact_p": 0.0,
+ "bootstrap95_ci": [
+  0.1057,
+  0.1667
+ ],
+ "bootstrap_n": 10000,
+ "seed": 42
+}

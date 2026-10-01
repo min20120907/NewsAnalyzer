@@ -1,0 +1,326 @@
+{
+  "datasets": {
+    "cofacts_2292": {
+      "labels": {
+        "FAKE": 2025,
+        "REAL": 267
+      },
+      "system_500_498_common": {
+        "n": 498,
+        "TP": 442,
+        "FP": 4,
+        "FN": 1,
+        "TN": 51,
+        "acc": 0.99,
+        "precision_fake": 0.991,
+        "recall_fake": 0.9977,
+        "f1_fake": 0.9944
+      },
+      "zero_shot_qwen_498": {
+        "n": 498,
+        "TP": 406,
+        "FP": 22,
+        "FN": 37,
+        "TN": 33,
+        "acc": 0.8815,
+        "precision_fake": 0.9486,
+        "recall_fake": 0.9165,
+        "f1_fake": 0.9323
+      },
+      "paired_delta": {
+        "accuracy": 0.1085,
+        "ci95": [
+          0.0803,
+          0.1365
+        ],
+        "mcnemar_b": 56,
+        "mcnemar_c": 2,
+        "p": 0.0
+      },
+      "baselines_2292": {
+        "majority": {
+          "n": 2292,
+          "TP": 2025,
+          "FP": 267,
+          "FN": 0,
+          "TN": 0,
+          "acc": 0.8835,
+          "precision_fake": 0.8835,
+          "recall_fake": 1.0,
+          "f1_fake": 0.9382,
+          "recall_credible": 0.0
+        },
+        "tfidf_record5fold": {
+          "n": 2292,
+          "TP": 2021,
+          "FP": 242,
+          "FN": 4,
+          "TN": 25,
+          "acc": 0.8927,
+          "precision_fake": 0.8931,
+          "recall_fake": 0.998,
+          "f1_fake": 0.9426,
+          "recall_credible": 0.0936,
+          "per_fold_acc": [
+            0.8889,
+            0.8954,
+            0.8952,
+            0.8886,
+            0.8952
+          ]
+        },
+        "tfidf_cluster5fold": {
+          "n": 2292,
+          "TP": 2019,
+          "FP": 248,
+          "FN": 6,
+          "TN": 19,
+          "acc": 0.8892,
+          "precision_fake": 0.8906,
+          "recall_fake": 0.997,
+          "f1_fake": 0.9408,
+          "recall_credible": 0.0712,
+          "per_fold_acc": [
+            0.8865,
+            0.8889,
+            0.8911,
+            0.8865,
+            0.893
+          ]
+        }
+      },
+      "retrieval_at_0_72": {
+        "record": {
+          "cov": 0.5585,
+          "sel": 0.9533,
+          "caa": 0.5323,
+          "f1": 0.9741,
+          "fpr": 0.2512,
+          "fnr": 0.0242,
+          "abst": 0.4415
+        },
+        "cluster": {
+          "cov": 0.3609,
+          "sel": 0.908,
+          "caa": 0.3267,
+          "f1": 0.9473,
+          "fpr": 0.316,
+          "fnr": 0.064,
+          "abst": 0.6391
+        }
+      }
+    },
+    "wsdm_2000": {
+      "dataset": "WSDM 2019 ByteDance Chinese titles",
+      "n": 2000,
+      "labels": {
+        "FAKE": 999,
+        "REAL": 1001
+      },
+      "prior_all_fake": {
+        "n": 2000,
+        "TP": 999,
+        "FP": 1001,
+        "FN": 0,
+        "TN": 0,
+        "accuracy": 0.4995,
+        "balanced_accuracy": 0.5,
+        "recall_fake": 1.0,
+        "recall_credible": 0.0
+      },
+      "prior_all_real": {
+        "n": 2000,
+        "TP": 0,
+        "FP": 0,
+        "FN": 999,
+        "TN": 1001,
+        "accuracy": 0.5005,
+        "balanced_accuracy": 0.5,
+        "recall_fake": 0.0,
+        "recall_credible": 1.0
+      },
+      "current_system": {
+        "status": "not rerun",
+        "reason": "2,000 live evidence calls exceed the current single-slot evaluation budget"
+      },
+      "legacy_modeB_100_debug": {
+        "n": 100,
+        "decided": 3,
+        "coverage": 0.03,
+        "TP": 2,
+        "FP": 0,
+        "FN": 1,
+        "TN": 0,
+        "accuracy_decided": 0.6666666666666666,
+        "note": "100-row debug artifact from 2026-09-10; not a full 2,000-row result."
+      },
+      "bounded_system_probe": {
+        "n": 37,
+        "labels": {
+          "FAKE": 19,
+          "REAL": 18
+        },
+        "valid_score_responses": 33,
+        "score_prediction": {
+          "FAKE": 33,
+          "UNKNOWN": 4
+        },
+        "score_truth_by_prediction": {
+          "FAKE": {
+            "FAKE": 17,
+            "REAL": 16
+          },
+          "UNKNOWN": {
+            "FAKE": 2,
+            "REAL": 2
+          }
+        },
+        "evidence_prediction": {
+          "FAKE": 1,
+          "UNKNOWN": 36
+        },
+        "avg_latency_s": 9.9525,
+        "status": "partial diagnostic; 50-run was stopped after 37/50 because the full live request budget was exceeded",
+        "artifact_deleted": "not retained as final result; only this summary remains",
+        "decision_rule": "final_score >= 60 => REAL; otherwise FAKE; UNKNOWN for missing/invalid score",
+        "confusion_on_valid": {
+          "TP": 17,
+          "FP": 16,
+          "FN": 0,
+          "TN": 0
+        }
+      }
+    },
+    "taiwan_news_workbook_30": {
+      "n": 30,
+      "categories": {
+        "A": 10,
+        "B": 10,
+        "C": 5,
+        "D": 5
+      },
+      "tasks": {
+        "credibility": 10,
+        "viewpoints": 10,
+        "analysis": 5,
+        "key_points": 5
+      },
+      "predictions": {
+        "ABSTAIN": 20,
+        "REAL": 10
+      },
+      "jev_verdicts": {
+        "INSUFFICIENT": 20,
+        "REAL": 10
+      },
+      "tree_counts": {
+        "no_verdict": 20,
+        "verdict": 10
+      },
+      "avg_latency_s": 0.7855135514517315,
+      "total_cost": 0.0009099720000000001,
+      "cost_per_call": 3.03324e-05,
+      "api_errors": 0,
+      "note": "The workbook has A-D task categories, not fake/real ground truth; accuracy is not computable."
+    }
+  },
+  "jev_498": {
+    "protocol": {
+      "model": "typesafe/jev-1.13",
+      "endpoint": "https://openrouter.ai/api/alpha/decisions",
+      "probe": "data/eval/metrics_500.jsonl",
+      "text_limit": 2000,
+      "gate": "ABSTAIN if evidence_sufficiency >= 0.50; otherwise use verdict REAL/FAKE",
+      "no_truth_leakage": "true labels and final scores were not included in JEV state"
+    },
+    "arms": {
+      "text_only": {
+        "n": 500,
+        "n_decided": 2,
+        "n_abstain": 498,
+        "coverage": 0.004,
+        "TP": 1,
+        "FP": 0,
+        "FN": 0,
+        "TN": 1,
+        "accuracy_decided": 1.0,
+        "accuracy_all_abstain_wrong": 0.004,
+        "balanced_accuracy_decided": 1.0,
+        "recall_fake": 1.0,
+        "recall_credible": 1.0,
+        "verdict_counts": {
+          "INSUFFICIENT": 498,
+          "FAKE": 1,
+          "REAL": 1
+        },
+        "gate_counts": {
+          "no_verdict": 498,
+          "verdict": 2
+        },
+        "avg_latency_s": 0.7858230591434986,
+        "api_errors": 0,
+        "total_cost": 0.021454775999999984,
+        "path": "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/data/eval/jev_text_only_498.jsonl"
+      },
+      "evidence": {
+        "n": 500,
+        "n_decided": 164,
+        "n_abstain": 336,
+        "coverage": 0.328,
+        "TP": 161,
+        "FP": 0,
+        "FN": 0,
+        "TN": 3,
+        "accuracy_decided": 1.0,
+        "accuracy_all_abstain_wrong": 0.328,
+        "balanced_accuracy_decided": 1.0,
+        "recall_fake": 1.0,
+        "recall_credible": 1.0,
+        "verdict_counts": {
+          "FAKE": 161,
+          "INSUFFICIENT": 336,
+          "REAL": 3
+        },
+        "gate_counts": {
+          "verdict": 164,
+          "no_verdict": 336
+        },
+        "avg_latency_s": 0.7713646377089899,
+        "api_errors": 0,
+        "total_cost": 0.022801926000000004,
+        "path": "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/data/eval/jev_evidence_498.jsonl"
+      }
+    },
+    "comparators": {
+      "newsanalyzer": {
+        "n": 498,
+        "TP": 442,
+        "FP": 4,
+        "FN": 1,
+        "TN": 51,
+        "acc": 0.99,
+        "precision_fake": 0.991,
+        "recall_fake": 0.9977,
+        "f1_fake": 0.9944
+      },
+      "zeroshot_qwen27": {
+        "n": 498,
+        "TP": 406,
+        "FP": 22,
+        "FN": 37,
+        "TN": 33,
+        "acc": 0.8815,
+        "precision_fake": 0.9486,
+        "recall_fake": 0.9165,
+        "f1_fake": 0.9323
+      }
+    }
+  },
+  "conclusions": [
+    "Cofacts 2,292 is in-domain but heavily imbalanced; system 99.0% on the 498 paired sample is not a cross-domain accuracy estimate.",
+    "WSDM is balanced but cross-domain; current full system run was not completed because 2,000 live evidence calls exceed the current single-slot evaluation budget.",
+    "The 30-article workbook has task/category buckets, not fake/real labels, so no accuracy can be computed.",
+    "JEV with status-only evidence reaches perfect selective accuracy on 164 decided rows but abstains on 336/500; this is an abstention/evidence-gate result, not a 100% full-set replacement.",
+    "A bounded 37-row WSDM live probe produced 33 valid final-score responses; all 33 were scored FAKE at cutoff 60 (17/19 fake, 16/18 real), showing a strong real-class false-negative problem on this cross-domain slice, but it is not the full 2,000-row result."
+  ]
+}

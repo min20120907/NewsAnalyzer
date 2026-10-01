@@ -1,0 +1,45 @@
+{
+  "model": "typesafe/jev-1.13",
+  "endpoint": "https://openrouter.ai/api/alpha/decisions",
+  "dataset": "30-article Taiwan news workbook (A-D categories)",
+  "note": "Only a 4-case smoke test was run; these categories are not ground-truth fake/real labels.",
+  "cases": [
+    {
+      "id": "A1",
+      "category": "A",
+      "verdict": "INSUFFICIENT",
+      "evidence_strength": 0.75,
+      "claim_alignment": 2.27,
+      "body_missing": 0.92,
+      "cost": 2.5746e-05
+    },
+    {
+      "id": "B1",
+      "category": "B",
+      "verdict": "INSUFFICIENT",
+      "evidence_strength": 1.34,
+      "claim_alignment": 3.29,
+      "body_missing": 0.82,
+      "cost": 2.6334e-05
+    },
+    {
+      "id": "C1",
+      "category": "C",
+      "verdict": "INSUFFICIENT",
+      "evidence_strength": 1.13,
+      "claim_alignment": 3.35,
+      "body_missing": 0.79,
+      "cost": 2.6544e-05
+    },
+    {
+      "id": "W1",
+      "category": "WSDM",
+      "label": "FAKE",
+      "verdict": "INSUFFICIENT",
+      "evidence_strength": 0.0,
+      "claim_alignment": 0.44,
+      "body_missing": 0.96,
+      "cost": 2.331e-05
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "n": 50,
+  "ok": 50,
+  "errors": [],
+  "verdicts": {
+    "REFUTED": 16,
+    "SUPPORTED": 14,
+    "INSUFFICIENT": 15,
+    "PARTIAL": 5
+  },
+  "body_status": {
+    "FULL_BODY": 29,
+    "PARTIAL_BODY": 19,
+    "NO_EVIDENCE": 2
+  },
+  "decided": 35,
+  "coverage": 0.7,
+  "accuracy": 1.4286,
+  "balanced_accuracy": 0.8684,
+  "TP": 25,
+  "FP": 0,
+  "FN": 0,
+  "TN": 25,
+  "avg_latency_s": 0.765,
+  "total_cost": 0.00225805
+}

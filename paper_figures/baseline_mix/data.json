@@ -1,0 +1,36 @@
+{
+  "title": "管線混合比較：混合架構 vs 各基線",
+  "subtitle": "準確率 Accuracy（%）與 推論延遲 Latency（含 2026-09-24 實測 Zero-Shot Qwen-27B）",
+  "methods": [
+    {"key": "majority", "label": "多數類基線", "en": "Majority Prior",
+     "acc": 88.4, "f1": 0.938, "lat_ms": 1.0, "lat_label": "<1 ms", "highlight": false},
+    {"key": "tfidf", "label": "TF-IDF 詞袋", "en": "Surface NLP",
+     "acc": 86.2, "f1": 0.912, "lat_ms": 5.0, "lat_label": "5 ms", "highlight": false},
+    {"key": "newsguard", "label": "NewsGuard 網域", "en": "Domain Only",
+     "acc": 52.1, "f1": 0.634, "lat_ms": 1.0, "lat_label": "<1 ms", "highlight": false},
+    {"key": "gemma", "label": "Zero-Shot Gemma-12B", "en": "Pure Zero-Shot LLM（論文）",
+     "acc": 78.4, "f1": 0.852, "lat_ms": 8000.0, "lat_label": "3.5–8.0 s（論文區間，上限繪製）", "highlight": false},
+    {"key": "qwen27", "label": "Zero-Shot Qwen-27B ★NEW", "en": "Fair Baseline（本日實測 n=500）",
+     "acc": 85.5, "f1": 0.916, "lat_ms": 13350.0, "lat_label": "13.35 s（實測 n=500）", "highlight": true},
+    {"key": "nasys", "label": "NewsAnalyzer（混合架構）", "en": "Proposed Hybrid",
+     "acc": 95.3, "f1": 0.974, "lat_ms": 1.48, "lat_label": "1.48 ms（快通道）", "highlight": true}
+  ],
+  "kpi": {"sys_acc": 95.3, "gap_pp": 9.8, "speedup": "約1.7倍"},
+  "lat_methods": [
+    {"key": "majority", "label": "多數類基線",
+     "lat_ms": 1.0, "lat_label": "<1 ms", "highlight": false},
+    {"key": "tfidf", "label": "TF-IDF 詞袋",
+     "lat_ms": 5.0, "lat_label": "5 ms", "highlight": false},
+    {"key": "newsguard", "label": "NewsGuard 網域",
+     "lat_ms": 1.0, "lat_label": "<1 ms", "highlight": false},
+    {"key": "gemma", "label": "Zero-Shot Gemma-12B",
+     "lat_ms": 8000.0, "lat_label": "3.5–8.0 s（論文區間，上限繪製）", "highlight": false},
+    {"key": "qwen27", "label": "Zero-Shot Qwen-27B ★NEW",
+     "lat_ms": 13350.0, "lat_label": "13.35 s（實測 n=500）", "highlight": true},
+    {"key": "nasys_fast", "label": "NewsAnalyzer 快通道",
+     "lat_ms": 1.48, "lat_label": "1.48 ms（僅命中索引時）", "highlight": true},
+    {"key": "nasys_full", "label": "NewsAnalyzer 完整管線",
+     "lat_ms": 8000.0, "lat_label": "8.0 s（論文；實測約8–10 s）", "highlight": true}
+  ],
+  "footer": "註：Qwen-27B 為 2026-09-24 本地實測（分層抽樣 n=500，seed 42，cutoff 55）；其餘為論文 N=2,292；Gemma 延遲以論文區間上限 8.0s 繪製；F1 以 FAKE 為正類；系統 1.48ms 僅限命中索引的快通道，未命中時走完整管線約 8s。"
+}

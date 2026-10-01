@@ -1,0 +1,15 @@
+{
+  "n_sample": 500,
+  "n_valid": 498,
+  "cutoff": 55,
+  "seed": 42,
+  "accuracy": 0.8554,
+  "TP": 390,
+  "TN": 36,
+  "FP": 19,
+  "FN": 53,
+  "precision_fake": 0.9535,
+  "recall_fake": 0.8804,
+  "avg_latency_s": 13.35,
+  "model": "qwen3.8-27b-fastmtp"
+}

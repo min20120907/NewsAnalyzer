@@ -1,0 +1,17 @@
+{
+  "title": "混淆矩陣比較：混合架構 vs 純 Zero-Shot Qwen-27B（paired common-set n=492）",
+  "subtitle": "同 500 rowid、同擾動輸入；只保留雙方皆有效輸出的交集（排除 8 筆）　paired diff=13.61pp，95%CI=[10.57,16.67]，McNemar exact p<0.000001",
+  "panels": [
+    {"key": "newsanalyzer", "source": "data/eval/paired_baseline.json",
+     "title": "NewsAnalyzer（混合架構）",
+     "cm": [[436, 1], [4, 51]],
+     "metrics": {"n": 492, "n_valid": 492, "TP": 436, "FP": 4, "FN": 1, "TN": 51,
+                 "acc": 0.9898, "precision_fake": 0.9909, "recall_fake": 0.9977, "f1_fake": 0.9943}},
+    {"key": "zeroshot_qwen27", "source": "data/eval/paired_baseline.json",
+     "title": "Zero-Shot Qwen-27B（純 Prompt）",
+     "cm": [[384, 53], [19, 36]],
+     "metrics": {"n": 492, "n_valid": 492, "TP": 384, "FP": 19, "FN": 53, "TN": 36,
+                 "acc": 0.8537, "precision_fake": 0.9529, "recall_fake": 0.8787, "f1_fake": 0.9143}}
+  ],
+  "footer": "註：paired common-set n=492（雙方皆有效；8 筆 ERROR/UNKNOWN 排除）；McNemar b=69/c=2；判定規則：hybrid 走 fact_check desc 映射，zero-shot 走 score<55（各系統原生決策）。"
+}

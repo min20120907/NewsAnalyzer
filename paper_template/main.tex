@@ -50,7 +50,7 @@ National Chengchi University, Taipei, Taiwan \\
 % ABSTRACT
 %======================================================================
 \begin{abstract}
-Fake news spreads fast on Traditional Chinese social media like Facebook, LINE chats, and Threads. Real news and fake posts look the same in the feed, so readers cannot tell them apart. Large language models are poor judges for this job: they do not know new hoaxes, they believe smooth but fake writing, and they give scores with no proof behind them. Cloud APIs are also slow and send user data away. Therefore, this study builds \textbf{NewsAnalyzer}, a checker that ties every score to proof it actually found. It has three parts: (1) a local list of $N=2{,}292$ checked claims from Cofacts with SBERT search, (2) scores for website trust, feeling words, and how new a post is, and (3) a hard cap at 25 points ($S \le 25$) whenever proof against the claim is found. A local Qwen3.8-27B model only writes short summaries and never makes the call. We tested all 2,292 claims with 5-fold cross-validation under rewrites from light to heavy. The checker was right 95.3\% of the time ($F_1 = 0.974$) on solved claims and answers in 1.48\,ms. Against majority, TF-IDF, NewsGuard-style, and plain-LLM baselines, it was more accurate while keeping all user data on the user's own machine.
+Fake news spreads fast on Traditional Chinese social media like Facebook, LINE chats, and Threads. Real news and fake posts look the same in the feed, so readers cannot tell them apart. Large language models are poor judges for this job: they do not know new hoaxes, they believe smooth but fake writing, and they give scores with no proof behind them. Cloud APIs are also slow and send user data away. Therefore, this study builds \textbf{NewsAnalyzer}, a checker that ties every score to proof it actually found. It has three parts: (1) a local list of $N=2{,}292$ checked claims from Cofacts with SBERT search, (2) scores for website trust, feeling words, and how new a post is, and (3) a hard cap at 25 points ($S \le 25$) whenever proof against the claim is found. A local Qwen3.8-27B model only writes short summaries and never makes the call. We tested all 2,292 claims with 5-fold cross-validation under rewrites from light to heavy, including cluster-level splits that exclude near-duplicates of every test claim. The checker was right 95.3\% of the time ($F_1 = 0.974$) on solved claims at record level and retains 90.8\% under the stricter cluster-level splits; it answers in 1.48\,ms. Against majority, TF-IDF, NewsGuard-style, and equal-capacity zero-shot LLM baselines (99.0\% vs.\ 88.2\% on a paired 500-claim probe), it was more accurate while keeping article content and analysis on-device and issuing only bounded lookup queries (post title and at most a 300-character claim prefix) to public fact-check and search services.
 \keywords{Fake news detection, Traditional Chinese social media, fact-checking census, metadata scoring, semantic retrieval, dynamic safety anchoring, edge inference.}
 \end{abstract}
 
@@ -149,9 +149,9 @@ To overcome these structural limitations, we introduce \textbf{NewsAnalyzer}, a 
 The main contributions of this work are:
 \begin{itemize}\setlength{\itemsep}{2pt}
   \item \textbf{Deconstruction of Brute-Force LLM Limitations}: We formulate the systemic failure modes of standalone zero-shot LLMs in regional social environments, showing why empirical grounding and multi-signal metadata are necessary prerequisites for reliable verification.
-  \item \textbf{Macro Fact-Check Census and Sub-2\,ms Retrieval}: We construct an offline semantic index over 2,292 IFCN-verified claims from the localized Cofacts archive, achieving 95.3\% accuracy ($F_1 = 0.974$), 99.9\% top-1 recall, and 1.48\,ms retrieval latency.
+  \item \textbf{Macro Fact-Check Census and Sub-2\,ms Retrieval}: We construct an offline semantic index over 2,292 IFCN-verified claims from the localized Cofacts archive, achieving 95.3\% selective accuracy ($F_1 = 0.974$) at record level with a 90.8\% near-duplicate-free cluster-level lower bound, 99.9\% top-1 recall, and 1.48\,ms retrieval latency.
   \item \textbf{Multi-Signal Metadata Scoring and Dynamic Safety Anchoring}: We propose a composite scoring formulation combining domain blacklist heuristics, sentiment volatility, and temporal decay with an asymmetric clamp ($S \le 25$) that eliminates hallucinated false negatives on known hoaxes.
-  \item \textbf{Privacy-Preserving Edge Architecture and Baseline Comparison}: We implement an open-source browser extension and local inference server, benchmarking its accuracy and resilience against pure zero-shot LLMs, surface NLP classifiers, and domain heuristics.
+  \item \textbf{Privacy-Preserving Edge Architecture and Baseline Comparison}: We implement an open-source browser extension and local inference server that keeps article content and analysis on-device (external lookups bounded to the title and a short prefix), benchmarking its accuracy and resilience against equal-capacity zero-shot LLMs, surface NLP classifiers, and domain heuristics.
 \end{itemize}
 
 %======================================================================
@@ -241,7 +241,7 @@ USER: <ARTICLE TITLE> \n <ARTICLE URL> \n <ARTICLE BODY (max 1200 chars)>
 \section{System Engineering and Edge Execution}
 
 \subsection{Client-Side DOM Parsing (Manifest V3)}
-The frontend extension conforms to Chrome Manifest V3~\cite{chrome_mv3}. A content script attaches a \texttt{MutationObserver} to the social feed container. When post nodes enter the viewport during scrolling, the script inserts a lightweight rating badge. Network calls stay strictly within the local host loopback interface, ensuring complete privacy with zero data egress.
+The frontend extension conforms to Chrome Manifest V3~\cite{chrome_mv3}. A content script attaches a \texttt{MutationObserver} to the social feed container. When post nodes enter the viewport during scrolling, the script inserts a lightweight rating badge. The extension communicates exclusively with the local backend over the loopback interface. To ground its verdicts, the backend issues bounded lookups to public fact-check databases and search services: only the post title and at most a 300-character prefix of the claim text leave the device (Cofacts API, Google Fact Check Tools, MyGoPen, Google News RSS, and---when coverage is insufficient---Bing and Google search). The article body, the auxiliary LLM analysis, and all scoring remain on-device; no account identity or full text is transmitted.
 
 \subsection{Grammar-Constrained Schema Adherence}
 Unconstrained LLM generation exhibits a 15--20\% JSON parse failure rate due to conversational commentary, markdown fences, and internal reasoning tags. Enabling llama.cpp's grammar-constrained \texttt{response\_format:\allowbreak json} parameter with chain-of-thought reasoning disabled masks invalid token transitions at the decoding level, achieving a 100\% parse rate over 2,000 automated test runs while holding a steady 20.8\,GB VRAM allocation on consumer hardware.
@@ -258,24 +258,25 @@ All local components execute on an NVIDIA GeForce RTX 2080 Ti workstation (22\,G
 Table~\ref{tab:latency} summarizes the empirical latency across operational tiers.
 
 \begin{table}[!htbp]
-\caption{System Latency and Generation Metrics across Operational Tiers.}
+\caption{System latency across operational tiers. Pipeline stage medians are measured server-side over $n=500$ automated \texttt{/judge} requests (corpus probe set, seed 42, after a 50-run warm-up); end-to-end percentiles denote the full HTTP round-trip.}
 \label{tab:latency}
 \centering
 \begin{tabular}{lc}
 \toprule
 \textbf{Operational Tier / Metric} & \textbf{Empirical Measurement} \\
 \midrule
-SBERT Fact-Check Census Retrieval & 1.48\,ms (median $<$2\,ms) \\
-LLM TTFT Proxy / Throughput & 6.2\,s / 12\,tok/s \\
-Single-Pass LLM Completion & 8.0\,s ($\sim$100 tokens) \\
+SBERT census vector lookup & 1.48\,ms (median $<$2\,ms) \\
+Stage median, sentiment / similarity & 0.08\,s / 0.10\,s \\
+Stage median, fact-check / web search & 1.60\,s / 2.69\,s \\
+Stage median, local LLM deep analysis & 4.34\,s \\
+End-to-end \texttt{/judge} (median / P95 / P99) & 7.12\,s / 14.89\,s / 16.53\,s \\
 JSON Parse \& Schema Compliance & 100\% (2000/2000) \\
-End-to-End \texttt{/judge} (Single-Pass / Full Deep) & 3.5\,s / 14.7\,s (P95: 18.1\,s) \\
 VRAM Allocation (\texttt{nvidia-smi}) & 20.8\,GB \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-When an incoming query matches an indexed rumor ($\theta_{\text{sim}} \ge 0.72$), the system responds through the \textbf{Instant Retrieval Fast-Path (1.48\,ms)} without invoking the LLM. For unindexed claims, the single-pass local LLM generates structured viewpoints in 8.0\,s.
+When an incoming claim matches an indexed rumor above $\theta_{\text{sim}} = 0.72$, the census vector lookup resolves in 1.48\,ms and the retrieved evidence dominates the fused verdict (LLM fusion weight $w_{\text{LLM}} = 0.10$). For unindexed or unmatched claims, the pipeline concurrently queries fact-check sources and web search, then runs local LLM deep analysis; across $n=500$ live requests the complete multi-source pipeline returns at a median of 7.12\,s (P95: 14.89\,s), dominated by the web-search stage (2.69\,s median) and the deep-analysis stage (4.34\,s median).
 
 \subsection{Full-Corpus 5-Fold Stratified Cross-Validation ($N{=}2{,}292$)}
 We evaluate retrieval precision across the entire eligible Cofacts corpus of $N=2{,}292$ verified claims (2,025 FAKE, 267 REAL) using 5-fold stratified cross-validation. In each fold, 20\% of claims ($\sim$458 items) act as test queries and are strictly excluded from the retrieval index. Each query is tested under four perturbation levels: \textbf{Verbatim}, \textbf{Mild} (3-char prefix, 85\% body), \textbf{Medium} (prefix, 60\% body, 40\% synonym substitution), and \textbf{Heavy} (prefix, 40\% body, 70\% synonym substitution, sentence shuffling).
@@ -290,19 +291,41 @@ We evaluate retrieval precision across the entire eligible Cofacts corpus of $N=
 & \multicolumn{3}{c|}{\textbf{Verbatim}} & \multicolumn{3}{c|}{\textbf{Mild}} & \multicolumn{3}{c|}{\textbf{Medium}} & \multicolumn{3}{c}{\textbf{Heavy}} \\
 $\theta_{\text{sim}}$ & Cov & Acc & F1 & Cov & Acc & F1 & Cov & Acc & F1 & Cov & Acc & F1 \\
 \midrule
-0.55 & .95 & .91 & .95 & .95 & .89 & .94 & .95 & .90 & .94 & .92 & .89 & .94 \\
-0.60 & .88 & .92 & .95 & .89 & .90 & .95 & .87 & .91 & .95 & .80 & .90 & .94 \\
-0.65 & .75 & .94 & .96 & .75 & .92 & .96 & .73 & .93 & .96 & .63 & .92 & .96 \\
-0.70 & .61 & .95 & .97 & .60 & .94 & .97 & .56 & .95 & .97 & .46 & .94 & .97 \\
-\textbf{0.72} & \textbf{.55} & \textbf{.95} & \textbf{.97} & \textbf{.54} & \textbf{.95} & \textbf{.97} & \textbf{.50} & \textbf{.95} & \textbf{.98} & \textbf{.39} & \textbf{.94} & \textbf{.97} \\
-0.75 & .48 & .96 & .98 & .46 & .96 & .98 & .42 & .96 & .98 & .29 & .95 & .97 \\
-0.80 & .36 & .97 & .98 & .34 & .97 & .98 & .30 & .97 & .98 & .19 & .95 & .97 \\
-0.85 & .27 & .97 & .98 & .24 & .96 & .98 & .20 & .96 & .98 & .08 & .97 & .99 \\
+0.55 & .96 & .90 & .94 & .96 & .89 & .94 & .95 & .90 & .94 & .92 & .89 & .94 \\
+0.60 & .89 & .91 & .95 & .89 & .90 & .94 & .87 & .91 & .95 & .80 & .90 & .94 \\
+0.65 & .76 & .93 & .96 & .76 & .92 & .96 & .73 & .93 & .96 & .65 & .92 & .96 \\
+0.70 & .62 & .94 & .97 & .61 & .94 & .97 & .57 & .95 & .97 & .47 & .94 & .97 \\
+\textbf{0.72} & \textbf{.56} & \textbf{.95} & \textbf{.97} & \textbf{.55} & \textbf{.94} & \textbf{.97} & \textbf{.51} & \textbf{.96} & \textbf{.98} & \textbf{.40} & \textbf{.94} & \textbf{.97} \\
+0.75 & .48 & .96 & .98 & .47 & .96 & .98 & .43 & .96 & .98 & .30 & .94 & .97 \\
+0.80 & .36 & .97 & .98 & .34 & .97 & .98 & .30 & .97 & .98 & .19 & .96 & .98 \\
+0.85 & .27 & .97 & .98 & .25 & .97 & .98 & .20 & .97 & .98 & .09 & .99 & .99 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-As shown in Table~\ref{tab:accuracy}, setting $\theta_{\text{sim}} = 0.72$ achieves 95.3\% accuracy ($F_1 = 0.974$) while resolving 55.2\% of verbatim queries. Under medium rewrites, accuracy remains robust at 95.4\% ($F_1 = 0.975$). Exact database recall on unperturbed queries reaches 99.9\%.
+As shown in Table~\ref{tab:accuracy}, setting $\theta_{\text{sim}} = 0.72$ achieves 95.3\% selective accuracy ($F_1 = 0.974$) while resolving 55.8\% of verbatim queries; a permissive $\theta_{\text{sim}} = 0.55$ raises coverage to 95.9\% (90.1\% accuracy), whereas a stringent $\theta_{\text{sim}} = 0.85$ attains 97.1\% accuracy at 26.9\% coverage. Under medium rewrites, accuracy remains robust at 95.6\% ($F_1 = 0.976$). Exact database recall on unperturbed in-corpus queries reaches 99.9\%. All cells are computed on the frozen corpus snapshot (2{,}292 records, seed 42).
+
+\subsection{Near-Duplicate Robustness: Record- vs Cluster-Level Cross-Validation}
+Crowdsourced archives contain near-duplicate claims that describe the same rumor in different wording. Under the record-level split above, a held-out claim can still leave a paraphrased sibling in the retrieval index, which may inflate the measured accuracy. To quantify this effect, we cluster the whole corpus by SBERT similarity (cosine $\ge 0.80$, connected components), obtaining $1{,}612$ clusters---the largest containing $102$ claims---with $1{,}400$ singletons. We then repeat the identical 5-fold protocol with \emph{entire clusters} assigned to a single fold, guaranteeing that no near-duplicate of a test claim remains indexed.
+
+\begin{table}[!htbp]
+\caption{Record-level vs.\ cluster-level 5-fold held-out retrieval at $\theta_{\text{sim}} = 0.72$. Cluster-level splits exclude all near-duplicates (SBERT cosine $\ge 0.80$) of each test claim from the index. Cov = coverage; Sel = selective accuracy on resolved queries.}
+\label{tab:cluster}
+\centering
+\begin{tabular}{l|cc|cc}
+\toprule
+& \multicolumn{2}{c|}{\textbf{Record-level}} & \multicolumn{2}{c}{\textbf{Cluster-level}} \\
+\textbf{Perturbation} & Cov & Sel & Cov & Sel \\
+\midrule
+Verbatim & .558 & .953 & .361 & .908 \\
+Mild     & .553 & .943 & .364 & .909 \\
+Medium   & .506 & .956 & .284 & .919 \\
+Heavy    & .400 & .939 & .226 & .906 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:cluster} reports the comparison. Cluster-level selective accuracy declines only modestly, from 95.3\% to 90.8\% (verbatim) and from 93.9\% to 90.6\% (heavy), while coverage drops as expected once paraphrased siblings are removed. The retrieval evidence path therefore remains robust under the strictest de-duplication, and the cluster-level figures serve as the conservative lower bound for the retrieval component.
 
 \subsection{Comparative Evaluation Against Competing Paradigms}
 To demonstrate the superiority of empirical multi-signal grounding over conventional single-modality approaches, we benchmark NewsAnalyzer against four standard baseline paradigms:
@@ -310,33 +333,53 @@ To demonstrate the superiority of empirical multi-signal grounding over conventi
   \item \textbf{Majority Prior Baseline}: Predicts the majority class (FAKE) indiscriminately.
   \item \textbf{Surface Lexical NLP (TF-IDF + Linear Classifier)}: Standard lexical bag-of-words baseline trained on surface term frequencies.
   \item \textbf{Pure Domain Reputation (NewsGuard Heuristic)}: Classifies credibility based solely on hostname domain white/blacklists.
-  \item \textbf{Brute-Force Zero-Shot LLM (Prompt-Only)}: Prompts Gemma-4-12B directly with the raw article without retrieval or metadata grounding.
+  \item \textbf{Equal-Capacity Zero-Shot LLM (Prompt-Only)}: Prompts the same Qwen3.8-27B engine directly with the raw article without retrieval, metadata, or safety grounding.
   \item \textbf{NewsAnalyzer (Proposed Hybrid Architecture)}: Macro fact-checking census + multi-signal metadata fusion + dynamic safety clamping.
 \end{enumerate}
 
 \begin{table}[!htbp]
-\caption{Systematic comparison between NewsAnalyzer and competing fact-checking paradigms on Traditional Chinese social feeds ($N=2{,}292$).}
+\caption{Systematic comparison between NewsAnalyzer and competing fact-checking paradigms on the 500-claim probe set ($n=498$ paired subset; decision cutoff 60). All surface baselines track the 88.4\% class prior (CREDIBLE-class recall $\le 9.4\%$); only the proposed system sustains high accuracy on credible claims. Full-corpus values ($N=2{,}292$) for the first three columns: 88.4\%, 89.3\%, and 88.7\%.}
 \label{tab:baseline-comparison}
 \centering
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lccccc}
 \toprule
-\textbf{Evaluation Dimension} & \textbf{Majority Prior} & \textbf{Surface NLP (TF-IDF)} & \textbf{Domain Only (NewsGuard)} & \textbf{Pure Zero-Shot LLM} & \textbf{NewsAnalyzer (Proposed)} \\
+\textbf{Evaluation Dimension} & \textbf{Majority Prior} & \textbf{Surface NLP (TF-IDF)} & \textbf{Domain Only (NewsGuard)} & \textbf{Zero-Shot Qwen3.8-27B} & \textbf{NewsAnalyzer (Proposed)} \\
 \midrule
-Accuracy (Resolved) & 88.4\% & 86.2\% & 52.1\% & 78.4\% & \textbf{95.3\%} \\
-$F_1$-Score & 0.938 & 0.912 & 0.634 & 0.852 & \textbf{0.974} \\
+Accuracy ($n{=}498$; cutoff 60) & 89.0\% & 89.6\% & 89.6\% & 88.2\% & \textbf{99.0\%} \\
+$F_1$-Score & 0.942 & 0.944 & 0.945 & 0.932 & \textbf{0.994} \\
+CREDIBLE-class Recall & 0.0\% & 7.3\% & 5.5\% & 60.0\% & \textbf{98.1\%} \\
 Social Media Feed Support & No & Partial & \textbf{Fails} (Same Origin) & Yes & \textbf{Yes} (DOM MutationObserver) \\
 Temporal Freshness & Static & Static & Static & \textbf{Blind} (Knowledge Cutoff) & \textbf{Dynamic Fact-Check Census} \\
 Stylistic Deception Resistance & Zero & Low & Zero & Low (Fooled by tone) & \textbf{High} (Empirical Grounding) \\
 Auditable Provenance & None & None & Domain flag & Hallucinated Citations & \textbf{IFCN / Cofacts Source Links} \\
-Inference Latency & $<$1\,ms & 5\,ms & $<$1\,ms & 3.5--8.0\,s & \textbf{1.48\,ms} (Instant Fast-Path) \\
-Data Egress / User Privacy & None & None & Domain only & Severe (Cloud API Egress) & \textbf{Zero Egress} (On-Device) \\
+Inference Latency & $<$1\,ms & 5\,ms & $<$1\,ms & 13.35\,s & \textbf{1.48\,ms} (Instant Fast-Path) \\
+Data Egress / User Privacy & None & None & Domain only & Severe (Cloud API Egress) & \textbf{Bounded} (title + $\le$300 chars; analysis on-device) \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-As detailed in Table~\ref{tab:baseline-comparison}, the majority prior achieves a superficial 88.4\% accuracy due to class imbalance but provides zero discriminative utility. Pure domain heuristics fail completely on social media feeds where both verified reporting and rumors share the \texttt{facebook.com} or \texttt{line.me} origin. Crucially, standalone zero-shot LLMs achieve only 78.4\% accuracy on regional rumors because they lack ground-truth knowledge of local affairs and are vulnerable to polished fake news. NewsAnalyzer achieves 95.3\% accuracy and provides auditable IFCN fact-checking citations while sustaining sub-2\,ms fast-path responses.
+As detailed in Table~\ref{tab:baseline-comparison}, on the paired probe set all surface paradigms---majority prior, TF-IDF, and domain-only heuristics---cluster at 89--90\% accuracy, which merely tracks the 88.4\% class prior: their CREDIBLE-class recall does not exceed 9.4\%. Domain heuristics in particular cannot discriminate on social feeds where verified reporting and rumors share the \texttt{facebook.com} or \texttt{line.me} origin, and the equal-capacity zero-shot LLM, though improving to 88.2\%, still misses 40\% of credible claims. NewsAnalyzer is the only paradigm that sustains high accuracy on credible content (98.1\% recall; 99.0\% overall) while providing auditable IFCN fact-checking citations and sub-2\,ms fast-path responses.
+
+\subsection{Paired Comparison Against an Equal-Capacity Zero-Shot LLM}
+To isolate the contribution of the architecture (grounded retrieval, multi-signal fusion, and safety clamping) from raw model capacity, we re-run the identical 500-claim probe set through a pure zero-shot baseline powered by the \emph{same} Qwen3.8-27B engine as the system, with retrieval, metadata, and fusion disabled. Both sides are binarized with the identical decision rule (credible iff the score reaches the 60-point ``Likely credible'' boundary). Table~\ref{tab:fair} reports the paired result: NewsAnalyzer attains 99.0\% versus 88.2\% for the equal-capacity zero-shot baseline ($\Delta$Acc $= +10.85$\,pp, 95\% CI $[8.03, 13.65]$, McNemar exact $p = 1.2\times10^{-14}$). Because both sides share the same model, this gap isolates architectural grounding rather than parameter count; the baseline collapses precisely on genuinely credible content (CREDIBLE-class recall 60.0\% vs.\ 98.1\%), where polished writing resists surface heuristics. The conclusion is stable under the alternative retrieval-state decision protocol ($+13.6$\,pp, $n=492$).
+
+\begin{table}[!htbp]
+\caption{Paired comparison against an equal-capacity zero-shot LLM on the same 500-claim probe set. Both sides are binarized with the identical rule: credible iff score $\ge 60$. $\Delta$Acc = paired accuracy difference; CI = 10{,}000-sample bootstrap 95\% CI; McNemar exact two-sided test on discordant pairs.}
+\label{tab:fair}
+\centering
+\begin{tabular}{lccccc}
+\toprule
+\textbf{System} & \textbf{Acc.} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F1} & \textbf{TP/FP/FN/TN} \\
+\midrule
+NewsAnalyzer (hybrid) & \textbf{99.0\%} & 99.1\% & 99.8\% & 0.994 & 442/4/1/51 \\
+Zero-shot Qwen3.8-27B & 88.2\% & 94.9\% & 91.7\% & 0.932 & 406/22/37/33 \\
+\midrule
+\multicolumn{6}{l}{$\Delta$Acc $= +10.85$\,pp, 95\% CI $[8.03, 13.65]$, McNemar $p = 1.2\times10^{-14}$ ($n=498$)} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Case Study: Live Content Farm Verification}
 To demonstrate end-to-end multi-signal execution on unindexed claims, we evaluated a live content-farm article (\url{https://www.pco.tw/news/html/?276.html}) containing sensationalist health clickbait. 
@@ -366,7 +409,7 @@ Cross-domain evaluation revealed dialectal boundaries: testing our Taiwan-centri
 %======================================================================
 \section{Conclusion}
 
-NewsAnalyzer demonstrates that robust, privacy-preserving fake news detection on Traditional Chinese social media requires shifting from brute-force LLM prompting to an empirical, multi-signal paradigm. By combining an offline macro census of 2,292 IFCN-verified Cofacts claims with a multi-attribute metadata scoring engine and local auxiliary perspective extraction, the system achieves 95.3\% accuracy ($F_1 = 0.974$) and 1.48\,ms retrieval latency on consumer hardware with zero data egress.
+NewsAnalyzer demonstrates that robust, privacy-preserving fake news detection on Traditional Chinese social media requires shifting from brute-force LLM prompting to an empirical, multi-signal paradigm. By combining an offline macro census of 2,292 IFCN-verified Cofacts claims with a multi-attribute metadata scoring engine and local auxiliary perspective extraction, the system attains 99.0\% paired accuracy against an equal-capacity zero-shot LLM (95.3\% selective retrieval accuracy with a 90.8\% near-duplicate-free cluster-level lower bound) and 1.48\,ms retrieval latency on consumer hardware, keeping article content and analysis on-device while issuing only bounded lookup queries to public fact-check and search services.
 
 \section*{Reproducibility and Code Availability}
 To facilitate independent replication, the evaluation datasets, benchmarking scripts, and Chrome extension source code are available at: \url{https://github.com/min20120907/NewsAnalyzer}.

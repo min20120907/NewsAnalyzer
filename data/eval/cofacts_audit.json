@@ -1,0 +1,27 @@
+{
+ "n_raw_corpus": 2469,
+ "n_after_status_filter": 2469,
+ "n_final_len_gt_40": 2292,
+ "class_dist": {
+  "FAKE": 2025,
+  "REAL": 267
+ },
+ "status_dist": {
+  "inaccurate": 1817,
+  "accurate": 267,
+  "partial": 208
+ },
+ "text_len": {
+  "min": 41,
+  "median": 212.0,
+  "mean": 421.8
+ },
+ "feedback_count": {
+  "min": 0,
+  "median": 1.0,
+  "mean": 14.8,
+  "zero_n": 582
+ },
+ "provenance_url_coverage": 1.0,
+ "label_rule": "RUMOR/FALSE->inaccurate(FAKE); NOT_RUMOR/TRUE->accurate(REAL); OPINIONATED->partial(FAKE); see python/cofacts_local.py::_classify_candidate"
+}

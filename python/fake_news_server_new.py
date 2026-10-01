@@ -618,6 +618,13 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
         head = f"  - {nm}: {st}"
         if url:
             head += f"（{url}）"
+        if s.get("soft_hit_status"):
+            # 2026-10-01：軟命中（sim 0.45～0.72）。相似度不足以判定同一事件，
+            # 必須由你讀下方回覆原文判斷是否真的在查核本主張。
+            head += (f"［軟命中：檢索相似度 {float(s.get('soft_hit_sim') or 0):.2f}，"
+                     f"低於硬門檻；該源標籤為 {s.get('soft_hit_status')}，"
+                     f"請自行判斷是否同一事件——若是則 evidence_state 為 "
+                     f"full_body_evidence，若否則 unrelated_evidence］")
         fc_lines.append(head)
         if reply:
             fc_lines.append("    查核回覆原文：\n" + reply.rstrip())
@@ -936,10 +943,17 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     fb_pts = 0.0; fb_desc = "none"
     tl_pts = 0.0; tl_desc = "unknown"
     if MULTI_FC_AVAILABLE:
+        # 2026-10-01：軟命中（sim 0.45～0.72）完全不參與 fact_check 計分。
+        # 判定交給 LLM 的 evidence_state（PFCD two-stage）；LLM 若判
+        # full_body_evidence，1035 那段會把 soft_hit_status 升級並重算 fact_check。
+        # sources 保持原樣不變，這樣 prompt 組裝仍看得到原始 status 與回覆原文。
+        # 實測沒有這一步時 fact_check 仍吃 partial 的 9 分、而 LLM 已經判
+        # unrelated_evidence——自相矛盾。
+        _fc_pool = [r for r in sources if not r.get("needs_llm_verdict")]
         # 取最嚴重的查核結論（inaccurate > partial > accurate > not_found/disabled）
         sev = {"inaccurate": 3, "partial": 2, "accurate": 1, "not_found": 0, "disabled": 0, "error": 0}
         worst = None
-        for r in sources:
+        for r in _fc_pool:
             if r.get("status") in ("inaccurate", "partial", "accurate") and \
                (worst is None or sev[r["status"]] > sev[worst["status"]]):
                 worst = r
@@ -1023,6 +1037,40 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     # 下方 clamp/basis 各自讀同一個 _ev_unrelated。
     _ev_unrelated = (isinstance(deep, dict)
                      and deep.get("evidence_state") == "unrelated_evidence")
+    # 2026-10-01：軟命中帶（0.45～COFACTS_MIN_SIM）降級成 not_found，但保留原始 status
+    # 到 soft_hit_status —— prompt 組裝（fc_lines）會把它顯示成「軟命中待裁決」餵給
+    # LLM，讓 LLM 用 evidence_state 判相關性（PFCD two-stage：召回放寬 → semantic
+    # rerank 由 LLM 做）。只有標籤不夠——「央視國慶晚會」sim 0.862 命中「李登輝不姓李」，
+    # 兩者 status 都是 inaccurate，得看到回覆原文才分得出。
+    _soft = [s for s in (sources or []) if s.get("needs_llm_verdict")]
+    if _soft:
+        # LLM 判「證據完整且相關」就升為硬命中：此時 similarity_score 仍低於 0.72，
+        # clamp 的 0.72 條件不會觸發（clamp 另有 unrelated 閘門擋反向誤判），只吃 -30。
+        _promote = (isinstance(deep, dict)
+                    and deep.get("evidence_state") == "full_body_evidence")
+        for _s in _soft:
+            _s["soft_hit_status"] = _s.get("status")
+            _s["soft_hit_sim"] = _s.get("similarity_score")
+            _s["llm_promoted"] = _promote
+            if not _promote:
+                _s["status"] = "not_found"
+                _s["feedback_count"] = 0
+        if _promote:
+            # 升級後 fact_check 要重算：走最嚴重取樣
+            _worst = max((s.get("soft_hit_status") for s in _soft),
+                         key=lambda x: {"inaccurate": 3, "partial": 2,
+                                        "accurate": 1}.get(x, 0), default=0)
+            _d = {"inaccurate": -DEFAULT_WEIGHTS["fact_check"],
+                  "partial": DEFAULT_WEIGHTS["fact_check"] * 0.3,
+                  "accurate": DEFAULT_WEIGHTS["fact_check"]}.get(_worst, 0) \
+                - DEFAULT_WEIGHTS["fact_check"] * 0.5
+            res["fact_check"] = {"score": DEFAULT_WEIGHTS["fact_check"] * 0.5 + _d,
+                                 "desc": _worst,
+                                 "weight": DEFAULT_WEIGHTS["fact_check"]}
+            total += _d
+            avail += _d
+            final = (total / avail) * 100 if avail > 0 else 0.0
+            rule_score = final
     if _ev_unrelated:
         _fc0 = res.get("fact_check") or {}
         if _fc0.get("desc") == "inaccurate":

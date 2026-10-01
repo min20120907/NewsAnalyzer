@@ -1,0 +1,32 @@
+{
+  "n": 30,
+  "categories": {
+    "A": 10,
+    "B": 10,
+    "C": 5,
+    "D": 5
+  },
+  "tasks": {
+    "credibility": 10,
+    "viewpoints": 10,
+    "analysis": 5,
+    "key_points": 5
+  },
+  "predictions": {
+    "ABSTAIN": 20,
+    "REAL": 10
+  },
+  "jev_verdicts": {
+    "INSUFFICIENT": 20,
+    "REAL": 10
+  },
+  "tree_counts": {
+    "no_verdict": 20,
+    "verdict": 10
+  },
+  "avg_latency_s": 0.7855135514517315,
+  "total_cost": 0.0009099720000000001,
+  "cost_per_call": 3.03324e-05,
+  "api_errors": 0,
+  "note": "The workbook has A-D task categories, not fake/real ground truth; accuracy is not computable."
+}

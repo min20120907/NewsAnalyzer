@@ -28,6 +28,9 @@ COFACTS_API_URL = "https://api.cofacts.tw/graphql"
 UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
       "Chrome/120.0 Safari/537.36")
 COFACTS_MIN_SIM = float(os.environ.get("COFACTS_MIN_SIM", "0.72"))
+# 2026-10-01：召回下界。COFACTS_MIN_SIM 仍是「硬命中」線（clamp 只認它），
+# 低於這條才真的 not_found。中間那段交給 LLM rerank 裁決。
+COFACTS_SOFT_MIN_SIM = float(os.environ.get("COFACTS_SOFT_MIN_SIM", "0.45"))
 
 CACHE_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                         "..", "data", "cofacts", "cofacts_cache.db")
@@ -61,14 +64,14 @@ def extract_entities(text: str) -> set:
     if not text:
         return set()
     entities = set()
-    # 1. 姓氏 + 1~2 字人名樣式 (例如：范振宗、鄭麗文、沈伯洋)
+    # 2026-10-01：只保留 3 字變體。2 字版（何醫／許多／簡訊）幾乎全是從動詞、
+    # 形容詞切出來的假實體。去噪交給 _strong_entities 的虛詞字判準，這裡只做形狀過濾。
     for i in range(len(text) - 1):
         if text[i] in SURNAMES:
-            for length in (2, 3):
-                if i + length <= len(text):
-                    sub = text[i:i + length]
-                    if re.match(r'^[\u4e00-\u9fa5]+$', sub):
-                        entities.add(sub)
+            if i + 3 <= len(text):
+                sub = text[i:i + 3]
+                if re.match(r'^[一-鿿]+$', sub):
+                    entities.add(sub)
     # 2. 政治/社會熱門專有名詞
     key_terms = ['青鳥', '館長', '台積電', '高虹安', '柯建銘', '莊競程', '徐欣瑩']
     for term in key_terms:
@@ -77,19 +80,38 @@ def extract_entities(text: str) -> set:
     return entities
 
 
+def _strong_entities(text: str) -> set:
+    """高置信實體。
+
+    2026-10-01：改用「詞典命中」而非「姓氏比對 + 數量」。姓氏比對必然產噪音
+    （何+醫學、許+多癌），而任何去噪規則都會漏——實測「任何醫學證據」＋
+    「任何醫學研究」讓「何醫學」出現兩次，重複法也被騙過。黑名單只會無限追。
+    改判準：3 字候選必須**不含常用虛詞字**（醫/多/新/大/小/老/好/真/全…），
+    那是人名不會用的字；真名如「陳惠仁」「沈伯洋」「范振宗」不含這類字。
+    """
+    VIRTUAL = set("醫多新大小老好真全前後本該個些們等再又更沒不很最第")
+    ents = extract_entities(text)
+    known = {'青鳥', '館長', '台積電', '高虹安', '柯建銘', '莊競程', '徐欣瑩'}
+    return {e for e in ents
+            if e in known or (len(e) == 3 and not (set(e) & VIRTUAL))}
+
+
 def entity_gatekeeper(query_text: str, candidate_text: str) -> bool:
     """實體門控 (Entity Gatekeeper)：
     如果查詢文本包含明確特定人名/實體，但候選文章完全未包含任何對應實體，
     且包含其他衝突人名，則判定門控不通過 (False)。
+
+    2026-10-01：判「真實體」用重複出現而非字典長度。純姓氏比對必然有噪音
+    ——「任何醫學證據」會切出「何醫學」、「許多癌患者」切出「許多癌」，
+    單數量門檻擋不住（實測兩者同時出現 → 誤判主題衝突 → 真檸檬水查核被丟）。
+    真人名在正文通常出現 2 次以上，噪音詞只出現一次。
     """
-    q_ents = extract_entities(query_text[:300])
-    # 過濾出長度 >= 3 的人名/專名（精度較高）
-    strong_q_ents = {e for e in q_ents if len(e) >= 3 or e in ['館長', '青鳥']}
-    if not strong_q_ents:
+    q_ents = _strong_entities(query_text[:300])
+    if not q_ents:
         return True  # 查詢無明確強實體，放行給 SBERT 判定
     
     c_ents = extract_entities(candidate_text[:400])
-    overlap = strong_q_ents.intersection(c_ents)
+    overlap = q_ents.intersection(c_ents)
     if overlap:
         return True  # 有實體交集，通過
     
@@ -319,9 +341,17 @@ def _recall_queries(snippet: str) -> list:
     return qs[:2]
 
 
-def _keyword_query(snippet: str) -> str:
-    """jieba 關鍵字查詢（最後備援）：空白分隔的短詞組是 moreLikeThis 最吃的形式
-    （實例：'交通安全月 機車族 零違規 抽獎 公路局 重機' 直接命中目標 #1）。lazy 載入，失敗回 ''。"""
+def _keyword_queries(snippet: str) -> list:
+    """jieba 關鍵字查詢（最後備援）：回傳多個**各自獨立**的短查詢詞。
+
+    2026-10-01（實測對照，同一則檸檬水查核）：
+      '檸檬水' → 8 usable    '治癌' → 7    '癌症' → 6
+      '檸檬水 癌症' → 6      '檸檬水 治癌' → 1
+      '檸檬水 癌症 治癌' → 1  '檸檬水治癌' → 0  ← 詞一多/一長就失配
+    moreLikeThis 對短輸入最敏感、對多詞 AND 語義最脆弱，所以逐詞各打一次再合併，
+    而不是拼成一個查詢。取最長的 5 個（實體詞訊息量最高，「水能」這種黏邊
+    殘渣長度短會自然排後面）。lazy 載入 jieba，失敗回 []。
+    """
     try:
         import jieba as _jieba
         _STOP = {"推出", "符合", "資格", "表示", "指出", "認為", "今天", "昨天",
@@ -332,27 +362,33 @@ def _keyword_query(snippet: str) -> str:
             t = t.strip()
             if len(t) < 2 or len(t) > 6 or t in seen:
                 continue
-            if not any("\u4e00" <= ch <= "\u9fff" for ch in t):
+            if not any("一" <= ch <= "鿿" for ch in t):
                 continue
             if t in _STOP:
                 continue
             seen.add(t)
             toks.append(t)
-            if len(toks) >= 8:
-                break
-        return " ".join(toks)
+        toks.sort(key=len, reverse=True)
+        return toks[:5]
     except Exception:
-        return ""
+        return []
 
 
 def _graphql_recall(snippet: str, timeout_api: int) -> list:
-    """主查＋短查＋jieba 關鍵字備援，合併去重（by id），最多 8 個 node。"""
+    """主查＋短查＋jieba 關鍵字備援，合併去重（by id），最多 8 個 node。
+
+    2026-10-01：每個 query 各自只收 2 筆（原本第一個 query 就能塞滿 8 筆上限，
+    後續短查與關鍵詞備援全被跳過）。實測檸檬水案：長句主查撈到 8 筆無關
+    （沙拉油／台糖／蘋果藥殘）就收手，沒去查「檸檬水」這個真詞，而單獨查
+    「檸檬水」有 8 usable。moreLikeThis 對短輸入敏感，合併召回要靠多樣本，
+    靠單一長句撈滿是錯的。"""
     seen, nodes = set(), []
     queries = [snippet] + _recall_queries(snippet)
     try:
-        for qi, q in enumerate(queries):
-            if qi > 0 and len(nodes) >= 3:
+        for q in queries:
+            if len(nodes) >= 16:
                 break
+            before = len(nodes)
             r = requests.post(COFACTS_API_URL, json={
                 "query": _GRAPHQL, "variables": {
                     "filter": {"moreLikeThis": {"like": q}}}},
@@ -368,31 +404,45 @@ def _graphql_recall(snippet: str, timeout_api: int) -> list:
                 if nid and nid not in seen:
                     seen.add(nid)
                     nodes.append(node)
-                if len(nodes) >= 8:
+                if len(nodes) - before >= 2:
                     break
     except Exception:
         pass
-    if len(nodes) < 3:
-        # 最後備援：jieba 關鍵字查詢（lazy，約 +3s，只在前面撈不到時觸發）
+    # 2026-10-01：條件從「召回筆數」改成「有實質回覆的筆數」。原本用 len(nodes)<N，
+    # 但長句主查常撈滿 8 筆無關文章（實測檸檬水案撈到沙拉油／台糖／蘋果藥殘），
+    # 讓「筆數夠」的條件成立，關鍵詞備援整段被跳過。改用 _classify_candidate 有回覆
+    # 者計數才對——沒有回覆的文章本來就會被丟掉，佔著額度沒意義。
+    _usable = sum(1 for nd in nodes
+                  if any((r.get("reply") or {}).get("text", "").strip()
+                         for r in (nd.get("articleReplies") or [])))
+    if _usable < 3:
+        # 最後備援：jieba 關鍵字查詢（lazy，只在前面撈不到時觸發）
         try:
-            kq = _keyword_query(snippet)
-            if kq:
+            for kq in filter(None, _keyword_queries(snippet)):
+                before_k = len(nodes)
                 r = requests.post(COFACTS_API_URL, json={
                     "query": _GRAPHQL, "variables": {
                         "filter": {"moreLikeThis": {"like": kq}}}},
                     headers={"User-Agent": UA, "Content-Type": "application/json"},
                     timeout=timeout_api + 5)
-                if r.status_code == 200:
-                    data = r.json()
-                    edges = (data.get("data") or {}).get("ListArticles", {}).get("edges") or []
-                    for edge in edges:
-                        node = edge.get("node") or {}
-                        nid = node.get("id")
-                        if nid and nid not in seen:
-                            seen.add(nid)
-                            nodes.append(node)
-                        if len(nodes) >= 8:
-                            break
+                if r.status_code != 200:
+                    continue
+                data = r.json()
+                edges = (data.get("data") or {}).get("ListArticles", {}).get("edges") or []
+                for edge in edges:
+                    node = edge.get("node") or {}
+                    nid = node.get("id")
+                    if not nid or nid in seen:
+                        continue
+                    # 有實質回覆才收（與 _usable 同一判準）——沒回覆的文章
+                    # 進來也會被 _classify_candidate 丟掉，只是佔額度
+                    if not any((rp.get("reply") or {}).get("text", "").strip()
+                               for rp in (node.get("articleReplies") or [])):
+                        continue
+                    seen.add(nid)
+                    nodes.append(node)
+                    if len(nodes) - before_k >= 2:
+                        break
         except Exception:
             pass
     return nodes
@@ -462,8 +512,16 @@ def get_fact_check(text: str, use_cache: bool = True,
             best_candidate = cand
 
     # 判定與動態門檻衰減
-    if best_candidate and best_sim >= COFACTS_MIN_SIM:
+    # 2026-10-01：0.45～COFACTS_MIN_SIM 的「軟命中帶」不再直接 not_found，改回傳
+    # 讓下游 LLM 用 evidence_state 裁決（PFCD 標準 two-stage：高召回召回 →
+    # semantic rerank，文獻明確說單一門檻做不了 rerank）。
+    # 實測 53 則真實新聞餵 2489 筆池：≥0.72 只有 3 筆、0.45–0.72 有 49 筆，而池內
+    # 最佳命中與第 5 佳的落差中位僅 0.037 —— 相似度分佈是平的，門檻切不出東西。
+    # 真檸檬水查核 sim 0.52 被舊門檻當 not_found；「央視國慶晚會」sim 0.862 卻命中
+    # 「李登輝不姓李」——兩者都要 LLM 看內文才分得出，門檻不能。
+    if best_candidate and best_sim >= COFACTS_SOFT_MIN_SIM:
         best_candidate["similarity_score"] = best_sim
+        best_candidate["needs_llm_verdict"] = best_sim < COFACTS_MIN_SIM
         if use_cache:
             _cache_put(key, best_candidate)
         return best_candidate

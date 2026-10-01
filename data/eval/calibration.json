@@ -1,0 +1,43 @@
+{
+ "n_total": 500,
+ "n_valid": 500,
+ "cutoff": 60,
+ "bins": [
+  {
+   "bin": "<20",
+   "band": "Highly suspicious",
+   "n": 283,
+   "n_fake": 281,
+   "p_fake": 0.9929
+  },
+  {
+   "bin": "20--40",
+   "band": "Suspected fake",
+   "n": 118,
+   "n_fake": 116,
+   "p_fake": 0.9831
+  },
+  {
+   "bin": "40--60",
+   "band": "Unverified",
+   "n": 46,
+   "n_fake": 46,
+   "p_fake": 1.0
+  },
+  {
+   "bin": "60--75",
+   "band": "Likely credible",
+   "n": 3,
+   "n_fake": 1,
+   "p_fake": 0.3333
+  },
+  {
+   "bin": "75--100",
+   "band": "Highly credible",
+   "n": 50,
+   "n_fake": 0,
+   "p_fake": 0.0
+  }
+ ],
+ "n_negative": 1
+}

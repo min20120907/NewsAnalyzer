@@ -1,0 +1,28 @@
+{
+  "newsanalyzer": {
+    "n": 500,
+    "n_valid": 494,
+    "n_unknown": 6,
+    "TP": 437,
+    "FP": 4,
+    "FN": 1,
+    "TN": 52,
+    "acc": 0.9899,
+    "precision_fake": 0.9909,
+    "recall_fake": 0.9977,
+    "f1_fake": 0.9943
+  },
+  "zeroshot_qwen27": {
+    "n": 498,
+    "n_valid": 498,
+    "n_unknown": 0,
+    "TP": 390,
+    "FP": 19,
+    "FN": 53,
+    "TN": 36,
+    "acc": 0.8554,
+    "precision_fake": 0.9535,
+    "recall_fake": 0.8804,
+    "f1_fake": 0.9155
+  }
+}
