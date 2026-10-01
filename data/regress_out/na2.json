@@ -1,0 +1,152 @@
+{
+ "available_weight": 100.0,
+ "clamp_reason": "",
+ "clamped": false,
+ "deep_analysis": {
+  "abstain": true,
+  "analysis": "由於Cofacts、Google查核及MyGoPen等查核來源均顯示未找到相關結果，且提供的網路搜尋結果僅為新聞標題摘要，未載入任何查核正文或回覆原文，因此無法確認該主張的真實性。目前缺乏查核機構對志祺七七父親身份及持股市值的具體判定依據，必須補全查核原文或官方財報數據方可判定。",
+  "claim": "YouTuber志祺七七的父親是上市公司欣銓科技的創辦人之一，且持股市值超過十億元。",
+  "credibility_score": 60,
+  "evidence_state": "no_evidence",
+  "evidence_used": [],
+  "is_provisional": true,
+  "key_points": [
+   "提供的查核結果顯示Cofacts、Google查核及MyGoPen均為not_found，缺乏查核機構的判定文字或回覆原文。",
+   "雖然網路搜尋結果摘要提及多家媒體報導志祺七七父親為欣銓科技創辦人且持股市值破十億，但這些僅為新聞標題摘要，未載入具體查核正文或事實核對細節。",
+   "依據規則，僅有搜尋結果摘要而無查核正文載入，屬於證據不足，無法進行實質的事實比對與評分。"
+  ],
+  "model": "qwen3.8-27b-fastmtp",
+  "samples": 1,
+  "score_std": 0.0,
+  "viewpoints": "目前僅有媒體報導主張志祺七七父親為欣銓科技創辦人且資產破十億，但缺乏查核機構對該主張的正面或負面判定依據，正反雙方立場無法基於提供的查核材料進行完整摘要。"
+ },
+ "evidence_state": "no_evidence",
+ "final_score": 64.26251244544983,
+ "fusion_weight": 0.0,
+ "is_provisional": true,
+ "metrics": {
+  "domain": {
+   "desc": "line.me",
+   "score": 25.0,
+   "weight": 25.0
+  },
+  "fact_check": {
+   "desc": "not_found",
+   "score": 15.0,
+   "weight": 30.0
+  },
+  "sentiment": {
+   "desc": "0.75",
+   "score": 12.0,
+   "weight": 15.0
+  },
+  "similarity": {
+   "desc": "81.75%（標題—內文一致性，非真實性）",
+   "score": 12.262512445449829,
+   "weight": 15.0
+  },
+  "timeliness": {
+   "desc": "unknown",
+   "score": 0.0,
+   "weight": 5.0
+  },
+  "user_feedback": {
+   "desc": "none",
+   "score": 0.0,
+   "weight": 10.0
+  }
+ },
+ "post_fusion_score": 64.26251244544983,
+ "rating_text": "大致可信",
+ "review_links": {
+  "duckduckgo": "https://duckduckgo.com/?q=%E5%BF%97%E7%A5%BA%E4%B8%83%E4%B8%83%E8%B6%85%E7%8B%82%E5%AE%B6%E4%B8%96%E6%9B%9D%E5%85%89%EF%BC%81%E7%88%B8%E6%98%AF%E5%8D%8A%E5%B0%8E%E9%AB%94%E5%85%AC%E5%8F%B8%E5%89%B5%E8%BE%A6%E4%BA%BA%E3%80%8C%E6%8C%81%E8%82%A1%E9%80%BE4%E5%8D%83%E5%BC%B5%E3%80%8D+%E5%B8%82%E5%80%BC%E7%A0%B410%E5%84%84+評論+討論",
+  "threads": "https://www.threads.net/search?q=%E5%BF%97%E7%A5%BA%E4%B8%83%E4%B8%83%E8%B6%85%E7%8B%82%E5%AE%B6%E4%B8%96%E6%9B%9D%E5%85%89%EF%BC%81%E7%88%B8%E6%98%AF%E5%8D%8A%E5%B0%8E%E9%AB%94%E5%85%AC%E5%8F%B8%E5%89%B5%E8%BE%A6%E4%BA%BA%E3%80%8C%E6%8C%81%E8%82%A1%E9%80%BE4%E5%8D%83%E5%BC%B5%E3%80%8D+%E5%B8%82%E5%80%BC%E7%A0%B410%E5%84%84"
+ },
+ "rule_score": 64.26251244544983,
+ "scoring_basis": "AI 模型判定證據不足，本次為暫時分數（非查核結論）：no_evidence",
+ "sources": [
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": 0.0,
+   "source": "cofacts",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "google",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "mygopen",
+   "status": "not_found",
+   "url": null
+  }
+ ],
+ "timings": {
+  "deep_analyze": 9839.2,
+  "fact_check": 2937.5,
+  "scoring": 9839.6,
+  "sentiment": 62.5,
+  "similarity": 129.6,
+  "total": 12840.3,
+  "web_search": 1109.5
+ },
+ "title": "志祺七七超狂家世曝光！爸是半導體公司創辦人「持股逾4千張」 市值破10億",
+ "total_raw_score": 64.26251244544983,
+ "url": "https://today.line.me/tw/v3/article/x2oNP3e",
+ "web_results": [
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "志祺七七超狂家世曝光！爸是半導體公司創辦人「持股逾4千張」　市值10億持續漲 - 鏡週刊Mirror Media",
+   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE54YkNJNFFwRHQ3VDdYYm9Yb0tkM1o2VFZGSVlkQ0p5ODYtVmpWakZ6ODdfZHIydUJ0TlRLZG9WTzVBajJnNkFWUTFSbFlHYVhTb3Nya0RVWVFWZWPSAWBBVV95cUxPQkNhZFJDbGRKeml6S0YyMlZ6LWEwWWg4NVlhbVpkQ0huVDJtdTFQT1pYQ0w3d1ZMY1NSaGFSczRrOExpXy14Z1JZU3NjTk9uWXBUdnd3eVdZdURhRVhfLUg?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "志祺七七超狂身家曝！爸爸是半導體公司創辦人　持股市值10億還在漲 - 三立新聞網SETN.com",
+   "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE55QVJrMm5zTWF6V01LNWZaUHd5ZTE0VjBTWTJMZ0k0TFZadVJuT2g0cGpSclJDNlJOTUFTUDlXVFR3SVV6NUxRTzZpaVdyRkE0a185cEk1SDZ4czBPdi130gFfQVVfeXFMTnlBUmsybnNNYXpXTUs1ZlpQd3llMTRWMFNZMkxnSTRMVlp1Um5PaDRwalJyUkM2Uk5NQVNQOVdUVHdJVXo1TFFPNmlpV3JGQTRrXzlwSTVINnhzME92LXc?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "志祺七七竟是富二代！爸爸是上市公司創辦人 「持股市值破10億」家世超狂 - 自由娛樂",
+   "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE5KMDZnSEVIdnBXYk5vdmFYVlVBRmtxRG9MRlE0czRKMVBobHMzZ2xSemExdjVfX2hTZGJ3RmZJOThyTU83R2Y4ZmdLM1U3MUppeWxyT05PV1psQl9U0gFiQVVfeXFMTklfOHM3ZXJ6RXhmNFdWenB4Z3hzYU5xS2NKMDhLQzB5S2tEX0RSeTFQS25jYjg3Um1uampFdWJoWVRmRERZQ0dmQXNxUE9aWkZER1NNblYyY01aWWd4eWt2U0E?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "志祺七七超狂家世曝光！父親是半導體創辦人身家破10億 - 中天新聞網",
+   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE1Lb3Z5c1E2V29ERW81YmozVTlLTmFRaW9yRmdlVWM3Uk13aEg3V1VybS0wZHZDWnVYX1lHbUpMNGxha2RydGVaTjloWlh3WnRreVBv?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "志祺七七富二代身分曝光！父親擁「逾10億身家」 - 民視新聞網",
+   "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5tN0FEUWZWRDhmREZRZ0FiOWFEa2k4Z3lJbHZpSUIzYUVFc0t5Y09kTzN3cGFfM0RRZXYyUWRWdlhhN05XQ1lGTVljZHBHU2oxRXpQNHlmdm1jd3pGdXYwUA?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "志祺七七富二代身分曝光！父親擁「逾10億身家」 | 民視新聞網 - LINE TODAY",
+   "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE9JRUI3dnNlSWFjbWc2N3N1SkRCdVpVSXN6dncwX2RoWHlEYzBTLVJKbVp6STRmYjhTQkV1VlBMZk5JRC16Qlcwb3ZZY3pPd191TzhKaEpB?oc=5"
+  }
+ ]
+}

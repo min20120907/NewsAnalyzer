@@ -30,3 +30,6 @@ tools/free-search/.env
 test_results.html
 tools/free-search/node_modules/
 tools/
+
+# 回歸集輸出（每次跑都變，不進版控）
+/regress_out/

@@ -1,0 +1,180 @@
+{
+ "available_weight": 100.0,
+ "clamp_reason": "",
+ "clamped": false,
+ "deep_analysis": {
+  "abstain": true,
+  "analysis": "查核來源 Cofacts 載入的原文內容為日本再生醫學相關資訊，與本主張的台灣長照論壇事件完全無關，屬於無關證據。雖然網路搜尋結果顯示多家媒體報導了該論壇活動，但缺乏查核機構針對此特定主張的判定原文。因此，目前無法依據查核機構的判定來確認該主張的事實性，需補充針對該論壇活動或趙國鈞發言的獨立查核原文方可判定。",
+  "claim": "鄰近健康創辦人趙國鈞將於2026年10月1日在健康台灣2030論壇上，聚焦長照轉型關鍵並揭曉高齡社會社區新解方。",
+  "credibility_score": 60,
+  "evidence_state": "unrelated_evidence",
+  "evidence_used": [
+   "Cofacts",
+   "台灣新聞雲"
+  ],
+  "is_provisional": true,
+  "key_points": [
+   "Cofacts 提供的查核原文內容為日本再生醫學專家岡野光夫的成就，與本主張涉及的台灣長照論壇及鄰近健康公司完全無關。",
+   "網路搜尋結果顯示台灣新聞雲與自由健康網等來源報導了該論壇活動，但缺乏針對該特定主張的獨立事實查核判定原文。",
+   "查核機構 Cofacts 雖標記為 accurate，但其載入的正文內容與本主張事件、對象、時間均不對應，屬於無關證據。",
+   "目前僅有新聞報導佐證活動存在，但無查核機構針對該論壇內容或趙國鈞發言的具體事實查核判定文字。"
+  ],
+  "model": "qwen3.8-27b-fastmtp",
+  "samples": 1,
+  "score_std": 0.0,
+  "viewpoints": "正方依據台灣新聞雲等媒體報導，主張該論壇將於2026年10月1日舉行並由趙國鈞揭曉新解方；反方或質疑方目前無具體反駁，但查核機構 Cofacts 提供的原文內容與本主張無關，無法提供獨立第三方對該特定主張的事實判定，導致證據鏈斷裂。"
+ },
+ "evidence_state": "unrelated_evidence",
+ "final_score": 62.85737466812134,
+ "fusion_weight": 0.0,
+ "is_provisional": true,
+ "metrics": {
+  "domain": {
+   "desc": "tnews.com.tw",
+   "score": 15.0,
+   "weight": 25.0
+  },
+  "fact_check": {
+   "desc": "not_found",
+   "score": 15.0,
+   "weight": 30.0
+  },
+  "sentiment": {
+   "desc": "0.83",
+   "score": 12.0,
+   "weight": 15.0
+  },
+  "similarity": {
+   "desc": "72.38%（標題—內文一致性，非真實性）",
+   "score": 10.857374668121338,
+   "weight": 15.0
+  },
+  "timeliness": {
+   "desc": "3023 天前",
+   "score": 0.0,
+   "weight": 5.0
+  },
+  "user_feedback": {
+   "desc": "有查核討論",
+   "score": 10.0,
+   "weight": 10.0
+  }
+ },
+ "post_fusion_score": 62.85737466812134,
+ "rating_text": "大致可信",
+ "review_links": {
+  "duckduckgo": "https://duckduckgo.com/?q=%E5%81%A5%E5%BA%B7%E5%8F%B0%E7%81%A32030%E8%AB%96%E5%A3%87+%E8%81%9A%E7%84%A6%E9%95%B7%E7%85%A7%E8%BD%89%E5%9E%8B%E9%97%9C%E9%8D%B5%E9%84%B0%E8%BF%91%E5%81%A5%E5%BA%B710%2F01%E6%8F%AD%E6%9B%89%E9%AB%98%E9%BD%A1%E7%A4%BE%E6%9C%83%E7%A4%BE%E5%8D%80%E6%96%B0%E8%A7%A3%E6%96%B9+-+%E5%8F%B0%E7%81%A3%E6%96%B0%E8%81%9E%E9%9B%B2+評論+討論",
+  "threads": "https://www.threads.net/search?q=%E5%81%A5%E5%BA%B7%E5%8F%B0%E7%81%A32030%E8%AB%96%E5%A3%87+%E8%81%9A%E7%84%A6%E9%95%B7%E7%85%A7%E8%BD%89%E5%9E%8B%E9%97%9C%E9%8D%B5%E9%84%B0%E8%BF%91%E5%81%A5%E5%BA%B710%2F01%E6%8F%AD%E6%9B%89%E9%AB%98%E9%BD%A1%E7%A4%BE%E6%9C%83%E7%A4%BE%E5%8D%80%E6%96%B0%E8%A7%A3%E6%96%B9+-+%E5%8F%B0%E7%81%A3%E6%96%B0%E8%81%9E%E9%9B%B2"
+ },
+ "rule_score": 62.85737466812134,
+ "scoring_basis": "命中的查核與本主張無關，已忽略該錨定（暫時分數，非查核結論）",
+ "sources": [
+  {
+   "alternatives": [
+    {
+     "matched_text": "日本再生醫學治療… \n非常進步的醫療信息… \n\nhttps://youtu.be/dEYYQZhmzFc",
+     "reasons": [
+      {
+       "text": "在日本再生醫學領域，岡野光夫扮演著先驅角色。1990 年，他成功利用患者的自體細胞，在體外培養製作成約 0.1 毫米薄片，然後再把培養出來的細胞片放回病患需要醫治的部分。這是全球第一個首次開發成功，關鍵就在使用獨創的「溫度感應細胞培養皿」，讓細胞片順利長大。",
+       "type": "NOT_RUMOR"
+      }
+     ],
+     "similarity_score": 0.5072559118270874,
+     "status": "accurate",
+     "url": "https://cofacts.tw/article/mbkpouez2bzf"
+    }
+   ],
+   "article_id": "2wgxgg37r3cw3",
+   "created_at": 1529633500.869,
+   "feedback_count": 0,
+   "llm_promoted": false,
+   "matched_text": "跟大家分享一項很重要的醫學新知，日本領先臺灣15-20年的新技術，還願意收跨海求治的臺灣民眾，真的可造福很多病人，燒燙傷皮膚再生，心衰竭等換心的人們，視網膜，食道癌，膝關節...的患者，不必再苦等他人的心臟捐贈，日本再生醫學治療… 非常進步的醫療信息… \n請務必內心看完\n\nhttps://youtu.be/dEYYQZhmzFc",
+   "needs_llm_verdict": true,
+   "reasons": [
+    {
+     "text": "在日本再生醫學領域，岡野光夫扮演著先驅角色。1990 年，他成功利用患者的自體細胞，在體外培養製作成約 0.1 毫米薄片，然後再把培養出來的細胞片放回病患需要醫治的部分。這是全球第一個首次開發成功，關鍵就在使用獨創的「溫度感應細胞培養皿」，讓細胞片順利長大。",
+     "type": "NOT_RUMOR"
+    }
+   ],
+   "similarity_score": 0.5531333684921265,
+   "soft_hit_sim": 0.5531333684921265,
+   "soft_hit_status": "accurate",
+   "source": "cofacts",
+   "status": "not_found",
+   "url": "https://cofacts.tw/article/2wgxgg37r3cw3"
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "google",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "mygopen",
+   "status": "not_found",
+   "url": null
+  }
+ ],
+ "timings": {
+  "deep_analyze": 11766.7,
+  "extract": 7559.1,
+  "fact_check": 3511.1,
+  "scoring": 11767.1,
+  "sentiment": 170.4,
+  "similarity": 117.5,
+  "total": 23008.9,
+  "web_search": 908.3000000000001
+ },
+ "title": "健康台灣2030論壇 聚焦長照轉型關鍵鄰近健康10/01揭曉高齡社會社區新解方 - 台灣新聞雲",
+ "total_raw_score": 62.85737466812134,
+ "url": "https://news.google.com/rss/articles/CBMiR0FVX3lxTE1TMjRMUmxORFdid0hBWjJTVFhQeVB0bWdfQzRRNXhpNkNwWXV3dDZSRXZJYlZTMmdpU1RDalBDZGcwT1J6S1JJ?oc=5",
+ "web_results": [
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "健康網》健康台灣2030論壇 聚焦長照轉型關鍵 - 自由健康網",
+   "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTFBISjVvTms2WkVNV1lRbXc2bEp4a2t0TFk0VDhTWnpndDNLaDkwemRqSGdobHMwU3VkMjFCZzhvTlNqclVrUWU3am0xaWxHZ1FBSHVWOHpiZ0JGQnpFS0swc1ZRUWg?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "聚焦醫療創新！鏡報「2026醫療創新健康臺灣高峰論壇」登場 產官學醫齊聚共議健康未來 - 鏡報",
+   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE1lU3gybG9BbURLMXEzWWNoSTd4M2JibGtOLVdBZnRSaElJSnM3XzZESnREZkhtUVppNGh1Ymc2YU1PQnpERFNmSmY2M3poNFh2U3c?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "敏盛醫院辦健康台灣深耕論壇 產官學醫共議醫療韌性與智慧轉型 | 產業動態 | 商情 - 經濟日報",
+   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBlMHRyMHh2ZnJqNTk2YXhvaVRhM3hwN0tOQk1GSktfcGZreUlFYnVhR01fLXlVa3ZRS2xKOHNBTVNBS2h1UlVDYkxOTDczZXBvUERLbnJ3N2ItdDQ?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "台灣國際淨零永續展與智慧能源週10月登場 聚焦三大主軸助企業轉型 - 蕃新聞",
+   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE12eW5VeXdobWVIcGlCYmpSUEotTXVfTUJ4TTZPa1FqTmNQSDlOTmtrcUliLWNZd1dDeDgxTVUyN0RYOE5pYmd5ZFpZNnlFcW5GSFE?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "健康台灣2030論壇 聚焦長照轉型關鍵 鄰近健康10/01揭曉高齡社會社區新解方 - winnews.com.tw",
+   "url": "https://news.google.com/rss/articles/CBMiSkFVX3lxTFB2SXBTSFlQQ04xYjRKSjhPN1NoTF9wa2hZRXJDTWxaYXR2NlZPUDVkRF8yYmFJZHlqWHhkdlZtanRyVnVwa2N4c2FB?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "長照3.0啟動！鄰近健康攜手產官學論壇 聚焦社區藥局轉型一站式健康中心 - 鏡報",
+   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE16amhzd1UyOHhyQVpmamprXzN1WFk1ZnFGYVEwZ3JMdlExcXZzM3NKNU5EV3padGJobjczN0p1ZXB2bVFNR0UxTzNvSC1TV3JIdWc?oc=5"
+  }
+ ]
+}

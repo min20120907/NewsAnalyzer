@@ -1,0 +1,165 @@
+{
+ "available_weight": 100.0,
+ "clamp_reason": "",
+ "clamped": false,
+ "deep_analysis": {
+  "abstain": true,
+  "analysis": "Cofacts查核原文內容為投資詐騙手法說明，與本主張之ETF績效數據無關，屬於無關證據。目前僅有財經新聞報導支持該數據，缺乏獨立查核機構對「報酬翻24倍」及「規模逾1600億元」之屬實性判定。需補充針對該ETF具體績效數據之查核原文方可判定。",
+  "claim": "富邦科技ETF（0052）掛牌20年累計報酬率超過2400%且資產規模突破1600億元",
+  "credibility_score": 60,
+  "evidence_state": "unrelated_evidence",
+  "evidence_used": [
+   "Cofacts"
+  ],
+  "is_provisional": true,
+  "key_points": [
+   "Cofacts查核內容針對投資詐騙集團手法，與本主張之ETF績效無關",
+   "新聞內文雖提及報酬與規模，但缺乏獨立查核機構對該數據屬實性的判定",
+   "搜尋結果僅為財經新聞報導，非事實查核結果"
+  ],
+  "model": "qwen3.8-27b-fastmtp",
+  "samples": 1,
+  "score_std": 0.0,
+  "viewpoints": "新聞報導方主張0052報酬翻24倍且規模逾1600億；查核機構Cofacts僅針對詐騙手法進行查核，未對本主張之數據進行屬實或虛構之判定"
+ },
+ "evidence_state": "unrelated_evidence",
+ "final_score": 64.17942476272583,
+ "fusion_weight": 0.0,
+ "is_provisional": true,
+ "metrics": {
+  "domain": {
+   "desc": "cnyes.com",
+   "score": 15.0,
+   "weight": 25.0
+  },
+  "fact_check": {
+   "desc": "not_found",
+   "score": 15.0,
+   "weight": 30.0
+  },
+  "sentiment": {
+   "desc": "0.75",
+   "score": 12.0,
+   "weight": 15.0
+  },
+  "similarity": {
+   "desc": "81.20%（標題—內文一致性，非真實性）",
+   "score": 12.17942476272583,
+   "weight": 15.0
+  },
+  "timeliness": {
+   "desc": "940 天前",
+   "score": 0.0,
+   "weight": 5.0
+  },
+  "user_feedback": {
+   "desc": "有查核討論",
+   "score": 10.0,
+   "weight": 10.0
+  }
+ },
+ "post_fusion_score": 64.17942476272583,
+ "rating_text": "大致可信",
+ "review_links": {
+  "duckduckgo": "https://duckduckgo.com/?q=%E3%80%8C%E5%B0%8F%E5%8F%B0%E7%A9%8D%E3%80%8D0052%E8%A6%8B%E8%AD%89%E5%8F%B0%E7%81%A3%E7%A7%91%E6%8A%80%E9%BB%83%E9%87%9120%E5%B9%B4+%E5%A0%B1%E9%85%AC%E7%BF%BB24%E5%80%8D%E3%80%81%E8%A6%8F%E6%A8%A1%E9%80%BE1600%E5%84%84%E5%85%83+-+Yahoo%E8%82%A1%E5%B8%82+評論+討論",
+  "threads": "https://www.threads.net/search?q=%E3%80%8C%E5%B0%8F%E5%8F%B0%E7%A9%8D%E3%80%8D0052%E8%A6%8B%E8%AD%89%E5%8F%B0%E7%81%A3%E7%A7%91%E6%8A%80%E9%BB%83%E9%87%9120%E5%B9%B4+%E5%A0%B1%E9%85%AC%E7%BF%BB24%E5%80%8D%E3%80%81%E8%A6%8F%E6%A8%A1%E9%80%BE1600%E5%84%84%E5%85%83+-+Yahoo%E8%82%A1%E5%B8%82"
+ },
+ "rule_score": 64.17942476272583,
+ "scoring_basis": "命中的查核與本主張無關，已忽略該錨定（暫時分數，非查核結論）",
+ "sources": [
+  {
+   "alternatives": [],
+   "article_id": "-ptbDY4BBMtPEaE08b49",
+   "created_at": 1709621113.148,
+   "feedback_count": 0,
+   "llm_promoted": false,
+   "matched_text": "14:44\n存入\n交易規則\n股票市場\n在線客服\n存股借券\n大廳 市場\n富橋\n提領資金\nBANK\n線上開戶\n自選股\n寶藏股\nETF\n自選\nLTE ↓↑\n%\n資金流水\n台指期\n交易\n融資借款\n目\n指數行情\n申購\n個人訊息\n",
+   "needs_llm_verdict": true,
+   "reasons": [
+    {
+     "text": "被害人加入投資群組後，詐騙集團成員於群組內佯裝「投資老師」、「會員」等人，遊說民眾登錄投資網站或下載投資APP，佯稱可以匯款或面交現金方式投資股票、虛擬貨幣等，保證獲利、翻倍獲利云云，被害人因而受騙而登錄投資網站或下載投資APP，殊不知此等投資網站或APP均為造假。",
+     "type": "RUMOR"
+    }
+   ],
+   "similarity_score": 0.6157360076904297,
+   "soft_hit_sim": 0.6157360076904297,
+   "soft_hit_status": "inaccurate",
+   "source": "cofacts",
+   "status": "not_found",
+   "url": "https://cofacts.tw/article/-ptbDY4BBMtPEaE08b49"
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "google",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "mygopen",
+   "status": "not_found",
+   "url": null
+  }
+ ],
+ "timings": {
+  "deep_analyze": 11185.5,
+  "extract": 7792.4,
+  "fact_check": 3364.4,
+  "scoring": 11186.0,
+  "sentiment": 303.0,
+  "similarity": 201.7,
+  "total": 22646.8,
+  "web_search": 1778.3999999999999
+ },
+ "title": "「小台積」0052見證台灣科技黃金20年 報酬翻24倍、規模逾1600億元 - Yahoo股市",
+ "total_raw_score": 64.17942476272583,
+ "url": "https://news.google.com/rss/articles/CBMi6wJBVV95cUxPQ2dVbnpFMTc3SnVRTjJkQW1QOG9JYWg0b0d1SXRudmNGMzVIMGdjOGF5NzVFemZBdWJ0U1A1UDQ5X3VJSXd2Q2VJN3lBT2daM3Bya3JBcWRwME9yLTQzc202NWpDbld2M1hsWHNPemRGNzdYQTVtWWUxVDRzWGZWeXFfTV9BaXFnZ3BZdTVMeTA4ajY1WkZ4RmRwZ0Q3VGNWa1l2MmEycXdjMUtHYVdGWHlMdFgwUzVCblBzWTlDcmxMNGNXOWN6SDRTSnF1d2lvOHdOeFJ3VVdkNEhscUpleHJlQzVDZ2Q2b2RKSTlKTE5Hbk9xQUZXNlNvTTlrdnI0RkZlWXdib0tJQi1ESDFQYmstQTVSb1pac3RESllscVBlN1d1cVM1MEpleFViakRhMzNuX090b25ndWVDT0l1SENoOGE5UnZtc3FFVDMtOERjczZGT0swTW9jcUw0Tng0UDI0MjRHZllqNE0?oc=5",
+ "web_results": [
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "「小台積」0052見證台灣科技黃金20年 報酬翻24倍、規模逾1600億元 - news.cnyes.com",
+   "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE1ydkhjX2M4Nm9ZX2pzTnZTc0UyTVppeGY1NzFlRjhqeWRBNW9oQk1PM3M3aGUtc3VfRXlqRDN3T2lJeEgyN1ZialRGcDJpNFU?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "《基金》見證台灣科技崛起！0052掛牌20年累計報酬率2427% - 旺得富理財網",
+   "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE5EMVh6Mkl5a1luMmYzbUVZT1BuRVNKNE1kellCdjhMajJoa2JIMlQtZ1pMeFFWWUE3ckJaM0EtZklOeEpOODRqMW56TUpzYVJwbU0wRXhpQkFvelNWdkljTllQZEZRcFBvM0E?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "「小台積」ETF掛牌20年，報酬率飆破2400%！0052見證台股科技轉型的黃金時代 | 林彥呈 | 財經 - Storm.mg",
+   "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTFBQT05oRUlXZzVHMEJwU3VEUC1nNWQzcUdxbEJJSWFzNlNYVWFzOXozYmtUd1I2UDhIZlVreENFbVMySUNKV042NjlWMTAtZw?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "小台積20年翻24倍！富邦科技ETF（0052） 通吃科技生態系紅利 - 三立新聞網SETN.com",
+   "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE1RZkkyRGdlQkh0eGtJaVVPR185UWJXclh6dHdZaDZTdXZzVEhmSUZDNF9iNWt5ZExUbjZrQXJSWWRob2NzaTJtNVpZcw?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "「小台積」0052掛牌20周年 累計報酬飆2,427 - 工商時報",
+   "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE1Jbm9SbDB6SEJ0cGRBejVGWjlFWERYcUlyUVdXMktGSDcxVkRhRTFlblVzazNSZWwyaXNtTXQwdWxIejlaaUNlOEl0OTNhSDkxVmtYeDFYUU55ZGxjRnZz?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "0052掛牌20周年！累計報酬率2427% 富邦投信曝展望 - 蕃新聞",
+   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE80M3VmeXdsNk1pYmkwQ0hqc1ZGR0NUeVEtUG15cWdISGM1V1dPTTRMd3NkNHJfdWV2N1hrZjNoakZhcFF2RE9NTlNSNmdyTDNGUFE?oc=5"
+  }
+ ]
+}

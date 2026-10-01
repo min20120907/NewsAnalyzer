@@ -1,0 +1,100 @@
+[
+ {
+  "id": "sw0",
+  "desc": "景氣燈號連9紅",
+  "request": {
+   "title": "景氣燈號連9紅！追平史上最長連紅紀錄 AI發展使台灣經濟維持穩健成長 - 財訊",
+   "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTE91dlFvVHlIbnoxRXVuTkpCYV9JYzVMTFl3cjlZLTZQYUh3V3I5bGhMV1VQcnJfb1gwLWdXVmI5clNlWTZEdlhZN0l6b2R4RGktNk1td0Nta09qVU5GTENRc1NFaTJ5M2FQY0VqN1NSUjJMQTRuQVkyM3RONA?oc=5",
+   "content": ""
+  },
+  "expect_rating": "大致可信",
+  "expect_max_score": 100.0,
+  "expect_min_score": 26.0,
+  "strict": true,
+  "floor": 25.0
+ },
+ {
+  "id": "sw1",
+  "desc": "0052報酬翻24倍",
+  "request": {
+   "title": "「小台積」0052見證台灣科技黃金20年 報酬翻24倍、規模逾1600億元 - Yahoo股市",
+   "url": "https://news.google.com/rss/articles/CBMi6wJBVV95cUxPQ2dVbnpFMTc3SnVRTjJkQW1QOG9JYWg0b0d1SXRudmNGMzVIMGdjOGF5NzVFemZBdWJ0U1A1UDQ5X3VJSXd2Q2VJN3lBT2daM3Bya3JBcWRwME9yLTQzc202NWpDbld2M1hsWHNPemRGNzdYQTVtWWUxVDRzWGZWeXFfTV9BaXFnZ3BZdTVMeTA4ajY1WkZ4RmRwZ0Q3VGNWa1l2MmEycXdjMUtHYVdGWHlMdFgwUzVCblBzWTlDcmxMNGNXOWN6SDRTSnF1d2lvOHdOeFJ3VVdkNEhscUpleHJlQzVDZ2Q2b2RKSTlKTE5Hbk9xQUZXNlNvTTlrdnI0RkZlWXdib0tJQi1ESDFQYmstQTVSb1pac3RESllscVBlN1d1cVM1MEpleFViakRhMzNuX090b25ndWVDT0l1SENoOGE5UnZtc3FFVDMtOERjczZGT0swTW9jcUw0Tng0UDI0MjRHZllqNE0?oc=5",
+   "content": ""
+  },
+  "expect_rating": "大致可信",
+  "expect_max_score": 100.0,
+  "expect_min_score": 26.0,
+  "strict": true,
+  "floor": 25.0
+ },
+ {
+  "id": "sw3",
+  "desc": "健康台灣2030",
+  "request": {
+   "title": "健康台灣2030論壇 聚焦長照轉型關鍵鄰近健康10/01揭曉高齡社會社區新解方 - 台灣新聞雲",
+   "url": "https://news.google.com/rss/articles/CBMiR0FVX3lxTE1TMjRMUmxORFdid0hBWjJTVFhQeVB0bWdfQzRRNXhpNkNwWXV3dDZSRXZJYlZTMmdpU1RDalBDZGcwT1J6S1JJ?oc=5",
+   "content": ""
+  },
+  "expect_rating": "大致可信",
+  "expect_max_score": 100.0,
+  "expect_min_score": 26.0,
+  "strict": true,
+  "floor": 25.0
+ },
+ {
+  "id": "sw4",
+  "desc": "小笠原欣辛拜會新北市長",
+  "request": {
+   "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題| 政治 - Newtalk新聞",
+   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE8zakJ6dGRXYlFrWWtubW9PRnlPZFZkc3VXSVRQaWxmWWdFNlZLT2lxT04zRmEzdWg3bU5uMHE3UG8tTVdOeGx5UFoxdEIzaHYwZXlJR2hQQjhrTE0?oc=5",
+   "content": ""
+  },
+  "expect_rating": "大致可信",
+  "expect_max_score": 100.0,
+  "expect_min_score": 26.0,
+  "strict": true,
+  "floor": 25.0
+ },
+ {
+  "id": "real_fake",
+  "desc": "檸檬水能治癌(假新聞)",
+  "request": {
+   "title": "檸檬水可以治療癌症？醫師證實：喝檸檬水就能抗癌，是真的嗎",
+   "url": "https://www.google.com/search?q=test",
+   "content": "網傳「每天喝檸檬水可以治療癌症甚至取代化學治療」，許多癌患者信以為真而停藥。衛福部提醒目前沒有任何醫學研究證實檸檬水能治療癌症。"
+  },
+  "expect_rating": null,
+  "expect_max_score": 25.0,
+  "expect_min_score": -10.0,
+  "strict": "ceiling",
+  "floor": null
+ },
+ {
+  "id": "t19",
+  "desc": "決戰新竹縣(標題only)",
+  "request": {
+   "title": "決戰新竹縣：雙強爭霸牽動北台灣政治版圖 誰能點亮幸福感？ - 台灣新聞雲",
+   "url": "https://news.google.com/rss/articles/CBMiR0FVX3lxTFBpelNSSFJudG9zX0k2aUVqS1ZzR2dCYWxLbEppYm9lRUtEeWRBWDZvdVNKRmFsZExtQWhGd24wOXpUNG9vdGxz?oc=5",
+   "content": ""
+  },
+  "expect_rating": null,
+  "expect_max_score": 100.0,
+  "expect_min_score": 26.0,
+  "strict": true,
+  "floor": null
+ },
+ {
+  "id": "na2",
+  "desc": "線上案例2",
+  "request": {
+   "title": "志祺七七超狂家世曝光！爸是半導體公司創辦人「持股逾4千張」 市值破10億",
+   "url": "https://today.line.me/tw/v3/article/x2oNP3e",
+   "content": "YouTuber「志祺七七」（張志祺）的頻道以社會時事議題分享，累積超過170萬人訂閱，近日媒體報導更披露，他其實還有一個「富二代」的身分，他的父親張季明是上市公司欣銓科技的創辦人之一。"
+  },
+  "expect_rating": null,
+  "expect_max_score": 100.0,
+  "expect_min_score": 26.0,
+  "strict": true,
+  "floor": null
+ }
+]

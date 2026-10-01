@@ -1,0 +1,169 @@
+{
+ "available_weight": 100.0,
+ "clamp_reason": "",
+ "clamped": false,
+ "deep_analysis": {
+  "abstain": true,
+  "analysis": "本次查核命中的Cofacts內容為投資詐騙防範宣導，與小笠原欣幸拜會新北市長候選人的政治事件無關，屬於證據錯配。雖然Newtalk新聞提供了詳細的事件描述，但缺乏獨立事實查核機構的判定原文。因此，目前無法依據查核標準確認該主張的真實性，需補充針對該特定政治事件的查核原文方可判定。",
+  "claim": "日本籍國立清華大學榮譽講座教授小笠原欣幸於2026年9月30日拜會新北市長候選人李四川與蘇巧慧，並討論「洋流」等選情議題。",
+  "credibility_score": 60,
+  "evidence_state": "unrelated_evidence",
+  "evidence_used": [
+   "Cofacts",
+   "Newtalk新聞"
+  ],
+  "is_provisional": true,
+  "key_points": [
+   "Cofacts提供的查核原文內容為投資詐騙手法說明，涉及短網址、LINE群組及虛擬貨幣詐騙，與本主張所述的政治人物拜會及選舉議題完全無關。",
+   "Newtalk新聞報導明確記載小笠原欣幸於2026年9月30日拜會李四川與蘇巧慧，並提及討論「洋流」議題，此為新聞事實報導而非查核判定。",
+   "Google查核與MyGoPen查核結果均為未找到，缺乏獨立事實查核機構對該事件真實性的判定文字。",
+   "現有查核來源（Cofacts）屬於領域錯配，無法作為判定該政治事件真偽的依據。"
+  ],
+  "model": "qwen3.8-27b-fastmtp",
+  "samples": 1,
+  "score_std": 0.0,
+  "viewpoints": "正方依據Newtalk新聞報導，指出小笠原欣幸確實拜會兩位候選人並討論選情；反方或質疑方目前無具體查核證據指出該報導為虛構，但缺乏獨立查核機構的屬實判定，僅有媒體單方報導。"
+ },
+ "evidence_state": "unrelated_evidence",
+ "final_score": 72.71476596593857,
+ "fusion_weight": 0.0,
+ "is_provisional": true,
+ "metrics": {
+  "domain": {
+   "desc": "newtalk.tw",
+   "score": 25.0,
+   "weight": 25.0
+  },
+  "fact_check": {
+   "desc": "not_found",
+   "score": 15.0,
+   "weight": 30.0
+  },
+  "sentiment": {
+   "desc": "0.90",
+   "score": 10.0,
+   "weight": 15.0
+  },
+  "similarity": {
+   "desc": "84.77%（標題—內文一致性，非真實性）",
+   "score": 12.714765965938568,
+   "weight": 15.0
+  },
+  "timeliness": {
+   "desc": "1691 天前",
+   "score": 0.0,
+   "weight": 5.0
+  },
+  "user_feedback": {
+   "desc": "有查核討論",
+   "score": 10.0,
+   "weight": 10.0
+  }
+ },
+ "post_fusion_score": 72.71476596593857,
+ "rating_text": "大致可信",
+ "review_links": {
+  "duckduckgo": "https://duckduckgo.com/?q=%E5%B0%8F%E7%AC%A0%E5%8E%9F%E6%AC%A3%E8%BE%9B%E6%8B%9C%E6%9C%83%E6%96%B0%E5%8C%97%E5%B8%82%E9%95%B7%E8%97%8D%E7%B6%A0%E5%80%99%E9%81%B8%E4%BA%BA%EF%BC%81+%E8%A8%8E%E8%AB%96%E3%80%8C%E6%B4%8B%E6%B5%81%E3%80%8D%E7%AD%89%E9%81%B8%E6%83%85%E8%AD%B0%E9%A1%8C%7C+%E6%94%BF%E6%B2%BB+-+Newtalk%E6%96%B0%E8%81%9E+評論+討論",
+  "threads": "https://www.threads.net/search?q=%E5%B0%8F%E7%AC%A0%E5%8E%9F%E6%AC%A3%E8%BE%9B%E6%8B%9C%E6%9C%83%E6%96%B0%E5%8C%97%E5%B8%82%E9%95%B7%E8%97%8D%E7%B6%A0%E5%80%99%E9%81%B8%E4%BA%BA%EF%BC%81+%E8%A8%8E%E8%AB%96%E3%80%8C%E6%B4%8B%E6%B5%81%E3%80%8D%E7%AD%89%E9%81%B8%E6%83%85%E8%AD%B0%E9%A1%8C%7C+%E6%94%BF%E6%B2%BB+-+Newtalk%E6%96%B0%E8%81%9E"
+ },
+ "rule_score": 72.71476596593857,
+ "scoring_basis": "命中的查核與本主張無關，已忽略該錨定（暫時分數，非查核結論）",
+ "sources": [
+  {
+   "alternatives": [],
+   "article_id": "1bx9gnebv6p01",
+   "created_at": 1644734905.616,
+   "feedback_count": 0,
+   "llm_promoted": false,
+   "matched_text": "因為社群人數逐漸增加，防止訊息量爆炸漏掉重要訊息，實施社群主題分類✨✨\n❶合約會所👇🏾\n👉 https://bit.ly/3nJDKv2\n❷網格會所👇🏾\n👉 https://bit.ly/3CDmu0X\n❸礦工會所👇🏾\n👉https://bit.ly/31oj4kZ\n❹鏈遊會所👇🏾\n👉https://bit.ly/2Ye0Ykw\n\n🈲大群不用退，只是有專門特定的問題可以至小群討論發問以及交流❤️\n",
+   "needs_llm_verdict": true,
+   "reasons": [
+    {
+     "text": "這類「分流社群＋短網址＋私下加 LINE」的模式要特別提高警覺。詐騙集團很常先用投資交流、合約、網格、挖礦或鏈遊等主題吸引加入，再把成員分流到不同小群組，方便由假老師、假助理或假客服進一步建立信任，最後引導到不明交易平台、要求入金或提供個人資料。\n\n尤其文中大量使用 bit.ly 等短網址，使用者在點擊前通常無法直接確認實際導向的網站，更增加釣魚網站、惡意下載或假平台的風險。遇到這類連結，不建議直",
+     "type": "RUMOR"
+    },
+    {
+     "text": "常見詐騙手法之一是透過社交軟體詐騙。\n\n有一些不法人士會以各式各樣的假身分，在各種社交平台和群組裡尋找目標。他們一開始對你噓寒問暖，以交友名義接近你，然後向你推薦投資項目。也有一些投資社群或投資專欄裡總是有所謂的“投資大師”，他們贏錢貼圖，輸錢則不貼，以極高回報不斷吸引著followers。\n\n通常這類“投資大師”是無法出示正規的金融履歷或者職業牌照（License），比如CFA、FRM、CPA、",
+     "type": "RUMOR"
+    },
+    {
+     "text": "請小心虛擬貨幣投資廣告，將被害人拉進LINE投資群組，由投資老師示範，再將連結放上群組，讓被害人指定老師代為操盤。\n\n例如指示下載APP、上網站加會員，匯款到人頭帳戶，初期少量出金，誘使加碼投資後，以提早領回要繳違約金、系統故障等推諉出金，最後將被害人踢出群組斷絕聯繫。\n這些都是常見的詐騙手法。",
+     "type": "RUMOR"
+    }
+   ],
+   "similarity_score": 0.4679567515850067,
+   "soft_hit_sim": 0.4679567515850067,
+   "soft_hit_status": "inaccurate",
+   "source": "cofacts",
+   "status": "not_found",
+   "url": "https://cofacts.tw/article/1bx9gnebv6p01"
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "google",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "mygopen",
+   "status": "not_found",
+   "url": null
+  }
+ ],
+ "timings": {
+  "deep_analyze": 15191.0,
+  "extract": 7720.0,
+  "fact_check": 3557.5,
+  "scoring": 15191.4,
+  "sentiment": 153.8,
+  "similarity": 126.9,
+  "total": 26623.6,
+  "web_search": 1612.1999999999998
+ },
+ "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題| 政治 - Newtalk新聞",
+ "total_raw_score": 72.71476596593857,
+ "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE8zakJ6dGRXYlFrWWtubW9PRnlPZFZkc3VXSVRQaWxmWWdFNlZLT2lxT04zRmEzdWg3bU5uMHE3UG8tTVdOeGx5UFoxdEIzaHYwZXlJR2hQQjhrTE0?oc=5",
+ "web_results": [
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題 - Yahoo新聞",
+   "url": "https://news.google.com/rss/articles/CBMigwNBVV95cUxNQ3VITXFWdHVGNk02M1J6bWtYbDlteHFKZzcyYkZQS2RJRUdaNms3am9HVXdad2JQRTJ5Rl9YQk94MTl0SUhfYVFXRWF0SUZiRWFwazJwczRjWTFJZXREXzd5S0habXhYTzFYbGVmRjFGeGJwbkpLMHg5N29ITVJleUdUZDQ4Yk5hWGY4TVlRR004MVhBQUNFMHk0M01KcE9GSzFZTVVmeG1iV3lTYXYwR3VYUkphUkNCMTNmUmdaMm9tdUh6WTlXeWJJNXE5LVd4ckdEbWhHcDU2UlRtWlFaek8wQ3pndWJzOXlOTFlGT0p2NVRmQ0JMU0tCNXhtdHFoTTZfZnlISE1fLWx1S3hhSEhnNDJRLUxwQmJHNGlsZ1ZoRXFIT1dYWDJDd2R5cE9SM2tpZmZVMzkwZW42aTY5MndqQjNCTnAxdVM5TE9ZekZMbF9KZzlfcmI2U3MwbUsybkZwcTVGRE5rdG9udDc1ZVBMMFJSdFJ3OEx0TXZnbmpXWTA?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題 | Newtalk - LINE TODAY",
+   "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTFAzOFdtcjBicmp5cG94V0dkVHBRYi1IUU5Ca2swNi1XNUtMWWpXS0NkLXRKUWJ6cjU2WW5KWExDa3lxM0FIeVB2UExKb0I0RnZaY2JvRWVB?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "被張淑娟點名是幫兇江怡臻籲蘇巧慧正面回應| 政治 - Newtalk新聞",
+   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBEQmxpTGh2WE9HY2JwTmZOaVZ5UEJDT1RkejFQN0lTLW54NDhENWpQemtfMmw5UEJsQXI4NUR2b0ZoVDlTbXp4X3RBQ0g1akJ3VVVhLVJwMVZmUE0?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "小笠原欣幸拜會蘇巧慧、李四川談洋流 揭新北是年底選舉最大決戰地 - Yahoo新聞",
+   "url": "https://news.google.com/rss/articles/CBMisgNBVV95cUxQeFNkdm11WWo4eFFCMWRFUXMzYU1QVmwyY0tKb1hiSEx4LWxMRDRfT1RucVc3ZnY0RUY3R0lhM1NVYlI1V0pQQl9QVDVkTXdiQy1OUUFhOVFzS19IUmhKOWlRbXhsRkN0eXUtanpvS2pYemtkN19oNzF2YUVaaE9HS2NnaGhKODBlVnl5R1JhSVVRQU1kOTI5ektfRmJsb0VXN2J2QjEwNHhGeFdmck84aEdJZG5UZVNObGlJWHJucUE4WG9scTJPZlhQMHZXWm04dFBObjdRX1pJUlU5SndlMUxMdDl3NmJvc2lDWm1TNkltcTY3OHhmNUp1aWxwZUZseUI1RVFENjFpUDZCY08wdTY1aXRWRGlXcDE5aEdEOGJNYmJndWcxdzM0R1FkZWhrLTJ4NWtRMnBYN0s4TVlBQ0xnR0tXRlYtbS1iV0NQS2dTQzBvNmJSUkkzaW9ieEVEdnhRZVFnbV9ZWXJxanA5Um9CQXExby1PNlYyeVIzSDFmQXVtRF83aWN5YUp2OHQzSFBRYmFERHJ2elh4Q1QyOU5TVzZ5dFFJQkM1Mm5DS2hPQQ?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "判刑回來繼續標？林月琴爆苗栗市代會主席「換殼」拿破億政府標案| 政治 - Newtalk新聞",
+   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE1fTkowQ09zb2FRclNnX3dHS1llVWhWMTJrV3pVaDE5OG0zaFlPdlJoNUx1R3FUSXJYRnBiMDZudDVWYXlqVmswbDI3RHFfeDVGd2sxb1VMVmJDaUU?oc=5"
+  }
+ ]
+}
