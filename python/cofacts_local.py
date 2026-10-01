@@ -342,10 +342,18 @@ def local_match_candidates(query: str, top_k: int = 5) -> list:
             # fact_check=-30 鎖死真新聞。過濾掉，讓它們退回 not_found。
             if not reasons:
                 continue
+            m_text = (row[4] or "")[:200]
+            # 2026-10-01：實體門控也要擋這條路徑。GraphQL 那條（get_fact_check
+            # 第 527 行）有擋，本地近鄲沒有 → 主動門控形同虛設。
+            # 實測「藍優先法案列普發2萬 王婉諭批評」命中 corpus 裡「香蕉鳳梨謠言
+            # 國民黨道歉」（NOT_RUMOR → accurate），兩者只共用「國民黨」就過了，
+            # 拿到 89.61 高度可信。
+            if m_text and not entity_gatekeeper(query, m_text):
+                continue
             results.append({
                 "status": row[0], "feedback_count": row[1],
                 "created_at": row[2], "article_id": row[3],
-                "matched_text": (row[4] or "")[:200], "sim": sim,
+                "matched_text": m_text, "sim": sim,
                 "url": f"https://cofacts.tw/article/{row[3]}" if row[3] else None,
                 "reasons": reasons
             })

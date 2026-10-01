@@ -58,6 +58,16 @@ def demo():
     got = _classify_candidate(verified)
     assert got and got["status"] == "accurate", "真查證的 NOT_ARTICLE 應維持 accurate"
 
+    # 2026-10-01：本地近鄲路徑也要有實體門控。實測「藍優先法案列普發2萬 王婉諭批評」
+    # 命中 corpus 裡「香蕉鳳梨謠言 國民黨道歉」(NOT_RUMOR→accurate) 拿到 89.61 高度可信，
+    # 只因為兩者共用「國民黨」。GraphQL 路徑有擋，這條沒有 → 門控形同虛設。
+    assert C.entity_gatekeeper(
+        "藍優先法案列普發2萬 王婉諭：政治不能只做最容易討好的選擇",
+        "香蕉鳳梨網路謠言元凶抓到了 農委會要國民黨道歉"), \
+        "只共用『國民黨』不該通過實體門控"
+    assert C.entity_gatekeeper("王婉諭批評普發2萬", "王婉諭批評普發2萬"), \
+        "同一實體應該通過門控"
+
     print("ALL PASS — 無回覆文章不會再變成查核判定")
 
 
