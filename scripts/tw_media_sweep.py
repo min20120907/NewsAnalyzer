@@ -31,10 +31,15 @@ def fetch(cat_key, q, n):
     for it in root.iterfind(".//item"):
         t = (it.findtext("title") or "").strip()
         link = (it.findtext("link") or "").strip()
-        # Google News 標題尾綴是 "| 來源"，取出比對白名單
+        # 2026-10-01：<source url> 才是真媒體網域；<link> 是 news.google.com 轉址。
+        # 送轉址給 /judge 會讓 domain 指標全部吃預設分（實測 48 則裡 22 則 domain
+        # <25，CNA/自由時報/UDN 這些白名單媒體跟假新聞站拿一樣分）。
+        src_el = it.find("source")
+        real = (src_el.get("url") or "").strip() if src_el is not None else ""
         src = t.rsplit("|", 1)[-1].strip() if "|" in t else ""
         if any(d.split(".")[0] in src.lower() or src.lower() in d for d in DOMAINS):
-            out.append({"title": t, "url": link, "cat": cat_key, "outlet": src})
+            out.append({"title": t, "url": real or link, "cat": cat_key,
+                        "outlet": src, "rss_link": link})
         if len(out) >= n:
             break
     return out
@@ -68,11 +73,12 @@ if __name__ == "__main__":
     items = []
     for k in cats:
         items += fetch(k, CATS[k], n)
-    # 去重
+    # 去重：2026-10-01 改用標題（url 現在是真網域，同一則新聞不同媒體轉載會重複）
     seen, uniq = set(), []
     for it in items:
-        if it["url"] not in seen:
-            seen.add(it["url"]); uniq.append(it)
+        k = it["title"].split("|")[0].split(" - ")[0].strip()
+        if k not in seen:
+            seen.add(k); uniq.append(it)
     print(f"[sweep] {len(uniq)} 則 (每類別 {n} 筆)", flush=True)
     ok = 0
     with ThreadPoolExecutor(max_workers=5) as ex:

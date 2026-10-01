@@ -851,7 +851,17 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         "關鍵評論": "thenewslens.com", "科技新報": "technews.tw", "TechNews": "technews.tw",
         "鉅亨網": "cnyes.com", "Yahoo": "tw.news.yahoo.com",
         "巴哈姆特": "gamer.com.tw", "GNN": "gamer.com.tw",
-        "PChome": "pchome.com.tw", "遠見": "gvm.com.tw"
+        "PChome": "pchome.com.tw", "遠見": "gvm.com.tw",
+        # 2026-10-01：48 則主流媒體掃描實測補齊（缺這些 → domain 拿不到真網域，
+        # 全部吃預設 15 分，白名單的優質媒體跟黑名單的假新聞站拿到一樣分）。
+        "Newtalk": "newtalk.tw", "台灣新聞雲": "tnews.com.tw",
+        "匯流": "houtong.com", "蕃新聞": "fnn.com.tw",
+        "工商時報": "ctwant.com", "中國評論": "cri.com.tw",
+        "娛樂星聞": "star.stock.yahoo.com", "今周刊": "todaynews.com",
+        "商傳媒": "businessweekly.com.tw", "台灣華報": "taiwan-hwa.net",
+        "世界新聞網": "worldjournal.com", "旺得富": "wdfm.com.tw",
+        "放言": "fount.asia", "TechNews": "technews.tw",
+        "FTNN": "ftnn.com", "Verse": "verse.town", "7Car": "7car.com.tw",
     }
 
     eval_url = target_url or url
