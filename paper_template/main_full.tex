@@ -220,42 +220,8 @@ A single similarity threshold is the obvious way to turn a vector index into a v
 
 \begin{figure}[!htbp]
 \centering
-\begin{tikzpicture}[
-  x=0.021cm, y=2.6cm,
-  hardbar/.style={draw=red!60!black, fill=red!35, line width=0.3pt},
-  softbar/.style={draw=orange!65!black, fill=orange!28, line width=0.3pt},
-  missbar/.style={draw=gray!75, fill=gray!18, line width=0.3pt},
-  ax/.style={-{Stealth[length=1.5mm]}, thin, draw=black!70},
-  lbl/.style={font=\tiny, fill=white, inner sep=1.2pt}
-]
-  \draw[ax] (0,0) -- (48.5,0) node[right, font=\tiny] {};
-  \draw[ax] (0,0) -- (0,0.30) node[above, font=\tiny] {$\max_i\mathrm{sim}$};
-  \node[font=\tiny, anchor=north] at (24,-0.012) {47 Taiwanese news reports, sorted by best match (descending)};
-    \foreach \x/\y/\st in {1/0.790/hardbar,2/0.777/hardbar,3/0.754/hardbar,4/0.740/hardbar,5/0.730/hardbar,6/0.704/softbar,7/0.702/softbar,8/0.699/softbar,9/0.697/softbar,10/0.692/softbar} {
-    \fill[\st] (\x,0) rectangle ++(0.70,\y);
-  }
-  \foreach \x/\y/\st in {11/0.685/softbar,12/0.684/softbar,13/0.676/softbar,14/0.674/softbar,15/0.673/softbar,16/0.673/softbar,17/0.672/softbar,18/0.669/softbar,19/0.666/softbar,20/0.659/softbar} {
-    \fill[\st] (\x,0) rectangle ++(0.70,\y);
-  }
-  \foreach \x/\y/\st in {21/0.652/softbar,22/0.651/softbar,23/0.642/softbar,24/0.636/softbar,25/0.633/softbar,26/0.632/softbar,27/0.628/softbar,28/0.621/softbar,29/0.618/softbar,30/0.616/softbar} {
-    \fill[\st] (\x,0) rectangle ++(0.70,\y);
-  }
-  \foreach \x/\y/\st in {31/0.610/softbar,32/0.607/softbar,33/0.604/softbar,34/0.597/softbar,35/0.592/softbar,36/0.583/softbar,37/0.581/softbar,38/0.581/softbar,39/0.575/softbar,40/0.568/softbar} {
-    \fill[\st] (\x,0) rectangle ++(0.70,\y);
-  }
-  \foreach \x/\y/\st in {41/0.567/softbar,42/0.567/softbar,43/0.562/softbar,44/0.562/softbar,45/0.548/softbar,46/0.457/softbar,47/0.390/missbar} {
-    \fill[\st] (\x,0) rectangle ++(0.70,\y);
-  }
-  \draw[red!70!black, thick, dashed] (0,0.72) -- (48.5,0.72);
-  \node[lbl, anchor=east] at (0,0.72) {\scriptsize $0.72$};
-  \node[lbl, anchor=west] at (1.2,0.745) {\scriptsize hard band: 5 queries};
-  \draw[orange!80!black, thick, dashed] (0,0.45) -- (48.5,0.45);
-  \node[lbl, anchor=east] at (0,0.45) {\scriptsize $0.45$};
-  \node[lbl, anchor=west] at (1.2,0.475) {\scriptsize soft band: 41 queries};
-  \node[lbl, anchor=north] at (47,0.39) {\scriptsize $0.39$};
-  \node[font=\tiny, anchor=north] at (24,-0.005) {47 Taiwanese news reports, sorted by best match (descending)};
-\end{tikzpicture}
-\caption{Empirical motivation for the two-stage design. Each bar is the maximum cosine similarity between one real Taiwanese news report and a $2{,}493$-record Cofacts pool (all $47$ bars are measured values, not interpolations). Only $5$ queries clear the hard threshold $\theta_{\mathrm{sim}}=0.72$; $41$ land in $[0.45, 0.72)$ and $1$ falls to $0.39$. The median gap between the best and the fifth-best candidate is $0.060$---a tenth of the band's width---so the similarity score carries almost no information about which candidate is correct. That is why the band is delegated to the LLM as a relevance question rather than resolved by a threshold.}
+\includegraphics[width=\textwidth]{fig_softband.png}
+\caption{Empirical motivation for the two-stage design. Each bar is the maximum cosine similarity between one real Taiwanese news report and a $2{,}493$-record Cofacts pool; all $47$ bars are measured values, not interpolations. Only $5$ queries clear the hard threshold $\theta_{\mathrm{sim}}=0.72$; $41$ land in $[0.45, 0.72)$ and $1$ falls to $0.39$. The median gap between the best and the fifth-best candidate is $0.060$---a tenth of the band's width---so the similarity score carries almost no information about which candidate is correct. That is why the band is delegated to the LLM as a relevance question rather than resolved by a threshold.}
 \label{fig:softband}
 \end{figure}
 
