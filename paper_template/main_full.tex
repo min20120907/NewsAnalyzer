@@ -175,7 +175,7 @@ The main contributions of this work are:
   \item \textbf{Live-Domain False-Positive Audit}: We construct a 48-article sweep of real Taiwanese mainstream reporting and use it to expose three distinct classes of false-positive recall (promotional/OCR noise, non-committal replies, entity-only overlap) that no offline benchmark can reveal (Section~\ref{sec:audit}). Each is eliminated at its root cause rather than by threshold adjustment.
   \item \textbf{Macro Fact-Check Census and Sub-2\,ms Retrieval}: We construct an offline semantic index over 2,292 IFCN-verified claims from the localized Cofacts archive, achieving 95.3\% selective accuracy ($F_1 = 0.974$) at record level with a 90.8\% near-duplicate-free cluster-level lower bound, 99.9\% top-1 recall, and 1.48\,ms retrieval latency.
   \item \textbf{Consistency-Gated Local Analysis}: We show that a single sample from the auxiliary model is not reproducible---three identical requests spanned 58 points---and accept the model's structured output only when repeated sampling agrees, refusing to answer otherwise (Section~\ref{sec:consistency}). The variance was discovered by a regression harness rather than by inspection, and we report the harness because it is what makes the finding reproducible (Section~\ref{sec:exp}).
-  \item \textbf{Privacy-Preserving Edge Architecture and Baseline Comparison}: We implement an open-source browser extension and local inference server that keeps article content and analysis on-device (external lookups bounded to the title and a short prefix), benchmarking its accuracy and resilience against equal-capacity zero-shot LLMs, surface NLP classifiers, and domain heuristics. Retrieval is executed concurrently across independently-timed providers with per-provider failure isolation (Section~\ref{sec:concurrent}), and query formulation---title-and-body rather than body alone, with a lexical fallback---is specified in Section~\ref{sec:query}.
+  \item \textbf{Privacy-Preserving Edge Architecture and Baseline Comparison}: We implement an open-source browser extension and local inference server that keeps article content and analysis on-device (external lookups bounded to the title and a short prefix), benchmarking its accuracy and resilience against equal-capacity zero-shot LLMs, surface NLP classifiers, and domain heuristics. Retrieval is executed concurrently across independently-timed providers with per-provider failure isolation (Section~\ref{sec:concurrent}), and query formulation---title-and-body rather than body alone, with a lexical fallback---is specified in Section~\ref{sec:query}. Section~\ref{sec:sources} characterises the four sources and reports their measured coverage, which we find to be highly uneven: on $48$ articles of mainstream reporting the three fact-check sources returned $1$, $0$, and $0$ hits respectively, because such articles are by construction not claims that anyone submitted for checking.
 \end{itemize}
 
 %======================================================================
@@ -280,6 +280,7 @@ w_{\text{fusion}} =
 This formulation ensures that verified fact-checking records dominate the final verdict, while LLM reasoning is given primary analytical weight only when empirical evidence is absent.
 
 \subsubsection{Asymmetric Safety Anchor Clamping}
+\label{sec:clamp}
 To prevent fluent LLM hallucinations from overriding known malicious rumors, the system enforces a non-linear safety clamp:
 \begin{equation}
 S_{\text{final}} =
@@ -323,11 +324,40 @@ Retrieval dominates end-to-end latency, and the stages are mutually independent,
 \label{sec:query}
 Two formulation decisions materially affect recall, and both were made in response to measured failures rather than by design intuition.
 
-First, the system queries with the post title \emph{joined with} the article body rather than the body alone. An earlier version sent only the body, and articles that open with site boilerplate (``分享到facebook,'' newsletter prompts, or a content-farm banner) dominated the embedding: legitimate reporting matched promotional material because the boilerplate was the most semantically salient text. Joining the title dilutes that contamination and matches the document's actual subject.
+First, the system queries with the post title \emph{joined with} the article body rather than the body alone. An earlier version sent only the body, and articles that open with site boilerplate (``分享到 facebook,'' newsletter prompts, or a content-farm banner) dominated the embedding: legitimate reporting matched promotional material because the boilerplate was the most semantically salient text. Joining the title dilutes that contamination and matches the document's actual subject.
 
 Second, semantic search is backed by a lexical fallback. When dense retrieval returns fewer than two candidates above the semantic floor, the system segments the query with a Chinese word segmenter and re-issues the lookup using the extracted content terms. Purely semantic matching fails on short, name-heavy queries---a post naming a company and a date has few high-salience terms, and its embedding drifts toward whichever checked claim happens to occupy that region of the vector space. The keyword path is insensitive to that failure mode.
 
 We further require that a fact-check provider's \emph{first} returned item is semantically similar to the query before it is accepted. Several providers return a fixed ordering unrelated to relevance, and the top item of that ordering is frequently about a different subject; without this gate, a single off-topic item from a provider is indistinguishable from a genuine match.
+
+\subsection{Retrieval Sources and Their Characteristics}
+\label{sec:sources}
+NewsAnalyzer consults three fact-check sources and one news corpus in parallel. They differ in provenance, editorial model, coverage, and---critically for a retrieval system---in how they respond to a query about content they have never seen. Table~\ref{tab:sources} summarises the four, and we report their measured hit rates on the $48$-article mainstream sweep because the differences are large enough to change how the multi-source design should be interpreted.
+
+\begin{table}[!htbp]
+\caption{The four retrieval sources. Coverage is the hit rate measured on the $48$-article Taiwanese mainstream sweep (Section~\ref{sec:audit}), counting a source as having hit when it returned a non-\texttt{not\_found} verdict. The three sources are queried concurrently; the news corpus is not a fact-check authority and contributes search results rather than verdicts.}
+\label{tab:sources}
+\centering
+\small
+\begin{tabular}{p{2.05cm}p{3.0cm}p{2.0cm}cc}
+\toprule
+\textbf{Source} & \textbf{Provenance and model} & \textbf{Query interface} & \textbf{Hits} & \textbf{Lat.} \\
+\midrule
+Cofacts & g0v collaborative wiki; volunteer claims with replies, cross-referenced to IFCN signatory organizations & GraphQL \texttt{moreLikeThis} + local SBERT index over $2{,}292$ claims & 1/47 & 1.60\,s \\
+Google Fact Check Tools & Aggregator over IFCN signatory publishers worldwide, queried by claim text & REST \texttt{claims:search} & 0/47 & $\sim$1.0\,s \\
+MyGoPen & Editorial fact-check outlet (MyGoPen) publishing in Traditional Chinese; Blogger Atom feed & Feed query + keyword fallback & 0/47 & $\sim$0.8\,s \\
+Google News RSS & News corpus, not an authority; used to locate related reporting & RSS query & n/a & 2.69\,s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Why the three sources behave so differently on mainstream reporting.}
+The low hit rates in Table~\ref{tab:sources} are not a malfunction, and reporting them without explanation would misrepresent the system. All three sources index \emph{claims that were submitted for checking}, and the $48$ articles in the sweep are ordinary news reports rather than circulating rumours. A mainstream article about new vehicle registrations, a government budget, or a diplomatic banquet has, almost by construction, never been submitted to a fact-check organisation---there is no claim to check. The one Cofacts hit in the sweep is consistent with this: it is the single article that reports a circulating health claim rather than routine news.
+
+The three sources also differ in what they are good for once a claim \emph{is} circulating. Cofacts is the only source with a Traditional Chinese volunteer corpus dense enough to produce non-trivial recall, and it is the source that carries the bulk of the system's evidence; its 2,292-claim local index is what makes the sub-$2$\,ms retrieval path possible at all. Google Fact Check Tools is an aggregator with broad international coverage but minimal Traditional Chinese content, and returned nothing for every sweep article. MyGoPen is the strongest editorial source in the language and matters disproportionately for health and medicine claims, but it published none of the topics the sweep covered. The value of running all three is therefore not redundancy on any single query; it is coverage across claim types, and the system's behaviour on a health rumour---where Cofacts and MyGoPen overlap---is where multi-source corroboration actually operates.
+
+\paragraph{Design consequences.}
+Three implementation decisions follow directly from these characteristics, and each is visible in the code rather than in configuration. First, because no single source is reliable, the scoring layer treats a verdict as requiring corroboration: the asymmetric clamp of Section~\ref{sec:clamp} applies only when at least one source returns substantive reasoning, and a bare verdict with an empty reason field is discarded. The $48$-article audit in Section~\ref{sec:audit} traced two separate defects to this---a reply with no reasoning was treated as a verification, and a hedge-only reply was counted because of its length. Second, because Cofacts is the workhorse, its response is the only one cached in the local SBERT index; the other two are queried live, which is why the fact-check stage is bounded by network time rather than the $1.48$\,ms local path. Third, because a source that has not seen the claim returns \texttt{not\_found} rather than an error, the pipeline treats absence as uninformative rather than negative---a distinction that Section~\ref{sec:openworld} shows is the difference between abstaining and falsely condemning contemporary content.
 
 %======================================================================
 % 5 EXPERIMENTS AND EVALUATION
