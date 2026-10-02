@@ -61,6 +61,11 @@ National Chengchi University, Taipei, Taiwan \\
 \renewcommand{\bottomfraction}{0.75}
 \renewcommand{\textfraction}{0.07}
 \renewcommand{\floatpagefraction}{0.80}
+% 消除 justified text 的 overfull hbox：TeX 預設只允許有限的空白拉伸，
+% 遇到不可斷的行（例如 \texttt{claims:search} 或 em-dash 前）就溢出。
+% emergencystretch 給它額外的伸縮空間，比手動改句子或縮小字型乾淨。
+\setlength{\emergencystretch}{1.2em}
+
 \setcounter{topnumber}{3}
 \setcounter{bottomnumber}{2}
 \setcounter{totalnumber}{5}
@@ -282,12 +287,13 @@ This formulation ensures that verified fact-checking records dominate the final 
 \subsubsection{Asymmetric Safety Anchor Clamping}
 \label{sec:clamp}
 To prevent fluent LLM hallucinations from overriding known malicious rumors, the system enforces a non-linear safety clamp:
+where $F = \{\texttt{inaccurate}, \texttt{false}\}$ is the set of statuses denoting a refuted claim and $s$ is the retrieval similarity:
 \begin{equation}
 S_{\text{final}} =
 \begin{cases}
-\min(S_{\text{fused}}, 25.0), & \text{if status } \in \{\texttt{inaccurate}, \texttt{false}\}, \text{ sim} \ge 0.85 \\
-\min(S_{\text{fused}}, 50.0), & \text{if status } \in \{\texttt{inaccurate}, \texttt{false}\}, 0.72 \le \text{sim} < 0.85 \\
-\min(S_{\text{fused}}, 55.0), & \text{if status } \in \{\texttt{partial}\} \\
+\min(S_{\text{fused}}, 25.0), & F \;\wedge\; s \ge 0.85 \\
+\min(S_{\text{fused}}, 50.0), & F \;\wedge\; 0.72 \le s < 0.85 \\
+\min(S_{\text{fused}}, 55.0), & \text{status} \in \{\texttt{partial}\} \\
 S_{\text{fused}}, & \text{otherwise}
 \end{cases}
 \end{equation}
@@ -344,7 +350,7 @@ NewsAnalyzer consults three fact-check sources and one news corpus in parallel. 
 \textbf{Source} & \textbf{Provenance and model} & \textbf{Query interface} & \textbf{Hits} & \textbf{Lat.} \\
 \midrule
 Cofacts & g0v collaborative wiki; volunteer claims with replies, cross-referenced to IFCN signatory organizations & GraphQL \texttt{moreLikeThis} + local SBERT index over $2{,}292$ claims & 1/47 & 1.60\,s \\
-Google Fact Check Tools & Aggregator over IFCN signatory publishers worldwide, queried by claim text & REST \texttt{claims:search} & 0/47 & $\sim$1.0\,s \\
+Google Fact Check Tools & Aggregator over IFCN signatory publishers worldwide, queried by claim text & REST \texttt{claims\allowbreak search} & 0/47 & $\sim$1.0\,s \\
 MyGoPen & Editorial fact-check outlet (MyGoPen) publishing in Traditional Chinese; Blogger Atom feed & Feed query + keyword fallback & 0/47 & $\sim$0.8\,s \\
 Google News RSS & News corpus, not an authority; used to locate related reporting & RSS query & n/a & 2.69\,s \\
 \bottomrule
@@ -372,7 +378,7 @@ The sources in Table~\ref{tab:sources} are queried over the network and are reac
 \toprule
 \textbf{Host} & \textbf{Organisation and role} & \textbf{Feed} & \textbf{In blk.} \\
 \midrule
-\texttt{tfc-taiwan.org.tw} & Taiwan FactCheck Center; IFCN signatory founded by a consortium of Taiwanese media organisations; publishes professional health and political checks & none & no \\
+\texttt{tfc-taiwan.org\allowbreak tw} & Taiwan FactCheck Center; IFCN signatory founded by a consortium of Taiwanese media organisations; publishes professional health and political checks & none & no \\
 \texttt{mygopen.com} & MyGoPen; independent editorial fact-check outlet, the strongest Traditional Chinese source on health and medicine claims & Blogger Atom & no \\
 \texttt{cofacts.tw} & Cofacts; g0v collaborative wiki, the source of the system's $2{,}292$-claim local index & GraphQL & no \\
 \texttt{cofacts.g0v.tw} & Cofacts legacy g0v host, retained because links to the earlier domain remain in circulation & GraphQL & no \\
