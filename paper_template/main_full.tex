@@ -361,13 +361,31 @@ Three implementation decisions follow directly from these characteristics, and e
 
 \subsection{Curated Fact-Check Organisation Registry}
 \label{sec:registry}
-The sources in Table~\ref{tab:sources} are queried over the network and are reachable only when they are online and indexed. Alongside them the system maintains a small curated registry of fact-check organisation hostnames, kept in a plain text file that is re-read whenever its modification time changes. The registry contains five hosts: \emph{Taiwan FactCheck Center} (\texttt{tfc-taiwan.org.tw}), an IFCN signatory established by a consortium of Taiwanese media organisations; \emph{MyGoPen} (\texttt{mygopen.com}), an independent editorial fact-check outlet; \emph{Cofacts} in both its public (\texttt{cofacts.tw}) and legacy g0v (\texttt{cofacts.g0v.tw}) forms; and \emph{Rumtoast} (\texttt{rumtoast.com}), a Taiwanese rumour-tracking project.
+The sources in Table~\ref{tab:sources} are queried over the network and are reachable only when they are online and indexed. Alongside them the system maintains a small curated registry of fact-check organisation hostnames, kept in a plain text file that is re-read whenever its modification time changes. Table~\ref{tab:registry} lists the five registered hosts.
 
-The registry is deliberately not a subscription. IFCN maintains a public list of signatory organisations, but it exposes no machine-readable feed of per-organisation claim records, so an automated mirror would have to scrape HTML and would break without notice; a hand-maintained file of five lines is both more reliable and easier to audit. We note this as a limitation of the registry rather than a design preference: the organisations listed here are the ones with public Traditional Chinese archives, and a new signatory with a usable feed would need to be added by hand.
+\begin{table}[!htbp]
+\caption{The curated fact-check organisation registry. All five hosts receive the full domain credibility score and are removed from the content-farm blocklist before it is applied. ``Machine-readable feed'' records whether the organisation exposes per-claim records in a form that could be mirrored automatically---none do, which is why the registry is maintained by hand rather than subscribed. Membership of the $96{,}991$-entry blocklist was checked against both local and remote blocklist files at the time of writing; all five are currently absent.}
+\label{tab:registry}
+\centering
+\small
+\begin{tabular}{p{2.7cm}p{5.6cm}p{1.9cm}c}
+\toprule
+\textbf{Host} & \textbf{Organisation and role} & \textbf{Feed} & \textbf{In blk.} \\
+\midrule
+\texttt{tfc-taiwan.org.tw} & Taiwan FactCheck Center; IFCN signatory founded by a consortium of Taiwanese media organisations; publishes professional health and political checks & none & no \\
+\texttt{mygopen.com} & MyGoPen; independent editorial fact-check outlet, the strongest Traditional Chinese source on health and medicine claims & Blogger Atom & no \\
+\texttt{cofacts.tw} & Cofacts; g0v collaborative wiki, the source of the system's $2{,}292$-claim local index & GraphQL & no \\
+\texttt{cofacts.g0v.tw} & Cofacts legacy g0v host, retained because links to the earlier domain remain in circulation & GraphQL & no \\
+\texttt{rumtoast.com} & Rumtoast; Taiwanese rumour-tracking project publishing curated rumour summaries & none & no \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-The registry has two distinct effects on scoring. A hostname present in it receives the full domain credibility score, on the reasoning that a page served by a fact-check organisation is a check rather than a claim. The same set is also subtracted from the content-farm blocklist before the blocklist is applied, so that an organisation which is scraped and republished by an aggressive blocklist source is not penalised for it. The precedence is deliberate and the ordering matters: the registry and the mainstream-media whitelist are removed from the blocklist first, so a false positive in an upstream blocklist cannot outrank a locally curated decision.
+The registry is deliberately not a subscription. IFCN maintains a public list of signatory organisations, but it exposes no machine-readable feed of per-organisation claim records, so an automated mirror would have to scrape HTML and would break without notice; a hand-maintained file of five lines is both more reliable and easier to audit. The two hosts that do expose a feed---MyGoPen's Atom feed and Cofacts' GraphQL endpoint---are consumed directly by the retrieval layer of Section~\ref{sec:sources} rather than through the registry, so the registry itself carries no traffic. We note the absence of automation as a limitation rather than a design preference: the organisations listed are those with public Traditional Chinese archives, and a new signatory with a usable feed would still need to be added by hand.
 
-We should be precise about the status of this second effect. None of the five registered hosts currently appears in the $96{,}991$-entry blocklist, so the subtraction is presently defensive rather than corrective. It exists because the blocklist is subscribed to third-party lists that we do not control, and a fact-check organisation's own domain can appear there through being scraped or republished; the precedence rule makes that outcome cheap to survive. The comparable case for the mainstream whitelist did occur, and is recorded in Section~\ref{sec:audit}: a legitimate news-aggregator host had been swept into the user-generated-content list, costing a real article $19$ points and crossing a rating boundary.
+The registry has two distinct effects on scoring. A hostname present in it receives the full domain credibility score, on the reasoning that a page served by a fact-check organisation is a check rather than a claim. The same set is also subtracted from the content-farm blocklist before the blocklist is applied, so that an organisation which is scraped and republished by an aggressive blocklist source is not penalised for it. The precedence is deliberate and the ordering matters: the registry and the mainstream whitelist are removed from the blocklist first, so a false positive in an upstream blocklist cannot outrank a locally curated decision.
+
+We should be precise about the status of this second effect. The ``In blk.'' column of Table~\ref{tab:registry} records that none of the five registered hosts currently appears in the blocklist, so the subtraction is presently defensive rather than corrective. It exists because the blocklist is subscribed to third-party lists that we do not control, and a fact-check organisation's own domain can appear there through being scraped or republished; the precedence rule makes that outcome cheap to survive. The comparable case for the mainstream whitelist did occur, and is recorded in Section~\ref{sec:audit}: a legitimate news-aggregator host had been swept into the user-generated-content list, costing a real article $19$ points and crossing a rating boundary.
 
 %======================================================================
 % 5 EXPERIMENTS AND EVALUATION
