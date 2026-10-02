@@ -55,6 +55,16 @@ Tamkang University, New Taipei City 25137, Taiwan \\
 National Chengchi University, Taipei, Taiwan \\
 \email{scchen@nccu.edu.tw}}
 
+% float 佈局：7 個表 + 3 個圖在 20+ 頁裡搶位置，llncs 預設的 float 比例太保守
+% 會把表推到頁頂、留下半頁空白。放寬上/下比例並允許更多 textfloat。
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.75}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.80}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{5}
+
 \begin{document}
 
 \maketitle
@@ -524,9 +534,9 @@ Table~\ref{tab:ablation} shows a clear division of labour. The safety clamp is t
 \label{sec:case}
 To demonstrate end-to-end multi-signal execution on unindexed claims, we evaluated a live content-farm article (\url{https://www.pco.tw/news/html/?276.html}) containing sensationalist health clickbait. 
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{app_parsing_result_crop.png}
+\includegraphics[width=0.88\textwidth,height=0.52\textheight,keepaspectratio]{app_parsing_result_crop.png}
 \caption{The web-based testing interface of the NewsAnalyzer backend, displaying real-time DOM parsing results, multi-signal metadata scoring, and auxiliary LLM perspective extraction directly derived from a submitted content farm URL.}
 \label{fig:app_parsing}
 \end{figure}
