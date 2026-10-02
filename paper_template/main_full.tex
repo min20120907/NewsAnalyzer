@@ -16,6 +16,7 @@
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
+\usepackage{array}
 \usepackage[expansion=false]{microtype}
 \usepackage{float}
 \usepackage{cite}
@@ -32,6 +33,12 @@
 \setCJKfamilyfont{zh}{AR PL UMing TW}
 \setCJKfamilyfont{zhb}{AR PL UMing TW}[BoldFont=AR PL UMing TW]
 \newcommand{\zh}[1]{{\CJKfamily{zh}#1}}
+% llncs 雙欄 + justified：不可斷的行需要額外伸縮空間。
+% 1.2em 是量過的折衷（0→3 個 overfull、1.2em→0），且不會把字距拉開到
+% 影響閱讀（見 commit 說明：真正的可讀性問題是表格欄內 justified，
+% 已用 raggedright 根治，那才是 underfull 的來源）。
+\setlength{\emergencystretch}{1.2em}
+
 \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
 \setlength{\floatsep}{6pt plus 2pt minus 2pt}
 \setlength{\intextsep}{6pt plus 2pt minus 2pt}
@@ -61,11 +68,6 @@ National Chengchi University, Taipei, Taiwan \\
 \renewcommand{\bottomfraction}{0.75}
 \renewcommand{\textfraction}{0.07}
 \renewcommand{\floatpagefraction}{0.80}
-% 消除 justified text 的 overfull hbox：TeX 預設只允許有限的空白拉伸，
-% 遇到不可斷的行（例如 \texttt{claims:search} 或 em-dash 前）就溢出。
-% emergencystretch 給它額外的伸縮空間，比手動改句子或縮小字型乾淨。
-\setlength{\emergencystretch}{1.2em}
-
 \setcounter{topnumber}{3}
 \setcounter{bottomnumber}{2}
 \setcounter{totalnumber}{5}
@@ -176,11 +178,11 @@ To overcome these structural limitations, we introduce \textbf{NewsAnalyzer}, a 
 
 The main contributions of this work are:
 \begin{itemize}\setlength{\itemsep}{2pt}
-  \item \textbf{Two-Stage Fact-Check Retrieval}: We show empirically that a single similarity threshold cannot separate relevant from irrelevant fact-check records in Traditional Chinese (Section~\ref{sec:two-stage}), and introduce a hard band plus an adjacent soft band escalated to the LLM as a relevance question rather than silently returned as \texttt{not\_found}. We further show that top-1 selection loses genuine matches because sibling claims in the same rumor family outrank them, motivating top-$k$ cross-confirmation with a family-delta test.
-  \item \textbf{Live-Domain False-Positive Audit}: We construct a 48-article sweep of real Taiwanese mainstream reporting and use it to expose three distinct classes of false-positive recall (promotional/OCR noise, non-committal replies, entity-only overlap) that no offline benchmark can reveal (Section~\ref{sec:audit}). Each is eliminated at its root cause rather than by threshold adjustment.
-  \item \textbf{Macro Fact-Check Census and Sub-2\,ms Retrieval}: We construct an offline semantic index over 2,292 IFCN-verified claims from the localized Cofacts archive, achieving 95.3\% selective accuracy ($F_1 = 0.974$) at record level with a 90.8\% near-duplicate-free cluster-level lower bound, 99.9\% top-1 recall, and 1.48\,ms retrieval latency.
-  \item \textbf{Consistency-Gated Local Analysis}: We show that a single sample from the auxiliary model is not reproducible---three identical requests spanned 58 points---and accept the model's structured output only when repeated sampling agrees, refusing to answer otherwise (Section~\ref{sec:consistency}). The variance was discovered by a regression harness rather than by inspection, and we report the harness because it is what makes the finding reproducible (Section~\ref{sec:exp}).
-  \item \textbf{Privacy-Preserving Edge Architecture and Baseline Comparison}: We implement an open-source browser extension and local inference server that keeps article content and analysis on-device (external lookups bounded to the title and a short prefix), benchmarking its accuracy and resilience against equal-capacity zero-shot LLMs, surface NLP classifiers, and domain heuristics. Retrieval is executed concurrently across independently-timed providers with per-provider failure isolation (Section~\ref{sec:concurrent}), and query formulation---title-and-body rather than body alone, with a lexical fallback---is specified in Section~\ref{sec:query}. Section~\ref{sec:sources} characterises the four sources and reports their measured coverage, which we find to be highly uneven: on $48$ articles of mainstream reporting the three fact-check sources returned $1$, $0$, and $0$ hits respectively, because such articles are by construction not claims that anyone submitted for checking.
+  \item \textbf{Two-Stage Fact-Check Retrieval}: A single similarity threshold cannot separate relevant from irrelevant fact-check records in Traditional Chinese; we introduce a hard band plus a soft band escalated to the LLM as a relevance question (Section~\ref{sec:two-stage}).
+  \item \textbf{Live-Domain False-Positive Audit}: A 48-article sweep of Taiwanese mainstream reporting exposes three classes of false-positive recall that no offline benchmark can reveal (Section~\ref{sec:audit}).
+  \item \textbf{Macro Fact-Check Census}: A $2{,}292$-claim local index achieving 95.3\% selective accuracy at record level and 90.8\% under near-duplicate exclusion, in 1.48\,ms.
+  \item \textbf{Consistency-Gated Local Analysis}: A single sample from the auxiliary model is not reproducible---three identical requests spanned 58 points---so its output is accepted only when repeated sampling agrees (Section~\ref{sec:consistency}).
+  \item \textbf{Privacy-Preserving Edge Architecture}: Article content and analysis stay on-device, with external lookups bounded to the title and a short prefix. The four retrieval sources and their measured coverage are characterised in Section~\ref{sec:sources}.
 \end{itemize}
 
 %======================================================================
@@ -345,7 +347,7 @@ NewsAnalyzer consults three fact-check sources and one news corpus in parallel. 
 \label{tab:sources}
 \centering
 \small
-\begin{tabular}{p{2.05cm}p{3.0cm}p{2.0cm}cc}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.05cm} >{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{2.0cm}cc}
 \toprule
 \textbf{Source} & \textbf{Provenance and model} & \textbf{Query interface} & \textbf{Hits} & \textbf{Lat.} \\
 \midrule
@@ -374,7 +376,7 @@ The sources in Table~\ref{tab:sources} are queried over the network and are reac
 \label{tab:registry}
 \centering
 \small
-\begin{tabular}{p{2.7cm}p{5.6cm}p{1.9cm}c}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}p{1.9cm}c}
 \toprule
 \textbf{Host} & \textbf{Organisation and role} & \textbf{Feed} & \textbf{In blk.} \\
 \midrule
