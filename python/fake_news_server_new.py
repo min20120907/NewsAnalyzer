@@ -769,28 +769,48 @@ def _evidence_is_unrelated(deep) -> bool:
 
 
 def deep_analyze(title: str, web_results: list, sources: list,
-                 timeout: "float | None" = None, content: str = "") -> dict:
-    """呼叫 LLM（預設 deep-proxy DeepSeek，QWEN_URL 指到 :8088 則走本機 Qwen3.8-27B）做深入分析。回傳 dict 或空 dict（失敗）。"""
+                 timeout: "float | None" = None, content: str = "",
+                 model_id: str = "") -> dict:
+    """呼叫 LLM 做深入分析。回傳 dict 或空 dict（失敗）。
+
+    model_id=None → 用既有 QWEN_URL/QWEN_MODEL（生產行為不變）。
+    model_id='openrouter/xxx' → 走 llm_registry 的該後端。
+    """
     if not REQUESTS_AVAILABLE:
         return {}
+    url, model_name, headers = QWEN_URL, QWEN_MODEL, {"Content-Type": "application/json"}
+    if model_id:
+        try:
+            import llm_registry as _reg
+            _bkey, _m, _cfg = _reg.resolve(model_id)
+            url = _cfg["base_url"]
+            model_name = _m
+            _k = _reg.api_key_for(_cfg)
+            if _k:
+                headers = {"Content-Type": "application/json",
+                           "Authorization": f"Bearer {_k}"}
+        except Exception as _e:
+            print(f"[judge] deep_analyze registry failed: {_e}", flush=True)
     prompt = _deep_analyze_build_prompt(title, web_results, sources, content=content)
     payload = {
-        "model": QWEN_MODEL,
+        "model": model_name,
         "messages": [
             {"role": "system",
-             "content": "你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字）。"},
+             "content": "你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字）。"
+                        "務必使用繁體中文撰寫所有欄位值。直接輸出 JSON，不要推理過程、不要英文。"},
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.2,
-        "max_tokens": 900,
+        # 900 對 reasoning 型模型不夠：實測 nemotron-ultra 把 3233 token 全花在
+        # 英文推理上，finish_reason=length，JSON 產出為 0。2000 是實測安全值。
+        "max_tokens": 2000,
         "stream": False,
         "response_format": {"type": "json_object"},
         "chat_template_kwargs": {"enable_thinking": False},
     }
     to = timeout or DEEP_ANALYZE_TIMEOUT
     try:
-        r = requests.post(QWEN_URL, json=payload, timeout=to,
-                          headers={"Content-Type": "application/json"})
+        r = requests.post(url, json=payload, timeout=to, headers=headers)
         r.raise_for_status()
         data = r.json()
         try:
@@ -855,7 +875,7 @@ def deep_analyze(title: str, web_results: list, sources: list,
 
 def deep_analyze_ensemble(title: str, web_results: list, sources: list,
                           samples: int = None, timeout: float = None,
-                          content: str = "") -> dict:
+                          content: str = "", model_id: str = "") -> dict:
     """多次取樣本機 LLM 以降低 7B 模型分數抖動；並回傳 std / 樣本數供前端說明。
     並發呼叫（ThreadPoolExecutor）控制總延遲約等於單次。
     註：27B 單次即穩定，預設單樣本（:8088 單槽下多樣本會互相排隊超時）。"""
@@ -869,14 +889,24 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
     # 排隊感知：只在後端是 :8088（單槽，常被 Hermes 長上下文佔用 100-330s）時才檢查；
     # deep-proxy（DeepSeek Web）走雲端排隊，不適用此邏輯。
     # 硬等只會吃滿逾時後拿到空結果 → 前端「沒有 qwen 回覆」。
-    if "8088" in QWEN_URL:
+    # 2026-10-02：model_id 指定雲端模型時，queue-skip 的對象是實際呼叫的後端，
+    # 不是 QWEN_URL（否則選 OpenRouter 也會被本機 :8088 的忙碌誤擋）。
+    _skip_url = QWEN_URL
+    if model_id:
+        try:
+            import llm_registry as _reg
+            _skip_url = _reg.resolve(model_id)[2]["base_url"]
+        except Exception:
+            pass
+    if "8088" in _skip_url:
         eta = qwen_queue_eta()
         if eta > QWEN_BUSY_ETA_SKIP:
             print(f"[judge] deep_analyze skipped: :8088 忙碌中 (queue eta≈{eta:.0f}s)", flush=True)
             return {"skipped": "qwen_busy", "queue_eta_s": round(eta, 1)}
 
     def _one():
-        return deep_analyze(title, web_results, sources, timeout=to, content=content)
+        return deep_analyze(title, web_results, sources, timeout=to, content=content,
+                            model_id=model_id)
 
     results = []
     if n == 1:
@@ -965,11 +995,12 @@ def _samples_for(mode: str) -> int:
     return 1 if mode == "fast" else int(os.environ.get("DEEP_ANALYZE_SAMPLES", "3"))
 
 
-def _score_single(title: str, url: str, content: str, refs: List[str], publish_date=None, target_url: str = None, mode: str = "fast") -> Dict:
+def _score_single(title: str, url: str, content: str, refs: List[str], publish_date=None, target_url: str = None, mode: str = "fast", llm_model: str = "") -> Dict:
     """Return full metric dict for one article (fast, GPU‑ready).
 
     mode: "fast"（n=1，約 12s）或 "deep"（n=3 跨次一致性，約 40s）。
     2026-10-01：預設 fast。deep 換掉 evidence_state 的整段擺動。
+    llm_model: 2026-10-02，'backend/model'，空字串＝沿用 QWEN_URL（行為不變）。
     """
     res: Dict[str, Dict] = {}
     total = 0.0; avail = sum(DEFAULT_WEIGHTS.values())
@@ -1203,7 +1234,8 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         try:
             _t = time.perf_counter()
             deep = deep_analyze_ensemble(_title_clean or content[:60], web_results, sources,
-                                         content=content, samples=n_samples)
+                                         content=content, samples=n_samples,
+                                         model_id=llm_model)
             timings["deep_analyze"] = round((time.perf_counter() - _t) * 1000, 1)
         except Exception as _e:
             print(f"[judge] deep_analyze failed: {_e}", flush=True)
@@ -1408,14 +1440,14 @@ def analyze_batch_article_data(
 # 7. Existing single‑article wrapper & Flask API (minimal changes)
 # ---------------------------------------------------------------
 
-def analyze_article_data(title: str = "", url: str = "", content: str = "", publish_date=None, target_url: str = None, mode: str = "fast", **_) -> Dict:
+def analyze_article_data(title: str = "", url: str = "", content: str = "", publish_date=None, target_url: str = None, mode: str = "fast", llm_model: str = "", **_) -> Dict:
     if not content:
         raise ValueError("content required for single analysis")
     if not url:
         url = "https://unknown"
     return _score_single(title or "N/A", url, content, [title, content],
                          publish_date=publish_date, target_url=target_url,
-                         mode=mode)
+                         mode=mode, llm_model=llm_model)
 
 # --------------------------- Flask -----------------------------
 app = Flask(__name__)
@@ -1823,6 +1855,37 @@ def index():
             return make_response(f.read())
     return make_response("Web UI not found. Expected at " + html_path, 404)
 
+@app.route("/models", methods=["GET"])
+def list_models():
+    """前端下拉選單的資料來源。2026-10-02。
+
+    回 llm_registry 的完整目錄（含停用項，前端自行顯示標記）。
+    探測狀態若已有 model_probe.json 就附上（前端灰掉掛掉的模型）。
+    """
+    try:
+        import llm_registry as _reg
+    except Exception as e:
+        return {"error": f"registry unavailable: {e}"}, 500
+    items = _reg.model_catalog(include_disabled=True)
+    probe_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "..", "data", "eval", "model_probe.json")
+    probe = {}
+    try:
+        if os.path.exists(probe_path):
+            with open(probe_path, encoding="utf-8") as f:
+                for r in json.load(f):
+                    probe[r["model"]] = r
+    except Exception:
+        pass
+    for it in items:
+        p = probe.get(it["id"])
+        if p:
+            it["probe_ok"] = bool(p.get("ok"))
+            it["probe_note"] = p.get("note")
+    return {"models": items, "default": _reg.default_backend(),
+            "probed_at": os.path.getmtime(probe_path) if os.path.exists(probe_path) else None}
+
+
 @app.route("/judge", methods=["POST"])
 def judge_news():
     load_domain_lists()  # 名單檔變動時免重啟重載（mtime 檢查，約毫秒級）
@@ -1886,9 +1949,30 @@ def judge_news():
 
     # 2026-10-01：mode=fast（預設，n=1 約 12s）| deep（n=3 跨次一致性，約 40s）
     mode = data.get("mode") or "fast"
+    # 2026-10-02：前端選單傳 'backend/model'，空字串＝沿用 QWEN_URL（行為不變）
+    llm_model = data.get("llm_model") or ""
     score = analyze_article_data(title=title, url=url, content=content,
                                  publish_date=extracted.get("publish_date"),
-                                 target_url=extracted.get("source"), mode=mode)
+                                 target_url=extracted.get("source"), mode=mode,
+                                 llm_model=llm_model)
+    # 2026-10-02：llm_model='consensus' → 多模型共識投票取代單一 deep 分析。
+    # 分歧時 abstain（不硬選），分歧度一起回前端。
+    if llm_model == "consensus":
+        try:
+            import llm_ensemble as _ens
+            wr = score.get("web_results") or []
+            src = score.get("sources") or []
+            cons = _ens.consensus_score(title or content[:60], wr, src, content)
+            da = score.get("deep_analysis") or {}
+            da.update({
+                "consensus": cons,
+                "model": f"共識×{len(cons.get('details') or [])}",
+                "credibility_score": cons.get("consensus_score"),
+                "abstain": bool(cons.get("abstained")),
+            })
+            score["deep_analysis"] = da
+        except Exception as _e:
+            print(f"[judge] consensus failed: {_e}", flush=True)
     timings = dict(score.get("timings") or {})
     if extract_ms is not None:
         timings["extract"] = extract_ms

@@ -1,0 +1,86 @@
+[
+ {
+  "model": "antigravity/claude-opus-4-6-thinking",
+  "ok": true,
+  "lat_s": 3.7,
+  "note": "中央氣象局"
+ },
+ {
+  "model": "antigravity/claude-sonnet-4-6",
+  "ok": true,
+  "lat_s": 1.2,
+  "note": "中央氣象局"
+ },
+ {
+  "model": "antigravity/gemini-3.1-pro-high",
+  "ok": false,
+  "lat_s": 24.0,
+  "note": "HTTP 400: {\"error\":{\"type\":\"upstream_error\",\"message\":\"antigravity upstream error (400). Body: {\\n  \\\"error\\\": {\\n    \\\""
+ },
+ {
+  "model": "antigravity/gemini-3.8-flash-high",
+  "ok": false,
+  "lat_s": 33.1,
+  "note": "HTTP 429: {\"error\":{\"type\":\"upstream_error\",\"message\":\"Antigravity resource exhausted (temporary). Quota may still be av"
+ },
+ {
+  "model": "antigravity/gemini-3.8-flash-medium",
+  "ok": false,
+  "lat_s": 11.8,
+  "note": "HTTP 429: {\"error\":{\"type\":\"upstream_error\",\"message\":\"Antigravity resource exhausted (temporary). Quota may still be av"
+ },
+ {
+  "model": "deepproxy/deepseek-chat",
+  "ok": false,
+  "lat_s": 0.2,
+  "note": "HTTP 502: {\"error\":{\"message\":\"failed to reach DeepSeek: create chat session: create_session error code=40003 biz_code=0"
+ },
+ {
+  "model": "openrouter/apodex/apodex-1.1-mini:free",
+  "ok": false,
+  "lat_s": 2.9,
+  "note": "content 空 (finish=length)"
+ },
+ {
+  "model": "openrouter/dots-studio/dots-3-note-preview:free",
+  "ok": true,
+  "lat_s": 3.1,
+  "note": "中央气象局。"
+ },
+ {
+  "model": "openrouter/google/gemma-4-31b-it:free",
+  "ok": false,
+  "lat_s": 0.8,
+  "note": "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"google/gemma-4-31b-it:free is temp"
+ },
+ {
+  "model": "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+  "ok": true,
+  "lat_s": 4.7,
+  "note": "中央氣象局"
+ },
+ {
+  "model": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+  "ok": true,
+  "lat_s": 2.2,
+  "note": "中央氣象局"
+ },
+ {
+  "model": "openrouter/poolside/laguna-s-2.1:free",
+  "ok": false,
+  "lat_s": 0.8,
+  "note": "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"poolside/laguna-s-2.1:free is temp"
+ },
+ {
+  "model": "openrouter/qwen/qwen3.8-27b:free",
+  "ok": true,
+  "lat_s": 3.7,
+  "note": "中央氣象局"
+ },
+ {
+  "model": "openrouter/thinkingmachines/inkling:free",
+  "ok": false,
+  "lat_s": 0.5,
+  "note": "HTTP 403: {\"error\":{\"message\":\"thinkingmachines/inkling:free is only available on agentic harnesses. Try plugging it int"
+ }
+]

@@ -1,0 +1,255 @@
+[
+ {
+  "model": "antigravity/claude-sonnet-4-6",
+  "fake": {
+   "cs": 42,
+   "lat_s": 17.8,
+   "state": "unrelated_evidence",
+   "abstain": true,
+   "han": 580,
+   "len": 689,
+   "sample": "本主張的核心事實——氣象署針對北部發布紫爆等級300毫米豪大雨特報——在Cofacts查核資料庫中無對應紀錄，而網路搜尋所找到的氣象署特報內容顯示雨勢較強區域為南部及東半部，與主張描述的地理範圍明顯不符。主張將空氣品質指標術語「紫爆」挪用於"
+  },
+  "real": {
+   "cs": 60,
+   "lat_s": 58.8,
+   "state": "no_evidence",
+   "abstain": true,
+   "han": 504,
+   "len": 602,
+   "sample": "Cofacts查核資料庫對本則主張回傳無證據，外部查核機構尚未就此事件留有判定紀錄，故須棄判（abstain）。然而，內文語氣平實、具名氣象署為來源、以地區與時間節點限定說法，符合往高分走的內文訊號；搜尋摘要亦顯示氣象署確有對多縣市發布大雨"
+  },
+  "usable": true,
+  "separation": 18
+ },
+ {
+  "model": "antigravity/claude-opus-4-6-thinking",
+  "fake": {
+   "cs": 47,
+   "lat_s": 60.7,
+   "state": "no_evidence",
+   "abstain": true,
+   "han": 386,
+   "len": 445,
+   "sample": "本主張在查核平台與網路搜尋中均無對應的氣象署北部紫爆大雨特報公告，搜尋到的實際特報區域為南部與東半部，與主張所稱北部不符。內文將空氣品質用語「紫爆」錯誤嫁接至降雨特報，並以「緊急通知」「務必留在室內」等急迫語氣要求讀者配合行動，符合典型謠言"
+  },
+  "real": {
+   "cs": 62,
+   "lat_s": 17.7,
+   "state": "no_evidence",
+   "abstain": true,
+   "han": 546,
+   "len": 627,
+   "sample": "本則新聞具備具名來源（氣象署）、具體地區與時間，語氣平實且無情緒煽動或急迫呼籲，屬於常見氣象類新聞格式。網路搜尋結果顯示氣象署確實近期有對多縣市發布大雨特報，間接支持其描述的天氣型態存在。然而，Cofacts查核平台無相關紀錄，且目前未取得"
+  },
+  "usable": true,
+  "separation": 15
+ },
+ {
+  "model": "antigravity/gemini-3.8-flash-high",
+  "fake": {
+   "cs": null,
+   "lat_s": 32.8,
+   "state": null,
+   "abstain": false,
+   "han": 0,
+   "len": 3,
+   "sample": ""
+  },
+  "real": {
+   "cs": null,
+   "lat_s": 0.0,
+   "state": null,
+   "abstain": false,
+   "han": 0,
+   "len": 3,
+   "sample": ""
+  },
+  "usable": false,
+  "separation": null
+ },
+ {
+  "model": "antigravity/gemini-3.8-flash-medium",
+  "fake": {
+   "cs": null,
+   "lat_s": 49.8,
+   "state": null,
+   "abstain": false,
+   "han": 0,
+   "len": 3,
+   "sample": ""
+  },
+  "real": {
+   "cs": null,
+   "lat_s": 0.0,
+   "state": null,
+   "abstain": false,
+   "han": 0,
+   "len": 3,
+   "sample": ""
+  },
+  "usable": false,
+  "separation": null
+ },
+ {
+  "model": "antigravity/gemini-3.1-pro-high",
+  "fake": {
+   "cs": null,
+   "lat_s": 1.0,
+   "state": null,
+   "abstain": false,
+   "han": 0,
+   "len": 3,
+   "sample": ""
+  },
+  "real": {
+   "cs": null,
+   "lat_s": 1.0,
+   "state": null,
+   "abstain": false,
+   "han": 0,
+   "len": 3,
+   "sample": ""
+  },
+  "usable": false,
+  "separation": null
+ },
+ {
+  "model": "openrouter/qwen/qwen3.8-27b:free",
+  "fake": {
+   "cs": 0,
+   "lat_s": 43.0,
+   "state": "",
+   "abstain": false,
+   "han": 0,
+   "len": 5,
+   "sample": ""
+  },
+  "real": {
+   "cs": 0,
+   "lat_s": 41.4,
+   "state": "",
+   "abstain": false,
+   "han": 0,
+   "len": 5,
+   "sample": ""
+  },
+  "usable": false,
+  "separation": 0
+ },
+ {
+  "model": "openrouter/google/gemma-4-31b-it:free",
+  "fake": {
+   "cs": null,
+   "lat_s": 0.8,
+   "state": null,
+   "abstain": false,
+   "han": 0,
+   "len": 3,
+   "sample": ""
+  },
+  "real": {
+   "cs": null,
+   "lat_s": 0.9,
+   "state": null,
+   "abstain": false,
+   "han": 0,
+   "len": 3,
+   "sample": ""
+  },
+  "usable": false,
+  "separation": null
+ },
+ {
+  "model": "openrouter/dots-studio/dots-3-note-preview:free",
+  "fake": {
+   "cs": 0,
+   "lat_s": 23.9,
+   "state": "",
+   "abstain": false,
+   "han": 0,
+   "len": 5,
+   "sample": ""
+  },
+  "real": {
+   "cs": 0,
+   "lat_s": 24.0,
+   "state": "",
+   "abstain": false,
+   "han": 0,
+   "len": 5,
+   "sample": ""
+  },
+  "usable": false,
+  "separation": 0
+ },
+ {
+  "model": "openrouter/apodex/apodex-1.1-mini:free",
+  "fake": {
+   "cs": 0,
+   "lat_s": 13.0,
+   "state": "",
+   "abstain": false,
+   "han": 0,
+   "len": 5,
+   "sample": ""
+  },
+  "real": {
+   "cs": 0,
+   "lat_s": 12.2,
+   "state": "",
+   "abstain": false,
+   "han": 0,
+   "len": 5,
+   "sample": ""
+  },
+  "usable": false,
+  "separation": 0
+ },
+ {
+  "model": "openrouter/poolside/laguna-s-2.1:free",
+  "fake": {
+   "cs": null,
+   "lat_s": 0.8,
+   "state": null,
+   "abstain": false,
+   "han": 0,
+   "len": 3,
+   "sample": ""
+  },
+  "real": {
+   "cs": 55,
+   "lat_s": 9.0,
+   "state": "no_evidence",
+   "abstain": true,
+   "han": 218,
+   "len": 248,
+   "sample": "本次查核未取得氣象署回覆原文或學校停班公告，僅見大雨特報摘要，故無法確認停班課與雨勢趨緩之對應關係。內文陳述可查證之天氣現象，但缺少具名官方出處與日期佐證。"
+  },
+  "usable": false,
+  "separation": null
+ },
+ {
+  "model": "deepproxy/deepseek-chat",
+  "fake": {
+   "cs": null,
+   "lat_s": 0.4,
+   "state": null,
+   "abstain": false,
+   "han": 0,
+   "len": 3,
+   "sample": ""
+  },
+  "real": {
+   "cs": null,
+   "lat_s": 0.1,
+   "state": null,
+   "abstain": false,
+   "han": 0,
+   "len": 3,
+   "sample": ""
+  },
+  "usable": false,
+  "separation": null
+ }
+]

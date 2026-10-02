@@ -2,6 +2,9 @@
 (function() {
     'use strict';
 
+    // 2026-10-02：頁面載入時就拉模型目錄，讓第一次點按鈕就有完整選單
+    document.addEventListener('DOMContentLoaded', () => preloadModelCatalog());
+
     // --- !!! WARNINGS !!! ---
     // 1. Selectors WILL break. F12 inspection and updates are MANDATORY.
     // 2. Requires Python server v1.4+ (accepting POST) running at the specified IP/Port.
@@ -31,6 +34,10 @@ const SELECTOR_BUTTON_TARGET_AREA_ALT = 'div[data-ad-rendering-role="story_messa
     const SERVER_IP = "127.0.0.1"; // <--- MODIFIED IP ADDRESS
     const SERVER_PORT = "5000";
     const SERVER_ENDPOINT = `http://${SERVER_IP}:${SERVER_PORT}/judge`;
+    const MODELS_ENDPOINT = `http://${SERVER_IP}:${SERVER_PORT}/models`;
+    // 2026-10-02：選過的模型記在 localStorage，下次沿用（免每次重選）
+    const MODEL_STORE_KEY = 'naSelectedLLMModel';
+    let _modelCatalog = null;   // 快取 /models 回應
 
     const INFO_PANEL_CLASS = 'fb-post-info-panel-server-v13r'; // Unique class
     const BUTTON_CLASS_NAME = 'custom-fb-server-score-button-v13r'; // Unique class
@@ -119,6 +126,65 @@ const SELECTOR_BUTTON_TARGET_AREA_ALT = 'div[data-ad-rendering-role="story_messa
     }
 
     /**
+     * 2026-10-02：模型選單。/models 拿目錄 → <select>。
+     * 'consensus' = 全部跑共識投票（多數決，分歧時 abstain）。
+     * 探測失敗的模型照列但標示原因，不藏起來——使用者該知道它為什麼不能用。
+     */
+    async function fetchModelCatalog() {
+        if (_modelCatalog) return _modelCatalog;
+        try {
+            const r = await fetch(MODELS_ENDPOINT);
+            _modelCatalog = await r.json();
+        } catch (e) {
+            _modelCatalog = { models: [] };
+        }
+        return _modelCatalog;
+    }
+
+    /**
+     * 背景預載模型目錄。面板開啟時通常已就緒，不阻塞請求。
+     * 來不及也無妨——選單會退化成只有「本機預設 / 共識」兩項，仍可用。
+     */
+    function preloadModelCatalog() {
+        if (!_modelCatalog) { fetchModelCatalog(); }
+    }
+
+    function buildModelSelectHtml() {
+        const saved = localStorage.getItem(MODEL_STORE_KEY) || '';
+        const opts = [
+            `<option value=""${!saved ? ' selected' : ''}>本機預設（Qwen3.8-27B）</option>`,
+            `<option value="consensus"${saved === 'consensus' ? ' selected' : ''}>🔀 全部跑（共識投票）</option>`,
+        ];
+        let byBackend = {};
+        for (const m of (_modelCatalog?.models || [])) {
+            (byBackend[m.backend] = byBackend[m.backend] || []).push(m);
+        }
+        for (const [bk, list] of Object.entries(byBackend)) {
+            const label = list[0]?.label?.split(' — ')[0] || bk;
+            opts.push(`<optgroup label="${escHtml(label)}">`);
+            for (const m of list) {
+                const bad = m.probe_ok === false;
+                const mark = bad ? ` ⚠️` : '';
+                const sel = m.id === saved ? ' selected' : '';
+                opts.push(`<option value="${escHtml(m.id)}"${sel}${bad ? ' data-bad="1"' : ''}>`
+                    + `${escHtml(m.model)}${mark}</option>`);
+            }
+            opts.push('</optgroup>');
+        }
+        return `<div style="margin:4px 0 6px;font-size:12px;color:#555;">
+            <label>AI 模型：</label><select id="na-llm-model" title="選擇評分模型">
+            ${opts.join('')}</select></div>`;
+    }
+
+    function getSelectedModel() {
+        const el = document.getElementById('na-llm-model');
+        if (!el) return '';
+        const v = el.value || '';
+        try { localStorage.setItem(MODEL_STORE_KEY, v); } catch (e) { /* 隱私模式 */ }
+        return v;
+    }
+
+    /**
      * 把 /judge 的 JSON 回應渲染成面板 HTML。
      * 重點：含「各階段耗時」（data.timings，單位 ms），可直接看出慢在哪一步。
      * 回傳 null 代表不是預期的 JSON → 呼叫端退回原樣顯示。
@@ -131,7 +197,19 @@ const SELECTOR_BUTTON_TARGET_AREA_ALT = 'div[data-ad-rendering-role="story_messa
         const srcs = (data.sources || []).map(s => `${escHtml(s.source)}：${escHtml(s.status)}`).join('、') || '—';
 
         let deep;
-        if (da.skipped) {
+        const cons = da.consensus;
+        if (cons) {
+            // 共識模式：把每個模型的票與理由列出來，讓使用者看見分歧
+            const rows = (cons.details || []).map(d => {
+                if (d.error) return `<div style="color:#888;">· ${escHtml(d.model.split('/').pop())}：${escHtml(d.error)}</div>`;
+                const b = d.bucket === 'fake' ? '🔴假' : d.bucket === 'real' ? '🟢真' : '⚪中間';
+                return `<div>· ${escHtml(d.model.split('/').pop())} → ${b} ${d.credibility_score}分</div>`;
+            }).join('');
+            const head = cons.consensus_score !== null && cons.consensus_score !== undefined
+                ? `✅ 共識 ${cons.consensus_score} 分（${escHtml(cons.reason || '')}）`
+                : `⚠️ 分歧，暫不給分（${escHtml(cons.reason || '')}）`;
+            deep = `${head}<div style="margin-top:3px;color:#444;font-size:12px;">${rows}</div>`;
+        } else if (da.skipped) {
             deep = `🟡 已跳過（${escHtml(da.skipped)}${da.queue_eta_s ? `，佇列 ETA≈${da.queue_eta_s}s` : ''}）`;
         } else if (da.credibility_score !== undefined && da.credibility_score !== null) {
             deep = `✅ AI 分數 ${escHtml(da.credibility_score)}（${escHtml(da.model || '')}${da.samples ? `，${da.samples} 次取樣` : ''}）`
@@ -209,6 +287,11 @@ const SELECTOR_BUTTON_TARGET_AREA_ALT = 'div[data-ad-rendering-role="story_messa
                             infoPanel.innerHTML = '<p style="color: red; text-align: center;">錯誤：無法提取分析所需資訊。</p>';
                             return;
                         }
+                        // 2026-10-02：模型選單插在 loader 下方，送出前讀值
+                        const sel = buildModelSelectHtml();
+                        infoPanel.insertAdjacentHTML('afterbegin', sel);
+                        dataToSend.llm_model = getSelectedModel();
+                        dataToSend.mode = 'fast';
                         const postData = JSON.stringify(dataToSend);
                         chrome.runtime.sendMessage({ type: 'na_judge', url: SERVER_ENDPOINT, body: postData }, function (res) {
                             if (!infoPanel) { return; }
