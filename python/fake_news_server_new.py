@@ -557,7 +557,36 @@ def _web_search_multi(queries: list, max_results: int = 6, ref_title: str = "") 
             print(f"[judge] web sim-filter failed: {_e}")
     print(f"[judge] web multi queries={[q[:24] for q in (queries or [])]} "
           f"total={len(merged)}", flush=True)
-    return merged[:max_results]
+    merged = merged[:max_results]
+    _attach_web_bodies(merged)
+    return merged
+
+
+def _attach_web_bodies(results: list, top_n: int = 2, min_chars: int = 120) -> None:
+    """就地為相似度最高的 top_n 筆搜尋結果抓取正文，寫入 r["body"]。
+
+    2026-10-02：web_search_client 只回 title/url/snippet，snippet 常是空或極短，
+    導致 deep_analyze 永遠看不到證據正文 —— 「查得到」與「查不到」對模型長得一樣，
+    分數沒有鑑別力。這裡重用既有的 _extract_from_url（trafilatura → newspaper3k →
+    Playwright → Selenium），只抓前 top_n 筆以控延遲。
+
+    ponytail: top_n=2 的取捨；抓全部會讓單則延遲從 ~12s 漲到 40s+。
+    若之後發現「前 2 筆都是低相關」是主要失效模式，再提高到 3 筆並加背景預抓快取。
+    """
+    if not results:
+        return
+    cands = [r for r in results if r.get("url") and r.get("body") is None][:top_n]
+    for r in cands:
+        try:
+            ex = _extract_from_url(r["url"])
+        except Exception as _e:
+            print(f"[judge] web body extract failed: {_e}")
+            continue
+        if isinstance(ex, dict):
+            txt = (ex.get("text") or ex.get("content") or "").strip()
+            if len(txt) >= min_chars:
+                r["body"] = txt[:2000]
+                print(f"[judge] web body attached len={len(r['body'])} src={r.get('source','?')}", flush=True)
 
 
 # ---------------------------------------------------------------
@@ -646,9 +675,16 @@ _DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只
 - 語氣平實、沒有急迫性、沒有情緒詞。
 - 論述有節制，會寫「可能」「估計」「截至某時」這類限定。
 
-⚠ 兩件最容易出錯的事：
+⚠ 三件最容易出錯的事：
 - 「查不到外部查核」是證據不足，不是內容可疑。分數高低要看內文自身的問題，不要因為查無就給 45。
 - 「查到了但說 NOT_RUMOR／這則確實存在」不等於內容屬實；那是弱標籤，撐不起 60 以上。
+- 🆕 2026-10-02 修正（配合計分層的 evidence-insufficient 上限錨定）：
+  當 evidence_state 屬於查不到證據的情形時，內文若宣稱了「可被即時獨立驗證的公共事實」
+  （具體機構今天宣布了什麼、具體數字、具體日期、具體人事命令、具體停班停課或警語），
+  卻沒有任何可查證出處，屬於可疑訊號，請往 45-50 走，不要給 60 以上。
+  理由：真實的公共機構公告會留下大量可追溯紀錄（新聞稿、公告編號、直播），
+  「查不到」本身就是反證。相對地，若內文只是觀點評論、產業趨勢、个人經驗或
+  查核機構本來就不會收錄的內容（小道消息、匿名爆料），查不到屬正常，維持 55-65。
 
 【評分尺度（僅 full_body_evidence 時使用，依你實際讀到的證據落點）】
 - 90 以上：查核機構明確判定屬實，且內文與主張逐項對得上。
@@ -676,15 +712,22 @@ _DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只
 
 def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
                               content: str = "", facts: "Optional[list]" = None) -> str:
-    # 網路搜尋摘要：最多取 5 筆，每筆 title + snippet 截短
+    # 2026-10-02：web 摘要原本只給 title + 120 字 snippet，LLM 永遠看不到證據正文，
+    # 於是「查得到」和「查不到」在模型眼中長得一模一樣 —— 唯一差別是引用條數，
+    # 於是輸出退化成「有幾筆結果就給幾分」，完全沒有鑑別力。
+    # 實測（同一模型、同一則假新聞）：只給 title/snippet 時 evidence_state 幾乎都是
+    # unrelated_evidence；把同一批結果的真實內文一併餵入後，模型才抓得到數字矛盾。
+    # 現在改為：優先用 body（正文），長度上限提到 400 字，足以涵蓋關鍵段落。
     lines = []
     for i, r in enumerate(web_results[:5], 1):
         t = (r.get("title") or "").strip()
-        s = (r.get("snippet") or r.get("body") or "").strip()
-        if len(s) > 120:
-            s = s[:120] + "…"
-        lines.append(f"{i}. {t} — {s}" if (t or s) else "")
-    web_summary = "\n".join(l for l in lines if l) or "（無網路搜尋結果）"
+        s = (r.get("body") or r.get("snippet") or "").strip()
+        if len(s) > 400:
+            s = s[:400] + "…"
+        if not (t or s):
+            continue
+        lines.append(f"{i}. {t}\n   {s}" if s else f"{i}. {t}")
+    web_summary = "\n".join(lines) or "（無網路搜尋結果）"
     # 查核源摘要：把機構回覆原文（reasons）一起給模型，否則它只能讀到 status 標籤，
     # 輸出就退化成「把 status 翻譯成分數」，這是分數沒有鑑別力與敘述模糊的根因。
     fc_lines = []
@@ -743,6 +786,48 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
                                     web_summary=web_summary,
                                     fc_block=fc_summary,
                                     today=_date.today().isoformat())
+
+
+# 傳言／匿名轉傳的確定性訊號。這類文本「本身」就是未經證實的內容，
+# 不能當成查核機構對本主張的「屬實」判定。
+# 2026-10-02 實測：虛構的「國防部退休金新制」命中 Cofacts 一則
+# 「台銀退休協會同仁傳的訊息，僅供參考：財政部 13% 改革方案…」
+# —— 那是匿名轉傳謠言、且講的是財政部不是國防部，Cofacts 卻標 accurate，
+# LLM 收到後判成 full_body_evidence 給 95 分，整則假新聞拿 84.2。
+_RUMOR_MARKERS = (
+    "僅供參考", "供參考", "轉傳", "轉貼", "請大家", "廣傳", "多多流傳",
+    "LINE傳", "臉書傳", "未證實", "傳聞", "據傳", "小道消息",
+    "內傳", "勿外傳", "以上僅為", "未經證實",
+)
+
+
+def _is_rumor_only_evidence(deep, sources=None) -> bool:
+    """證據正文本身是匿名轉傳／傳言 → 不可視為對本主張的屬實背書。
+
+    必須讀 `sources[].matched_text`（查核機構回覆的原文），而不是 LLM 的輸出欄位——
+    LLM 不會把「僅供參考：…」整段抄進 analysis，所以只看 deep 永遠偵測不到。
+    """
+    if not isinstance(deep, dict):
+        return False
+    if deep.get("evidence_state") != "full_body_evidence":
+        return False
+    # 證據原文才是重點：查核機構回覆的 matched_text / body
+    ev_texts = []
+    for s in (sources or []):
+        if not isinstance(s, dict):
+            continue
+        for k in ("matched_text", "body", "text", "content", "title"):
+            v = s.get(k)
+            if v:
+                ev_texts.append(str(v))
+    blob = " ".join(ev_texts) + " " + " ".join(
+        str(deep.get(k) or "") for k in
+        ("claim", "analysis", "viewpoints", "key_points", "evidence_used")
+    )
+    hard = ("僅供參考", "未證實", "未經證實", "傳聞", "據傳", "小道消息", "勿外傳", "內傳")
+    if any(m in blob for m in hard):
+        return True
+    return sum(1 for m in ("轉傳", "轉貼", "請大家", "廣傳", "多多流傳", "供參考") if m in blob) >= 2
 
 
 def _evidence_is_unrelated(deep) -> bool:
@@ -1306,13 +1391,43 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     post_fusion_score = final
     clamped = False
     clamp_reason = ""
-    if ai_cs is not None and not ai_abstain:
+    if ai_cs is not None:
         try:
             cs = float(ai_cs)
+            # 2026-10-02：證據本身是匿名轉傳／傳言時，不得按 full_body_evidence 採信。
+            _rumor_ev = _is_rumor_only_evidence(deep, sources)
+            if _rumor_ev and not ai_abstain:
+                ai_abstain = True
+                cs = min(cs, 45.0)
+                print(f"[judge] 證據為傳言／匿名轉傳，不採信為屬實背書 → 降為 abstain (cs<={cs:.0f})", flush=True)
             fc_hit = any((s.get('status') in ('hit', 'ok', 'inaccurate', 'partial'))
                          for s in (sources or []))
-            fusion_weight = 0.10 if fc_hit else 0.60
-            final = final * (1 - fusion_weight) + cs * fusion_weight
+            # 2026-10-02 修正：abstain 時也納入融合。
+            # 舊邏輯 `and not ai_abstain` 完全丟棄 abstain 分數，導致只有
+            # SBERT 情緒（15.0）+ 相似度（13.5）兩個訊號在講話，
+            # 分母卻仍含 domain 25 + fact_check 15，算出 58-68 的假高分。
+            # 實測：以假亂真的颱風新聞拿 68.2，真實颱風新聞拿 67.4 — 零鑑別力。
+            #
+            # fusion_weight 方向修正：舊邏輯查核命中給 0.10、查不到給 0.60，
+            # 等於「越沒證據越聽 AI 的」——但此時 AI 手上也沒有證據，
+            # 只是照內文語氣猜。方向應為：證據越弱，AI 話語權越低，
+            # 並在接近零證據時施加額外的上限錨定（no_evidence ≠ 真新聞）。
+            if ai_abstain:
+                # 證據不足：AI 分數已夾在 45-65，且會與情緒／相似度同向偏高，
+                # 給低話語權並壓低上限，避免「查不到」被讀成「不是假的」。
+                fusion_weight = 0.20
+                final = final * (1 - fusion_weight) + cs * fusion_weight
+                _abstain_cap = 55.0
+                _ev_label = str((deep or {}).get("evidence_state") or "unknown")
+                if final > _abstain_cap:
+                    clamped = True
+                    clamp_reason = (clamp_reason + "；" if clamp_reason else "") + (
+                        f"查核證據不足（{_ev_label}），分數僅為暫時值，"
+                        f"施加上限錨定（最高 {_abstain_cap:.0f}，不視為可信）")
+                    final = _abstain_cap
+            else:
+                fusion_weight = 0.55 if fc_hit else 0.25
+                final = final * (1 - fusion_weight) + cs * fusion_weight
             post_fusion_score = final
         except (TypeError, ValueError):
             pass
