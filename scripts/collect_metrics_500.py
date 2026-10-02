@@ -75,6 +75,10 @@ def main():
             rec["fusion_weight"] = d.get("fusion_weight")
             deep = d.get("deep_analysis") or {}
             rec["deep_cs"] = deep.get("credibility_score")
+            # 2026-10-02：abstain 的 credibility_score 已是區間值（45–65）不是固定 60，
+            # 且生產線 abstain 時 fusion_weight=0（分數不進 final）。不存 abstain 欄位的話，
+            # 日後重採會讓 component_ablation 把暫時分當真分融合，離線重算靜默失真。
+            rec["abstain"] = bool(deep.get("abstain"))
             rec["sources"] = [
                 {"source": s.get("source"), "status": s.get("status"),
                  "sim": s.get("similarity_score")} for s in (d.get("sources") or [])]

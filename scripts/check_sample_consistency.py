@@ -24,10 +24,13 @@ def agg(results):
     best = min(valid, key=lambda r: (str(r.get("evidence_state") or "") != state,
                                      abs(float(r["credibility_score"]) - avg)))
     abst = bool(best.get("abstain")) or disputed
+    # 2026-10-02：abstain 分數改為模型自評內文可信訊號的區間值（不再是寫死 60），
+    # 夾在 45–65。與 fake_news_server_new.py 的 deep_analyze_ensemble 同規則。
+    _cs = int(round(avg)) if not abst else max(45, min(65, int(round(avg))))
     return {
         "evidence_state": state,
         "abstain": abst,
-        "credibility_score": 60 if abst else int(round(avg)),
+        "credibility_score": _cs,
         "consistent": consistent, "disputed": disputed, "samples": len(valid),
     }
 
@@ -49,7 +52,16 @@ def demo():
     b = agg([r("unrelated_evidence", 60, True), r("full_body_evidence", 30),
              r("unrelated_evidence", 60, True)])
     assert b["disputed"] and b["abstain"], b
-    assert b["credibility_score"] == 60, b          # abstain 固定 60，不用平均
+    # 2026-10-02：abstain 不再是寫死 60。這個案例三個樣本是 60/30/60，
+    # avg=50 → 結果 50。舊版寫死 60 讓這條斷言「看起來對」——它是錯的斷言。
+    assert b["credibility_score"] == 50, b          # abstain 取平均並夾在 45–65
+    # 這個案例才真正驗證區間：樣本 52/70/64 → avg=62，且 70 被夾到 65
+    e1 = agg([r("no_evidence", 52, True), r("no_evidence", 70, True),
+              r("no_evidence", 64, True)])
+    assert e1["abstain"] and e1["credibility_score"] == 62, e1
+    # 單樣本超出區間要夾住（模型給 90 不能直接顯示 90）
+    assert agg([r("no_evidence", 90, True)])["credibility_score"] == 65
+    assert agg([r("no_evidence", 10, True)])["credibility_score"] == 45
     # 多數決選出 unrelated，但因為不一致仍然 abstain
     assert b["evidence_state"] == "unrelated_evidence", b
 

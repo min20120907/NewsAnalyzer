@@ -67,7 +67,10 @@ def verdict_of(rec, kept, use_clamp=True):
     den = sum(float(mets[c]["weight"]) for c in kept)
     rule = num / den * 100.0
     cs = rec.get("deep_cs")
-    if cs is not None:
+    # 2026-10-02：abstain 的 credibility_score 是暫時值（45–65 區間），生產線
+    # fusion_weight=0 不把它算進 final。離線重算必須複製同一條規則，否則新採資料
+    # 含 abstain 時會把暫時分當真分融合，與生產線不一致且不會報錯。
+    if cs is not None and not rec.get("abstain"):
         if "fact_check" in kept:
             fc_hit = any(s.get("status") in FC_HIT_STATUS
                          for s in (rec.get("sources") or []))

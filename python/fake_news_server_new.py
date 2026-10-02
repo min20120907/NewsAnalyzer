@@ -42,6 +42,7 @@ import os, re, html, json, math, traceback, time, csv, io
 from typing import List, Dict, Union, Optional
 from datetime import datetime, timedelta
 from urllib.parse import urlparse, unquote_plus, quote_plus
+from itertools import zip_longest
 
 # 把本檔案所在目錄加入 sys.path，確保 factcheck_multi / cofacts_local 可 import
 import sys as _sys
@@ -431,6 +432,42 @@ _WEB_QUERY_STOP = {"網傳", "宣稱", "真的", "請問", "消息", "影片", "
                    "熱門話題", "經濟日報", "即時", "快訊", "獨家", "CNA",
                    "Medical", "News"}
 
+# 2026-10-02：情緒／行動／催促詞。這些是謠言文體的樣貌標記，帶著它們去
+# 檢索會檢索不到「可對照的報導」——實測『對岸狠手在這裡』只回 2 筆相關
+# （kept=2 dropped=10），因為台灣媒體從不這樣寫。留下的是可查證實體
+# （台灣／澳洲／牛肉／關稅／氣象署／豪雨／300毫米），它們才是能對照的錨。
+_WEB_QUERY_NOISE = {
+    "狠手", "這裡", "對岸", "震撼", "驚人", "緊急", "通知", "警告", "紫爆",
+    "急", "快看", "趕快", "注意", "小心", "千萬", "別", "務必", "立刻",
+    "現在", "今天", "明天", "昨天", "每天", "出現", "級別", "潮席",
+    "直接", "全面", "瘋漲", "吃香", "喝采", "穩賺", "不賠", "岌岌可危",
+    "錯過", "一波", "再等", "必須", "知道", "看這裡", "一起", "來看",
+}
+
+
+def _web_query_terms(text: str, n: int = 5) -> list:
+    """jieba 關鍵詞，但排序改成「先留可查證實體」，不是出現順序。
+
+    ponytail: 只靠 _WEB_QUERY_STOP/NOISE 靜態詞表，不做詞性標註。
+    詞表補不動時看 jieba 的 tf-idf（jieba.analyse），別加新依賴。
+    """
+    try:
+        import jieba as _jb
+    except Exception:
+        return []
+    seen, kept, noisy = set(), [], []
+    for _t in _jb.cut(text or ""):
+        _t = _t.strip("，。、；：『』「」！？!?,. \t|｜-")
+        if not (2 <= len(_t) <= 8 and _t not in seen and _t not in _WEB_QUERY_STOP
+                and any("一" <= _c <= "鿿" for _c in _t)):
+            continue
+        seen.add(_t)
+        (noisy if _t in _WEB_QUERY_NOISE else kept).append(_t)
+        if len(kept) >= n:
+            break
+    # 位置不夠就拿次要詞補，但永遠排在中後段
+    return kept + noisy[:max(0, n - len(kept))]
+
 
 def _jieba_keywords(text: str, n: int = 5) -> list:
     try:
@@ -450,13 +487,23 @@ def _jieba_keywords(text: str, n: int = 5) -> list:
 
 
 def _build_web_queries(title: str, content: str) -> list:
-    """回傳 [C-query, B-query]（去重、過短捨去）。"""
+    """回傳 [去噪關鍵詞查詢, 原始關鍵詞查詢, B-query]（去重、過短捨去）。
+
+    2026-10-02：去噪版與原版並存，兩組都查、由 _web_search_multi 輪流合併。
+    實測去噪版在「對岸狠手…67%關稅」大勝（維基百科 → 真實關稅報導），
+    但在檸檬水治癌、罷免兩例反而查得更少——所以不取代原版，只並行。
+    """
     qs = []
     _title_clean = (title or "").strip()
     src = _title_clean if _title_clean not in ("", "N/A") else (content or "")[:80]
-    kw = _jieba_keywords(src + "。" + (content or "")[:300])
-    if kw:
-        qs.append(" ".join(kw))
+    blob = src + "。" + (content or "")[:300]
+    dedup = _web_query_terms(blob)
+    if dedup:
+        qs.append(" ".join(dedup))
+    # 原版順序查詢保留：它常是唯一能查到「同一則謠言的報導版」的那組
+    orig = _jieba_keywords(blob)
+    if orig and " ".join(orig) not in qs:
+        qs.append(" ".join(orig))
     core = _web_query_core(src)
     short = core.split()[0] if core.split() else core
     if short and short not in qs and len(short) >= 6:
@@ -469,7 +516,11 @@ def _build_web_queries(title: str, content: str) -> list:
 def _web_search_multi(queries: list, max_results: int = 6, ref_title: str = "") -> list:
     if not (WEB_SEARCH_AVAILABLE and _wsc is not None):
         return []
-    merged, seen = [], set()
+    # 2026-10-02：每個查詢各自取回後「輪流」合併，不照查詢順序堆疊。
+    # 理由（實測）：新關鍵詞查詢在 f2b 大勝（2→6 筆，真報導取代維基百科），
+    # 但在 f1/f3 反而變差——單一查詢有時整組失準。兩種都查、輪流進榜，
+    # 壞的那組只是少幾筆，不會把好的擠掉。
+    seen, per_query = set(), []
     for q in queries or []:
         if not q or len(q) < 4:
             continue
@@ -478,14 +529,15 @@ def _web_search_multi(queries: list, max_results: int = 6, ref_title: str = "") 
         except Exception as _e:
             print(f"[judge] web search failed: {_e}")
             continue
+        fresh = []
         for r in res:
             u = r.get("url")
             if u in seen:
                 continue
             seen.add(u)
-            merged.append(r)
-        if queries and _web_relevant_count(merged, queries[0]) >= 3:
-            break
+            fresh.append(r)
+        per_query.append(fresh)
+    merged = [r for group in zip_longest(*per_query) for r in group if r is not None]
     # 2026-09-24：SBERT 語意過濾（RSS 噪音如金世義 Newtalk sim≈0.29，
     # 同事件正常 0.68~0.93；門檻 0.45，過濾後不足 2 筆則保留 sim 最高的 2 筆）。
     if len(merged) > 2 and ref_title and SIMILARITY_MODEL is not None:
@@ -570,8 +622,33 @@ _DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只
   判無關看的是「是否在查核這一件特定的事」，不是「是否同一領域」。
 
 【第二步：依 evidence_state 決定 abstain 與分數】
-- search_hit_body_missing、no_evidence、unrelated_evidence：abstain 必須為 true，credibility_score 固定填 60，analysis 必須寫清楚缺什麼、目前不能確定什麼、要補哪一份原文才可判定。
+- search_hit_body_missing、no_evidence、unrelated_evidence：abstain 必須為 true。credibility_score 不得填固定值，
+  必須依「內文自身」的可信訊號在 45 到 65 之間自選：見下方【證據不足時的內文自評】。
+  analysis 必須寫清楚缺什麼、目前不能確定什麼、要補哪一份原文才可判定。
 - full_body_evidence：abstain 為 false，依下方證據強度落點評分。
+
+【證據不足時的內文自評】（只在 abstain 分支使用）
+外部查核查無不代表內容本身有問題，所以分數要反映「只看內文能看出什麼」，不得一律填 60。
+以下每一項在內文出現就往低分走，全部沒有才往高分走（45 = 明顯問題，65 = 內文無可挑剔）：
+
+往低分（45–54）的訊號：
+- 內文本身自相矛盾，或同一段內數字打架。
+- 訴諸權威卻查不到那個權威：「某權威人士表示／研究顯示／官方證實」但內文沒有具名機構或出處。
+- 要求讀者立刻動作的急迫語氣：轉發、擴散、趕快、錯過就來不及、救人。
+- 對立情緒或危機渲染：不實在啦、狠手、完蛋、崩潰、震撼、傻眼。
+- 誇大或絕對化數字：百年級、史上、全部、所有、一定、從來沒有。
+- 呼籲停止既有專業處置（停藥、停醫囑、停檢查）而沒有權威反證。
+- 目標明確要觸發轉發的群眾動員語句。
+
+往高分（55–65）的訊號：
+- 內文只陳述可查證的具體事實（機構、日期、金額、法條、職稱），不夾帶呼籲。
+- 有具名可查的出處（某某單位發布、某公司法說會、公告編號）。
+- 語氣平實、沒有急迫性、沒有情緒詞。
+- 論述有節制，會寫「可能」「估計」「截至某時」這類限定。
+
+⚠ 兩件最容易出錯的事：
+- 「查不到外部查核」是證據不足，不是內容可疑。分數高低要看內文自身的問題，不要因為查無就給 45。
+- 「查到了但說 NOT_RUMOR／這則確實存在」不等於內容屬實；那是弱標籤，撐不起 60 以上。
 
 【評分尺度（僅 full_body_evidence 時使用，依你實際讀到的證據落點）】
 - 90 以上：查核機構明確判定屬實，且內文與主張逐項對得上。
@@ -842,13 +919,19 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
     best = min(valid, key=lambda r: (str(r.get("evidence_state") or "") != state,
                                      abs(float(r["credibility_score"]) - avg)))
     abst = bool(best.get("abstain")) or disputed
+    # 2026-10-02：abstain 分數不再是寫死的 60，改為模型自評內文可信訊號的區間值。
+    # 這裡必須同時處理 `best` 的 abstain（evidence_state 不足）與 `disputed`（跨次不一致）
+    # 兩條路徑，因為 abst 已經把它們合併，disputed 樣本自己也會填內文自評分。
+    # 夾在 45–65：低於 45 表示模型把「查無查核」誤判成「內容可疑」，高於 65 表示
+    # 在完全無外部證據時給了超出上限的信心。兩者都是 prompt 失效訊號。
+    _cs = int(round(avg)) if not abst else max(45, min(65, int(round(avg))))
     return {
         "claim": best.get("claim", ""),
         "evidence_state": state,
         "evidence_used": best.get("evidence_used", []),
         "key_points": best.get("key_points", []),
         "viewpoints": best.get("viewpoints", ""),
-        "credibility_score": 60 if abst else int(round(avg)),
+        "credibility_score": _cs,
         "abstain": abst,
         "is_provisional": abst,
         "analysis": best.get("analysis", ""),
