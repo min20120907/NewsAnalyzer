@@ -2066,6 +2066,17 @@ def judge_news():
     mode = data.get("mode") or "fast"
     # 2026-10-02：前端選單傳 'backend/model'，空字串＝沿用 QWEN_URL（行為不變）
     llm_model = data.get("llm_model") or ""
+    # 2026-10-02：前端勾選多個模型 → 共識投票。
+    # 勾 1 個＝該模型單獨評分；勾 2+ 個＝多模型共識（分歧時 abstain）。
+    # 前端若未帶此欄位，行為與修正前完全相同（空字串＝沿用 QWEN_URL）。
+    _picked = [m for m in (data.get("llm_models") or []) if isinstance(m, str) and m]
+    consensus_models = []
+    if len(_picked) > 1:
+        llm_model = "consensus"
+        consensus_models = _picked
+    elif _picked:
+        llm_model = _picked[0]
+        consensus_models = []
     score = analyze_article_data(title=title, url=url, content=content,
                                  publish_date=extracted.get("publish_date"),
                                  target_url=extracted.get("source"), mode=mode,
@@ -2077,7 +2088,8 @@ def judge_news():
             import llm_ensemble as _ens
             wr = score.get("web_results") or []
             src = score.get("sources") or []
-            cons = _ens.consensus_score(title or content[:60], wr, src, content)
+            cons = _ens.consensus_score(title or content[:60], wr, src, content,
+                                       model_ids=consensus_models or None)
             da = score.get("deep_analysis") or {}
             da.update({
                 "consensus": cons,

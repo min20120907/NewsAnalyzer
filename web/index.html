@@ -260,6 +260,46 @@
   /* ---------- Footer ---------- */
   .footer { margin-top:auto; padding-top:40px; color:#4b5563; font-size:12px; text-align:center; max-width:720px; width:100%; }
 
+  /* ---------- Model Picker ---------- */
+  .model-picker {
+    margin-top: 18px; padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .model-picker-head {
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; margin-bottom:12px; flex-wrap:wrap;
+  }
+  .model-picker-title { font-size:14px; font-weight:700; color:var(--text); }
+  .model-hint { font-size:12px; color:var(--text-dim); }
+  .model-hint.consensus { color:var(--accent-2); font-weight:600; }
+  .model-groups { display:flex; flex-direction:column; gap:10px; }
+  .model-group-label {
+    font-size:11px; font-weight:700; letter-spacing:0.5px;
+    color:var(--text-dim); text-transform:uppercase; margin-bottom:6px;
+  }
+  .model-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .model-chip {
+    display:inline-flex; align-items:center; gap:7px;
+    padding:7px 12px; border-radius:999px; cursor:pointer;
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--card-border);
+    color:var(--text-dim); font-size:12.5px;
+    transition:all .16s ease; user-select:none;
+  }
+  .model-chip:hover { background:rgba(255,255,255,0.1); color:var(--text); }
+  .model-chip input { display:none; }
+  .model-chip .dot {
+    width:8px; height:8px; border-radius:50%;
+    background:var(--text-dim); flex-shrink:0; transition:background .16s;
+  }
+  .model-chip.checked {
+    background:linear-gradient(135deg, rgba(99,102,241,.28), rgba(139,92,246,.28));
+    border-color:var(--accent); color:#fff;
+  }
+  .model-chip.checked .dot { background:var(--accent-2); }
+  .model-chip.disabled { opacity:.38; cursor:not-allowed; }
+  .model-chip.disabled:hover { background:rgba(255,255,255,0.05); color:var(--text-dim); }
+
   /* ---------- Responsive ---------- */
   @media (max-width: 560px) {
     body { padding:24px 14px 40px; }
@@ -288,6 +328,15 @@
     <div class="actions">
       <button class="btn btn-primary" id="analyzeBtn">🔍 開始分析</button>
       <button class="btn btn-ghost" id="clearBtn">🗑️ 清除</button>
+    </div>
+
+    <!-- 模型選擇（可複數）：勾 1 個＝單一評分；勾 2+ 個＝多模型共識投票 -->
+    <div class="model-picker" id="modelPicker">
+      <div class="model-picker-head">
+        <span class="model-picker-title">🧠 分析模型</span>
+        <span class="model-hint" id="modelHint">載入中…</span>
+      </div>
+      <div class="model-groups" id="modelGroups"></div>
     </div>
 
     <div class="error" id="error"></div>
@@ -401,9 +450,87 @@ clearBtn.addEventListener('click', () => {
 
 analyzeBtn.addEventListener('click', analyze);
 
+/* ---------- 模型選擇 ---------- */
+const modelGroups = $('modelGroups');
+const modelHint = $('modelHint');
+
+function renderModelPicker(models) {
+  modelGroups.innerHTML = '';
+  // 依 backend 分組，順序沿用後端註冊表（llm_registry.BACKENDS 的定義順序）
+  const byBackend = new Map();
+  for (const m of models) {
+    if (!byBackend.has(m.backend)) byBackend.set(m.backend, []);
+    byBackend.get(m.backend).push(m);
+  }
+  for (const [backend, items] of byBackend) {
+    const group = document.createElement('div');
+    group.innerHTML = `<div class="model-group-label">${items[0].label.split(' — ')[0]}</div>`;
+    const chips = document.createElement('div');
+    chips.className = 'model-chips';
+    for (const m of items) {
+      const chip = document.createElement('label');
+      chip.className = 'model-chip';
+      // 只灰掉「探測過且失敗」的。probe_ok 為 undefined = 沒測過（例如 agy 系列，
+      // 當時 shim 沒起就不在 model_probe.json 裡），不代表不能用，讓使用者自己試。
+      const dead = m.probe_ok === false;
+      if (dead) chip.classList.add('disabled');
+      chip.innerHTML =
+        `<input type="checkbox" value="${m.id}"${dead ? ' disabled' : ''}>` +
+        `<span class="dot"></span>${m.model}` +
+        (m.local ? ' 🖥' : '') + (m.free && !m.local ? ' 🆓' : '') +
+        (m.probe_ok === undefined ? ' <span style="opacity:.6">未測</span>' : '');
+      chip.title = dead
+        ? `上次探測失敗：${m.probe_note || '無詳情'}`
+        : m.label;
+      chip.addEventListener('click', e => {
+        if (dead) { e.preventDefault(); return; }
+        // 讓 label 的 checkbox 換狀態後再更新樣式
+        setTimeout(updateModelHint, 0);
+      });
+      chips.appendChild(chip);
+    }
+    group.appendChild(chips);
+    modelGroups.appendChild(group);
+  }
+  // 預設勾選：本機模型（最快、免費）＋ 一個雲端模型
+  const preset = ['local/qwen3.8-27b-fastmtp'];
+  for (const cb of modelGroups.querySelectorAll('input')) {
+    if (preset.includes(cb.value)) { cb.checked = true; cb.closest('.model-chip').classList.add('checked'); }
+  }
+  updateModelHint();
+}
+
+function updateModelHint() {
+  const n = modelGroups.querySelectorAll('input:checked').length;
+  if (n === 0) { modelHint.textContent = '未勾選 → 使用系統預設'; modelHint.classList.remove('consensus'); }
+  else if (n === 1) { modelHint.textContent = '已選 1 個模型'; modelHint.classList.remove('consensus'); }
+  else { modelHint.textContent = `已選 ${n} 個模型 → 共識投票（分歧時不給分）`; modelHint.classList.add('consensus'); }
+}
+
+modelGroups.addEventListener('change', e => {
+  if (e.target.type === 'checkbox') {
+    e.target.closest('.model-chip').classList.toggle('checked', e.target.checked);
+    updateModelHint();
+  }
+});
+
+async function loadModels() {
+  try {
+    const r = await fetch('/models');
+    const d = await r.json();
+    renderModelPicker(d.models || []);
+  } catch (err) {
+    modelHint.textContent = '模型清單載入失敗（將使用系統預設）';
+  }
+}
+loadModels();
+
 async function analyze() {
   const text = input.value.trim();
   if (!text) { showError('請先貼上新聞連結或貼文內容'); return; }
+
+  const picked = [...document.querySelectorAll('.model-chip input:checked')]
+                  .map(i => i.value);
 
   setLoading(true);
   hideError();
@@ -412,6 +539,8 @@ async function analyze() {
   const payload = /^https?:\/\/\S+$/i.test(text)
     ? { url: text }
     : { postText: text };
+  // 勾 2+ 個 → 後端走多模型共識投票；勾 1 個或 0 個 → 沿用預設行為
+  if (picked.length) payload.llm_models = picked;
 
   try {
     const res = await fetch('/judge', {
