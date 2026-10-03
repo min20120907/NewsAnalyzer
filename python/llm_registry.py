@@ -52,6 +52,25 @@ BACKENDS = {
         "local": True,          # 單槽、需排隊感知
         "serial": True,         # 不併發
     },
+    "agy": {
+        # 2026-10-02：anti-api (:8964) 對 Gemini 回 429 resource_exhausted，即使
+        # 帳號額度 100%。根因是 proto 路徑不同——anti-api 的 encoder.ts 送
+        # metadata field 3 = apiKey，agy 走 v1internal:loadCodeAssist +
+        # authMethod=consumer（OAuth 使用者憑證），Antigravity 分開計額度。
+        # 這裡改走 agy CLI（python/agy_shim.py 包成 OpenAI 相容 HTTP）。
+        "label": "agy CLI (Antigravity consumer OAuth)",
+        "base_url": os.environ.get("AGY_SHIM_URL", "http://127.0.0.1:8965/v1/chat/completions"),
+        "models": [
+            "gemini-3.8-flash-high", "gemini-3.8-flash-medium",
+            "gemini-3.8-flash-low", "gemini-3.7-flash-high",
+            "gemini-3.6-flash-high", "gemini-3.1-pro-high",
+            # 2026-10-03：agy 的 Claude 已升 5.5，舊名 claude-{sonnet,opus}-4-6
+            # 回「no longer available, switch to 5.5」→ shim 502。
+            "claude-sonnet-5-5-high", "claude-opus-5-5-high",
+        ],
+        "free": True,
+        "serial": True,     # shim 內有全域鎖（agy 每次開一個 language server）
+    },
     "antigravity": {
         "label": "anti-api (Antigravity)",
         "base_url": os.environ.get("ANTIAPI_URL", "http://127.0.0.1:8964/v1/chat/completions"),
@@ -60,10 +79,13 @@ BACKENDS = {
         #   gemini-3.1-pro/3.8-flash → HTTP 429 resource exhausted（暫時性額度）
         #   gpt-5.3 / glm-5 / deepseek-3.2 → HTTP 400 "No valid account routing entries"
         #   gpt-oss-120b 能回但整篇跳英文 → 中文新聞評分不可用
+        # 2026-10-03：claude-sonnet-4-6 / claude-opus-4-6-thinking 上游已廢除
+        # （回「Claude 4.6 is no longer available. Please switch to Claude 5.5」）
+        # 且 anti-api 的 /v1/models 無 5.5 條目 → 整組撤下。
+        # gemini-3.8-flash-* / 3.1-pro 目前上游 429/404（enum 路徑未跟上 3.8，
+        # 見 src/proto/encoder.ts 註解）→ 只留 3.6 flash 系列（實測 200 OK）。
         "models": [
-            "claude-sonnet-4-6", "claude-opus-4-6-thinking",
-            "gemini-3.8-flash-high", "gemini-3.8-flash-medium",
-            "gemini-3.1-pro-high",
+            "gemini-3.6-flash-high", "gemini-3.6-flash-medium",
         ],
         "free": True,
     },

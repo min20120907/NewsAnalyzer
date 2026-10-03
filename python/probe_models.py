@@ -21,11 +21,13 @@ def probe(item):
     if key:
         headers["Authorization"] = f"Bearer {key}"
     t0 = time.perf_counter()
+    # max_tokens 4000：推理模型（如 apodex）reasoning 會吃掉小 budget，
+    # 400 會造成 content 全空 (finish=length) 的假陽性（2026-10-03 實測）。
     try:
         r = requests.post(url, headers=headers, json={
             "model": item["model"],
             "messages": [{"role": "user", "content": PROBE}],
-            "max_tokens": 400,          # 太小會被 thinking 吃光（實測）
+            "max_tokens": 4000,         # 太小會被 thinking 吃光（實測）
             "temperature": 0.1,
             "stream": False,
         }, timeout=TIMEOUT)
@@ -46,9 +48,16 @@ def main():
     results = []
     # 本機單槽不能併發 → 排除 local，其餘併發
     cloud = [i for i in items if not i["local"]]
+    # 2026-10-03：agy 也是單槽（agy_shim 全域鎖，每個請求 spawn 一個 CLI）。
+    # 用併發 6 會讓後面 5 個排在鎖裡，超過 client 端 timeout 全部誤判失敗
+    # （實測單打 2.0s 成功，併發時 156s read timeout）。改成兩批。
+    serial = [i for i in cloud if i["backend"] == "agy"]
+    parallel = [i for i in cloud if i["backend"] != "agy"]
     with cf.ThreadPoolExecutor(max_workers=6) as ex:
-        for res in ex.map(probe, cloud):
+        for res in ex.map(probe, parallel):
             results.append(res)
+    for item in serial:
+        results.append(probe(item))
     results.sort()
 
     ok = [r for r in results if r[1]]
