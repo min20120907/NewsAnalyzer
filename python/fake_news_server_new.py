@@ -870,10 +870,7 @@ def deep_analyze(title: str, web_results: list, sources: list,
             _bkey, _m, _cfg = _reg.resolve(model_id)
             url = _cfg["base_url"]
             model_name = _m
-            _k = _reg.api_key_for(_cfg)
-            if _k:
-                headers = {"Content-Type": "application/json",
-                           "Authorization": f"Bearer {_k}"}
+            headers = _reg.request_headers(_cfg)
         except Exception as _e:
             print(f"[judge] deep_analyze registry failed: {_e}", flush=True)
     prompt = _deep_analyze_build_prompt(title, web_results, sources, content=content)
@@ -951,7 +948,8 @@ def deep_analyze(title: str, web_results: list, sources: list,
             "abstain": abstain,
             "is_provisional": bool(abstain),
             "analysis": str(parsed.get("analysis") or ""),
-            "model": QWEN_MODEL,
+            # 2026-10-04：原本硬寫 QWEN_MODEL，導致選雲端模型時前端仍顯示 qwen3.8-27b。
+            "model": model_name,
         }
     except Exception as _e:
         print(f"[judge] deep_analyze failed: {_e}")

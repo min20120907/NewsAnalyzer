@@ -5,6 +5,13 @@
 新增一個模型＝在 BACKENDS 加一筆，前端選單自動出現。
 """
 import os
+import secrets
+
+# OpenCode 只做形狀檢查（ses_ + 12 小寫 hex + 14 英數），不做事後註冊，
+# 所以每個 process 隨機產生一次即可，不需持久化。
+_SES_TOKEN = secrets.token_hex(6) + "".join(
+    secrets.choice("0123456789abcdefghijklmnopqrstuvwxyz") for _ in range(14)
+)
 
 # ~/.hermes/.env 會被寫成遮罩字串 ***（實測 OPENROUTER_API_KEY 就是這樣），
 # 所以 os.environ 拿不到。直接讀原始 bytes。
@@ -39,6 +46,20 @@ def api_key_for(backend_cfg: dict) -> str:
     if v and not v.strip().startswith("***") and len(v) > 20:
         return v
     return _read_raw_env(env_key)
+
+
+def request_headers(backend_cfg: dict) -> dict:
+    """完整的請求標頭：Content-Type + 認證 + 後端自訂標頭。
+
+    所有呼叫端（deep_analyze / probe_models / 離線評測）都走這裡，
+    否則新後端（如需要 x-opencode-session 的 opencode-go）只會在部分路徑生效。
+    """
+    h = {"Content-Type": "application/json"}
+    h.update(backend_cfg.get("headers") or {})
+    k = api_key_for(backend_cfg)
+    if k:
+        h["Authorization"] = f"Bearer {k}"
+    return h
 
 # 每個後端＝一組「base_url + 可選模型清單」。
 #   probe_needed: 啟動時打一次 /chat/completions 確認活著（deep-proxy 會被 ban）
@@ -108,6 +129,28 @@ BACKENDS = {
         # （實測 5056 字元 reasoning、content 長度 0、finish_reason=length），
         # 評分 prompt 拿不到任何 JSON。這類模型要接需要自適應 max_tokens + 解析
         # reasoning 尾段，不是免費層能用的。
+    },
+    "opencode-go": {
+        # 2026-10-04 實測：Go lane（/zen/go/v1）只要求 x-opencode-session，
+        # 不像 Zen 免費層要整套 OpenCode 身分（UA + 5 個核心工具 + /responses lane）。
+        # 缺 session 標頭 → 400 MissingSessionID。
+        "label": "OpenCode Go 免費模型",
+        "base_url": os.environ.get("OPENCODE_GO_BASE_URL",
+                                   "https://opencode.ai/zen/go/v1/chat/completions"),
+        "api_key_env": "OPENCODE_GO_API_KEY",
+        "headers": {
+            "x-opencode-session": "ses_" + _SES_TOKEN,
+            "x-opencode-project": "newsanalyzer",
+        },
+        # 只列 id 帶 -free 的（使用者要求：免費模型）。
+        # 實測 200 + 正確繁中答案 + 支援 response_format=json_object。
+        # 未列入：grok-4.7（HTTP 400）、其餘付費 id。
+        "models": [
+            "longcat-2.5-preview-free",   # 4.0s，答「交通部中央氣象局」
+            "space-bunny-free",           # 2.2s
+        ],
+        "free": True,
+        "external": True,
     },
     "deepproxy": {
         "label": "deep-proxy (DeepSeek Web)",

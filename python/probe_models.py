@@ -6,7 +6,7 @@
 import sys, os, time, json, concurrent.futures as cf
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import requests
-from llm_registry import BACKENDS, model_catalog, api_key_for
+from llm_registry import BACKENDS, model_catalog, api_key_for, request_headers
 
 PROBE = "用一句話回答：台灣的中央氣象署在2023年改制前叫什麼？只回答案。"
 TIMEOUT = int(os.environ.get("PROBE_TIMEOUT", "60"))
@@ -16,10 +16,7 @@ def probe(item):
     mid = item["id"]
     cfg = BACKENDS[item["backend"]]
     url = cfg["base_url"]
-    headers = {}
-    key = api_key_for(cfg)
-    if key:
-        headers["Authorization"] = f"Bearer {key}"
+    headers = request_headers(cfg)
     t0 = time.perf_counter()
     # max_tokens 4000：推理模型（如 apodex）reasoning 會吃掉小 budget，
     # 400 會造成 content 全空 (finish=length) 的假陽性（2026-10-03 實測）。
