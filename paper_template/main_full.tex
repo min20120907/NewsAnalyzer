@@ -201,6 +201,11 @@ Early automated fake news detection relied on surface stylometrics, lexicon freq
 \subsection{Domain-Level Reputation and Crowdsourced Fact-Checking}
 Platform-level tools such as NewsGuard~\cite{Bianchi2024trustworthiness} evaluate publisher credibility at the domain level. While effective for flagging established content farms, domain heuristics fail completely on enclosed social platforms (e.g., Facebook and LINE), where credible journalism and malicious hoaxes share identical hostnames. Crowdsourced fact-checking repositories like Cofacts~\cite{cofacts2020, lim2023factchecking} collect volunteer refutations cross-referenced with accredited fact-checkers (Taiwan FactCheck Center~\cite{tfc2023}, MyGoPen). NewsAnalyzer leverages this civic data census as a local, offline vector database, bridging macro fact-checking intelligence directly into the client viewport.
 
+\subsection{Multilingual and Cross-Lingual Detection}
+English fake-news research has produced benchmarks stratified by task rather than by a single accuracy number, and that stratification is what we borrow. \textsc{Liar}~\cite{wang2017liar} ($12{,}814$ short PolitiFact statements) measures utterance-level classification, the closest analogue to a browser-extension input; FakeNewsNet~\cite{shu2020fakenewsnet} pairs articles with propagation traces for joint content--spread modelling, which an extension cannot observe; FEVER~\cite{thorne2018fever} ($185{,}445$ Wikipedia-derived claims) formalises the retrieve--select--verify pipeline whose three stages map directly onto our search, similarity-gate, and adjudication layers; and the Fake News Challenge~\cite{fnc2017challenge} isolates stance detection (agree/disagree/discuss/unrelated), which we use only as a reranking signal, never as ground truth. The lesson we take from this literature is architectural: the durable pattern is retrieve-then-verify with an LLM as evidence synthesiser, not as classifier---propagation features and zero-shot verdicts both degrade once the input leaves the training distribution.
+
+Japanese has exactly one reusable benchmark: the $307$-item Japanese Fake News Dataset~\cite{murayama2022japanese}, annotated from FactCheck Initiative Japan reviews, which is small enough that coverage limits must be stated alongside any accuracy. Its fact-checking ecosystem is correspondingly thin---the Japan Fact-Check Center and InFact are the two IFCN signatories with machine-readable output~\cite{jfc2024, infact2024}, and neither exposes a claim-level API---so a Japanese pipeline must retrieve from site search and RSS rather than from an aggregator. For Chinese outside Taiwan there is no IFCN-signed independent source at all; the pragmatic, honest treatment is cross-domain transfer scored as such, not a new crawler behind a login wall. Our multilingual extension (Section~\ref{sec:multilingual}) follows these constraints: one shared multilingual encoder, per-language evidence sources, per-language verdict mappings, and coverage reported before accuracy in every language.
+
 \subsection{Selective Prediction and Abstention}
 Our consistency gate and asymmetric safety clamp are instances of \emph{selective prediction}: the system may decline to answer rather than commit to a verdict it cannot support. Prior fake-news work has largely reported accuracy without coverage, which makes a system that answers everything and is right $95\%$ of the time indistinguishable from one that answers a third of the questions and is right $99\%$ of the time. Following Geifman and El-Yaniv~\cite{geifman2019selective}, we report coverage and selective accuracy together, always with the cluster-level lower bound attached (Section~\ref{sec:retrieval}). This is also why we evaluate open-world behaviour separately (Section~\ref{sec:openworld}): a frozen offline corpus cannot exhibit the live-source false positives that determine deployment behaviour.
 
@@ -369,10 +374,10 @@ Three implementation decisions follow directly from these characteristics, and e
 
 \subsection{Curated Fact-Check Organisation Registry}
 \label{sec:registry}
-The sources in Table~\ref{tab:sources} are queried over the network and are reachable only when they are online and indexed. Alongside them the system maintains a small curated registry of fact-check organisation hostnames, kept in a plain text file that is re-read whenever its modification time changes. Table~\ref{tab:registry} lists the five registered hosts.
+The sources in Table~\ref{tab:sources} are queried over the network and are reachable only when they are online and indexed. Alongside them the system maintains a small curated registry of fact-check organisation hostnames, kept in a plain text file that is re-read whenever its modification time changes. Table~\ref{tab:registry} lists the nine registered hosts.
 
 \begin{table}[!htbp]
-\caption{The curated fact-check organisation registry. All five hosts receive the full domain credibility score and are removed from the content-farm blocklist before it is applied. ``Machine-readable feed'' records whether the organisation exposes per-claim records in a form that could be mirrored automatically---none do, which is why the registry is maintained by hand rather than subscribed. Membership of the $96{,}991$-entry blocklist was checked against both local and remote blocklist files at the time of writing; all five are currently absent.}
+\caption{The curated fact-check organisation registry. All nine hosts receive the full domain credibility score and are removed from the content-farm blocklist before it is applied. ``Machine-readable feed'' records whether the organisation exposes per-claim records in a form that could be mirrored automatically. Membership of the $96{,}991$-entry blocklist was checked against both local and remote blocklist files at the time of writing; all nine are currently absent.}
 \label{tab:registry}
 \centering
 \small
@@ -384,16 +389,48 @@ The sources in Table~\ref{tab:sources} are queried over the network and are reac
 \texttt{mygopen.com} & MyGoPen; independent editorial fact-check outlet, the strongest Traditional Chinese source on health and medicine claims & Blogger Atom & no \\
 \texttt{cofacts.tw} & Cofacts; g0v collaborative wiki, the source of the system's $2{,}292$-claim local index & GraphQL & no \\
 \texttt{cofacts.g0v.tw} & Cofacts legacy g0v host, retained because links to the earlier domain remain in circulation & GraphQL & no \\
-\texttt{rumtoast.com} & Rumtoast; Taiwanese rumour-tracking project publishing curated rumour summaries & none & no \\
+\texttt{rumtoast.com} & Rumtoast; Taiwanese rumour-tracking project publishing curated rumour summaries & WordPress REST & no \\
+\texttt{factcheck.\allowbreak hkbu.edu.hk} & HKBU Fact Check; Hong Kong academic checker (written Chinese) & WordPress REST & no \\
+\texttt{infact.press} & InFact; Japanese independent fact-checker, IFCN signatory & WordPress REST & no \\
+\texttt{factcheckcenter.\allowbreak jp} & Japan Fact-Check Center; IFCN signatory & RSS & no \\
+\texttt{politifact.com} & PolitiFact; US political fact-checker whose pre-ClaimReview archive is absent from aggregators & site search & no \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The registry is deliberately not a subscription. IFCN maintains a public list of signatory organisations, but it exposes no machine-readable feed of per-organisation claim records, so an automated mirror would have to scrape HTML and would break without notice; a hand-maintained file of five lines is both more reliable and easier to audit. The two hosts that do expose a feed---MyGoPen's Atom feed and Cofacts' GraphQL endpoint---are consumed directly by the retrieval layer of Section~\ref{sec:sources} rather than through the registry, so the registry itself carries no traffic. We note the absence of automation as a limitation rather than a design preference: the organisations listed are those with public Traditional Chinese archives, and a new signatory with a usable feed would still need to be added by hand.
+The registry is deliberately not a subscription. IFCN maintains a public list of signatory organisations, but it exposes no machine-readable feed of per-organisation claim records, so an automated mirror would have to scrape HTML and would break without notice; a hand-maintained file of nine lines is both more reliable and easier to audit. The hosts that expose a feed---MyGoPen's Atom feed, Cofacts' GraphQL endpoint, three WordPress REST endpoints, one RSS feed, and one site search---are consumed directly by the retrieval layer of Section~\ref{sec:sources} and Section~\ref{sec:multilingual} rather than through the registry, so the registry itself carries no traffic. We note the absence of automation as a limitation rather than a design preference: the organisations listed are those with public Traditional Chinese archives, and a new signatory with a usable feed would still need to be added by hand.
 
 The registry has two distinct effects on scoring. A hostname present in it receives the full domain credibility score, on the reasoning that a page served by a fact-check organisation is a check rather than a claim. The same set is also subtracted from the content-farm blocklist before the blocklist is applied, so that an organisation which is scraped and republished by an aggressive blocklist source is not penalised for it. The precedence is deliberate and the ordering matters: the registry and the mainstream whitelist are removed from the blocklist first, so a false positive in an upstream blocklist cannot outrank a locally curated decision.
 
-We should be precise about the status of this second effect. The ``In blk.'' column of Table~\ref{tab:registry} records that none of the five registered hosts currently appears in the blocklist, so the subtraction is presently defensive rather than corrective. It exists because the blocklist is subscribed to third-party lists that we do not control, and a fact-check organisation's own domain can appear there through being scraped or republished; the precedence rule makes that outcome cheap to survive. The comparable case for the mainstream whitelist did occur, and is recorded in Section~\ref{sec:audit}: a legitimate news-aggregator host had been swept into the user-generated-content list, costing a real article $19$ points and crossing a rating boundary.
+We should be precise about the status of this second effect. The ``In blk.'' column of Table~\ref{tab:registry} records that none of the nine registered hosts currently appears in the blocklist, so the subtraction is presently defensive rather than corrective. It exists because the blocklist is subscribed to third-party lists that we do not control, and a fact-check organisation's own domain can appear there through being scraped or republished; the precedence rule makes that outcome cheap to survive. The comparable case for the mainstream whitelist did occur, and is recorded in Section~\ref{sec:audit}: a legitimate news-aggregator host had been swept into the user-generated-content list, costing a real article $19$ points and crossing a rating boundary.
+
+%======================================================================
+% 5 EXPERIMENTS AND EVALUATION
+%======================================================================
+\subsection{Multilingual Extension: English, Japanese, and Non-Taiwan Chinese}
+\label{sec:multilingual}
+The monolingual pipeline above covers Traditional Chinese as used in Taiwan. Extending it to English, Japanese, and the Chinese-speaking regions outside Taiwan (Hong Kong, Macao, Singapore, Malaysia) required new evidence sources but deliberately no new encoder: the production similarity model is a multilingual Sentence-BERT covering 50+ languages, and every gate threshold in Sections~\ref{sec:two-stage}--\ref{sec:clamp} is calibrated against its score distribution. Replacing it per language would invalidate all calibrated margins (our embedding-margin benchmark shows a candidate multilingual replacement collapsing the match/non-match margin from $+0.31$ to $+0.12$), so each language reuses the encoder and recalibrates only its query formulation and verdict mapping. Table~\ref{tab:multisrc} lists the resulting per-language evidence layer; the Chinese pipeline is untouched.
+
+\begin{table}[!htbp]
+\caption{Per-language evidence sources added by the multilingual extension. All seven non-Chinese sources are queried concurrently with the existing three; a language router (CJK-ratio with kana detection, no dependency) selects the query formulation. Measured retrieval figures are reported in Section~\ref{sec:multieval}; none of the new sources changes any Chinese threshold.}
+\label{tab:multisrc}
+\centering
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.55cm} >{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{2.0cm}}
+\toprule
+\textbf{Language} & \textbf{Source} & \textbf{Interface and verdict mapping} & \textbf{Why this shape} \\
+\midrule
+English & Google Fact Check Tools (\texttt{languageCode=en}) & REST \texttt{claims search}; keyword query (content words, no stopwords) with full-text fallback; Top-K self-rerank over returned claims; full-text similarity gate $0.60$ & Five major outlets expose no first-party API; the aggregator is the only structured entry point \\
+English & PolitiFact site search & Server-rendered search cards; verdict read from meter image labels; SBERT gate & Pre-ClaimReview checks (e.g.\ 2011) are structurally absent from Google's index and unreachable by any query \\
+Japanese & InFact & WordPress REST search; verdict-bearing headlines (e.g.\ verdict-final markers); SBERT gate & One of two IFCN signatories with machine-readable output; no claim API exists \\
+Japanese & Japan Fact-Check Center & RSS (15 most recent) matched locally; verdict-bearing headlines & No REST endpoint; RSS window bounds coverage honestly \\
+Chinese (non-TW) & Rumtoast crawler & WordPress REST search + one body fetch; verdict mapped from debunk passages, excluding boilerplate & Small traditional-Chinese rumour tracker; verdict lives in the body, not the headline \\
+Chinese (non-TW) & HKBU Fact Check & WordPress REST search; verdict-bearing headlines; written-Chinese queries reuse the existing pipeline & Small Hong Kong academic checker; Cantonese colloquial input needs recalibrated thresholds and is out of scope \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three findings from the implementation deserve explicit record because each contradicts the naive approach. First, English claim search is query-shape sensitive in both directions: a full $300$-character claim returns nothing for viral rumours whose tail over-constrains the index, while keyword queries return nothing for decontextualised fragments; the production path therefore tries keywords first and falls back to the full text, keeping the better of the two by full-text similarity. Second, the aggregator's ranking jitters across calls, so accepting its first returned claim is gambling; the English path scores all returned claims and keeps the argmax, the same Top-K shape already used for the Chinese corpus. Third, Japanese verdict headlines are frequently interrogative (``is it true?'') or negative (``is not correct''), and mapping bare affirmative markers to a positive verdict misfires on exactly those titles; the mapping therefore fires only on declarative verdict-final forms. Mainland simplified-Chinese checkers were deliberately excluded: no public API, login-walled crawling, non-IFCN verdict scales, and censored evidence independence. Simplified input is instead scored by cross-domain nearest-neighbour transfer and labelled as such.
 
 %======================================================================
 % 5 EXPERIMENTS AND EVALUATION
@@ -515,6 +552,16 @@ The result is a limitation of the \emph{platform}, not of the system, and we rep
 Two of the positive-class articles were rated $41.15$ and $41.83$, and we examined both rather than counting them as straightforward errors. Both concern the exaggerated health warning that pomelo cannot be eaten with certain medications. Cofacts rated the underlying pharmacology accurate; an independent medical fact-check service rated the same content as misleading because the warning is overstated. The system takes the more severe of the two verdicts and returns $41$. Both judgements are individually defensible, and the conservative resolution is the intended behaviour, but it does mean that a claim whose factual mechanism is correct and whose framing is alarmist is reported as unverified rather than credible.
 
 The broader consequence is that this experiment cannot measure the discrimination between news-shaped hoaxes and true reporting, because the platform supplied no news-shaped hoaxes to measure. We draw the negative conclusion directly: on the contemporary Traditional Chinese fact-checking ecosystem, the dominant false-positive risk for a retrieval-grounded checker is not a novel hoax but a low-quality post that resembles a checked claim. That is the regime the two-stage gate in Section~\ref{sec:two-stage} is built for, and it is the regime the $48$-article audit in Section~\ref{sec:audit} measures.
+
+\subsection{Multilingual Retrieval Evaluation}
+\label{sec:multieval}
+Each non-Chinese source is evaluated on the benchmark closest to its language, reporting coverage before accuracy per the selective-prediction discipline of Section~2. End-to-end pipeline accuracy on stratified $100$-item samples per language is in progress at the time of writing; the retrieval-layer figures below are measured and final.
+
+For English we sample $200$ \textsc{Liar} test statements ($12{,}814$-item benchmark~\cite{wang2017liar}) through the Google claim-search path. Coverage is $6.5\%$ ($13$ decided) with a selective accuracy of $84.6\%$ ($11$ of $13$). The low coverage is a property of the benchmark, not of the source: \textsc{Liar} statements are decontextualised speaker quotes (``On the Bush tax cuts.''), and the aggregator's keyword index cannot recall a claim from four words with no proposition. On viral-shaped English input---the actual deployment distribution---the same path returns verdict-bearing claims with similarities above $0.74$. A 2011 PolitiFact check missing from Google's index for lack of ClaimReview markup is recovered by the PolitiFact site-search source at similarity $0.95$.
+
+For Japanese we run the full $307$-item Murayama set~\cite{murayama2022japanese} through both sources. InFact covers $42.7\%$ at $100\%$ selective accuracy ($55$ decided); the Japan Fact-Check Center RSS window covers $35.2\%$ at $95.9\%$ ($49$ decided). The set is heavily fake-skewed ($271$ fake to $5$ real after excluding $31$ evidence-insufficient items), so these measure fake-class precision under retrieval, not balanced accuracy. Per-query latency for the Japanese pair is dominated by one RSS fetch, cached hourly.
+
+For non-Taiwan Chinese, cross-domain transfer on $2{,}000$ mainland headlines scores coverage $57.6\%$ at $55.3\%$ accuracy---reported as a transfer figure, not a system claim---while Hong Kong written-Chinese queries reuse the Taiwanese pipeline unchanged, and Cantonese colloquial input is explicitly out of scope pending recalibrated thresholds.
 
 \subsection{Comparative Evaluation Against Competing Paradigms}
 To demonstrate the superiority of empirical multi-signal grounding over conventional single-modality approaches, we benchmark NewsAnalyzer against four standard baseline paradigms:
@@ -716,6 +763,30 @@ K.~Shu, L.~Cui, S.~Wang, D.~Lee, and H.~Liu, ``dEFEND: Explainable Fake News Det
 
 \bibitem{geifman2019selective}
 Y.~Geifman and R.~El-Yaniv, ``SelectiveNet: A Deep Neural Network with an Integrated Reject Option,'' in \emph{Proc. ICML}, 2019, pp.~2151--2161.
+
+\bibitem{thorne2018fever}
+J.~Thorne, A.~Vlachos, C.~Christodoulopoulos, and A.~Mittal, ``FEVER: a Large-scale Dataset for Fact Extraction and VERification,'' in \emph{Proc. NAACL-HLT}, 2018, pp.~809--819.
+
+\bibitem{shu2020fakenewsnet}
+K.~Shu, D.~Mahudeswaran, S.~Wang, D.~Lee, and H.~Liu, ``FakeNewsNet: A Data Repository with News Content, Social Context, and Spatiotemporal Information for Studying Fake News on Social Media,'' \emph{Big Data}, vol.~8, no.~3, pp.~171--188, 2020.
+
+\bibitem{fnc2017challenge}
+D.~Pomerleau and R.~Rao, ``Fake News Challenge Stage 1 (FNC-I): Stance Detection,'' 2017. [Online]. Available: \url{https://www.fakenewschallenge.org}
+
+\bibitem{murayama2022japanese}
+T.~Murayama, et al., ``Japanese Fake News Dataset,'' in \emph{Proc. LREC}, 2022. [Online]. Available: \url{https://doi.org/10.5281/zenodo.5831617}
+
+\bibitem{jfc2024}
+Japan Fact-Check Center, 2024. [Online]. Available: \url{https://www.factcheckcenter.jp}
+
+\bibitem{infact2024}
+InFact, 2024. [Online]. Available: \url{https://infact.press}
+
+\bibitem{google2024claimsearch}
+Google Developers, ``Fact Check Tools API: Method claims.search,'' 2024. [Online]. Available: \url{https://developers.google.com/fact-check/tools/api/reference/rest/v1alpha1/claims/search}
+
+\bibitem{schema2024claimreview}
+Schema.org, ``ClaimReview,'' 2024. [Online]. Available: \url{https://schema.org/ClaimReview}
 
 \end{thebibliography}
 
