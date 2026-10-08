@@ -1,0 +1,200 @@
+{"id": "11972.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11685.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11096.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "5209.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9524.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "5962.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "7070.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "1046.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12849.json", "label": "true", "truth": "REAL", "status": "accurate", "sim": 0.8146, "matched": "Donald Trump is \"against marriage equality. He wants to go back.\"", "url": "https://politifact.com/factchecks/2016/aug/15/sean-patrick-maloney/donald-trump-against-same-sex-marriage/"}
+{"id": "13270.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6649.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": 0.4586, "matched": "“Stacey Abrams Boasts Dems Can ‘Jerry-Rig System’ and ‘Go Around Constitution’ To Win 2020 Election.", "url": "https://www.factcheck.org/2020/02/story-misrepresents-abrams-remarks-on-electoral-college/"}
+{"id": "2508.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11269.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": 0.9139, "matched": "\" 'Denali' is the Kenyan word for 'black power.' \"", "url": "https://politifact.com/factchecks/2015/sep/03/viral-image/no-denali-not-kenyan-word-black-power/"}
+{"id": "11200.json", "label": "false", "truth": "FAKE", "status": "inaccurate", "sim": 0.6597, "matched": "The U.S. spends \"57 cents on the dollar on defense.\"", "url": "https://politifact.com/factchecks/2019/dec/13/ilhan-omar/rep-ilhan-omars-claim-us-spends-57-federal-budget/"}
+{"id": "8047.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4888.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "3331.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9198.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "73.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "1328.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12169.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "5244.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12996.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": 0.4227, "matched": "President Joe Biden has \"allowed an invasion to occur at our border, almost 10 million migrants have", "url": "https://www.factcheck.org/2024/02/breaking-down-the-immigration-figures/"}
+{"id": "8162.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10064.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "1084.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "13231.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "13089.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "1051.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4161.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11966.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9800.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "816.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2646.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12381.json", "label": "true", "truth": "REAL", "status": "accurate", "sim": 0.9159, "matched": "“The United States has a low voter turnout rate.”", "url": "https://politifact.com/factchecks/2016/may/16/mamie-locke/mamie-locke-says-us-has-low-voter-turnout-rate/"}
+{"id": "8567.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9092.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10055.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4513.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10340.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6849.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": 0.2182, "matched": "President Donald Trump signed an order \"PROTECTING PRE-EXISTING CONDITIONS\" so it's false to say \"th", "url": "https://www.factcheck.org/2020/10/viral-post-overstates-effect-of-trumps-order-on-preexisting-conditions/"}
+{"id": "10971.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "13251.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": 0.8705, "matched": "Says he won the second debate with Hillary Clinton \"in a landslide\" in \"every poll.\"", "url": "https://politifact.com/factchecks/2016/oct/12/donald-trump/donald-trumps-ridiculous-claim-all-polls-show-he-w/"}
+{"id": "7545.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4929.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6239.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "266.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8841.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6313.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9550.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9612.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "13272.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "7562.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "3121.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9578.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4553.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": 0.0968, "matched": "“These reforms will save $120 billion for the system over 30 years and have staved off, for the time", "url": "https://www.washingtonpost.com/news/fact-checker/wp/2018/01/11/chris-christies-dubious-claim-he-saved-120-billion-in-the-n-j-pension-system/"}
+{"id": "2356.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "3453.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "1066.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2092.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "7442.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9910.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11083.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11443.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11539.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2966.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": 0.3535, "matched": "The Democratic-sponsored Inflation Reduction Act will wind up \"cutting Medicare $280 billion.\"", "url": "https://www.factcheck.org/2022/08/scott-overstates-tax-increases-in-inflation-reduction-act/"}
+{"id": "13367.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "1087.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "267.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4272.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8849.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12542.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": 0.7081, "matched": "Quotes Donald Trump saying “I love war in a certain way” (slight pause) “including with nukes, yes, ", "url": "https://www.factcheck.org/2016/09/groundhog-friday-13/"}
+{"id": "8372.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "3518.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8340.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10218.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12698.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2357.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "7823.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12541.json", "label": "barely-true", "truth": "FAKE", "status": "inaccurate", "sim": 0.7907, "matched": "Says delegates can't \"legally\" change the Republican National Convention rules to prevent Donald Tru", "url": "https://politifact.com/factchecks/2016/jun/19/donald-trump/donald-trump-said-its-illegal-delegates-change-rul/"}
+{"id": "2854.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4719.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2072.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2885.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "13334.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4820.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12309.json", "label": "barely-true", "truth": "FAKE", "status": "inaccurate", "sim": 0.6761, "matched": "The decision for the United States to buy heavy water from Iran \"will directly subsidize Iran’s nucl", "url": "https://politifact.com/factchecks/2016/apr/29/paul-ryan/us-purchase-heavy-water-iran-direct-subsidy-irans/"}
+{"id": "1420.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8761.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2491.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "1075.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9762.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "5935.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2821.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6370.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "3706.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10163.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2796.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6083.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "5913.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "934.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2162.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "3161.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2679.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8929.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10040.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12398.json", "label": "pants-fire", "truth": "FAKE", "status": "inaccurate", "sim": 0.3702, "matched": "When reporters asked President Donald Trump why he nominated Judge Amy Coney Barrett to replace the ", "url": "https://apnews.com/article/fact-checking-9545505871"}
+{"id": "2690.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8667.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8941.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6821.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10631.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6579.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11400.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "3228.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9746.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "1915.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12456.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": 0.5543, "matched": "The Democratic National Committee is meeting to consider replacing presidential nominee Hillary Clin", "url": "https://www.snopes.com/fact-check/democratic-party-holding-emergency-meeting-to-discuss-replacing-hillary-clinton/"}
+{"id": "4856.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4698.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2585.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6604.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4495.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8406.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10147.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10623.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2277.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8146.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6026.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "13056.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "1103.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4444.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9269.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4105.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8533.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6950.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "13125.json", "label": "barely-true", "truth": "FAKE", "status": "accurate", "sim": 0.5374, "matched": "In 1989, a senior U.N. environmental official said, “Entire nations could be wiped off the face of t", "url": "https://www.snopes.com/fact-check/nations-vanish-global-warming/"}
+{"id": "8294.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9908.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12424.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": 0.5115, "matched": "“The Enhanced Interrogation Program saved lives, prevented attacks, & produced intel that led to Osa", "url": "https://www.washingtonpost.com/news/fact-checker/wp/2018/03/20/the-harsh-interrogations-of-al-qaeda-detainees-was-it-torture-and-did-it-help-find-bin-laden/"}
+{"id": "4309.json", "label": "false", "truth": "FAKE", "status": "accurate", "sim": 0.4079, "matched": "During his governorship: “Every single city and county in Virginia, their unemployment dropped, and ", "url": "https://politifact.com/factchecks/2018/dec/04/terry-mcauliffe/terry-mcauliffe-mostly-right-about-his-jobs-record/"}
+{"id": "110.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "7677.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4780.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "715.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": 0.6804, "matched": "CO2 is not a problem. The Earth has more than enough land and ocean plant life to metabolize it. Glo", "url": "https://apnews.com/article/fact-checking-967359390899"}
+{"id": "3107.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "7565.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8606.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "3869.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10948.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12210.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4119.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "7272.json", "label": "barely-true", "truth": "FAKE", "status": "inaccurate", "sim": 0.7748, "matched": "\"Social Security has nothing to do with the deficit or the national debt.\"", "url": "https://politifact.com/factchecks/2023/jan/18/occupy-democrats/social-security-does-add-to-federal-budget-deficit/"}
+{"id": "12236.json", "label": "half-true", "truth": "REAL", "status": "accurate", "sim": 0.7646, "matched": "\"Research shows that 1 percent of licensed dealers supply a whopping 57 percent of the guns that are", "url": "https://politifact.com/factchecks/2018/mar/16/cory-booker/are-1-percent-gun-retailers-responsible-more-half/"}
+{"id": "4016.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6765.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11867.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11777.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9051.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4243.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "7818.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10871.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "4710.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "9507.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11324.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6046.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8434.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "3637.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "7744.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2897.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6060.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "603.json", "label": "false", "truth": "FAKE", "status": "inaccurate", "sim": 0.5502, "matched": "Say President George W. Bush \" ‘borrowed’ $1.37 trillion of Social Security surplus revenue to pay f", "url": "https://politifact.com/factchecks/2015/aug/03/facebook-posts/did-george-w-bush-borrow-social-security-fund-war/"}
+{"id": "11545.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10448.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "5461.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6684.json", "label": "pants-fire", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "450.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": 0.6384, "matched": "Republicans’ “sabotage of the Affordable Care Act has already cost more than 3 million Americans the", "url": "https://www.factcheck.org/2018/09/obama-cherry-picks-uninsured-figure/"}
+{"id": "769.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6425.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "502.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11711.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "5470.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8869.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8159.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6884.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10250.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "10757.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "8320.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "5472.json", "label": "false", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "5505.json", "label": "true", "truth": "REAL", "status": "accurate", "sim": 0.5373, "matched": "We've seen \"our deficits cut by two-thirds.\"", "url": "https://politifact.com/factchecks/2015/jan/21/barack-obama/barack-obama-claims-deficit-has-decreased-two-thir/"}
+{"id": "12427.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11464.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "11778.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "12961.json", "label": "false", "truth": "FAKE", "status": "inaccurate", "sim": 0.8185, "matched": "“The fact is” the Clinton Foundation has “got about 80 percent in overhead and 20 percent of the mon", "url": "https://politifact.com/factchecks/2016/aug/25/reince-priebus/reince-priebus-false-claim-80-clinton-foundation-c/"}
+{"id": "10269.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "2833.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6110.json", "label": "half-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "13400.json", "label": "barely-true", "truth": "FAKE", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "1251.json", "label": "true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}
+{"id": "6112.json", "label": "mostly-true", "truth": "REAL", "status": "not_found", "sim": null, "matched": "", "url": null}

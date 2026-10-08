@@ -100,8 +100,35 @@ def _map_google_rating(text: str):
     return "not_found"
 
 
+def _detect_lang(text: str) -> str:
+    """語言路由（免依賴）：CJK 字佔比 >10% 視為中文，否則走英文。
+    英文不換 SBERT 模型——現役 paraphrase-multilingual-MiniLM 本就含英文；
+    換 all-MiniLM 必須重算全部門控 margin（見 embedding-margin-bench 教訓），
+    v1 先只切證據源語言。"""
+    t = text or ""
+    if not t.strip():
+        return "zh"
+    cjk = sum(1 for c in t if "一" <= c <= "鿿")
+    return "zh" if cjk / max(len(t), 1) > 0.10 else "en"
+
+
+_EN_STOP = {"the", "a", "an", "in", "on", "of", "to", "is", "are",
+            "was", "were", "be", "been", "and", "or", "for", "with",
+            "that", "this", "it", "as", "by", "from", "says", "said",
+            "say", "claim", "claims", "claimed", "new", "over", "amid",
+            "will", "would", "has", "have", "had", "do", "does", "did"}
+
+
+def _en_keywords(text: str, limit: int = 6) -> str:
+    """英文 Claim Search 查詢詞：去停用詞取前 N 實詞。
+    實測整句直送 0 筆（"CDC cover-up" 尾巴殺掉召回），前 5 實詞回 10 筆。"""
+    toks = re.findall(r"[A-Za-z0-9][A-Za-z0-9'\-]*", text or "")
+    out = [t for t in toks if t.lower() not in _EN_STOP and len(t) > 1]
+    return " ".join(out[:limit])
+
+
 def get_google_factcheck(text: str, use_cache: bool = True,
-                         timeout_api: int = 15) -> dict:
+                         timeout_api: int = 15, lang: str = None) -> dict:
     if not GOOGLE_API_KEY:
         return {"source": "google", "status": "disabled",
                 "feedback_count": 0, "created_at": None,
@@ -109,9 +136,11 @@ def get_google_factcheck(text: str, use_cache: bool = True,
                 "reasons": [], "note": "未設定 GOOGLE_FACTCHECK_API_KEY"}
     if not text or len(text.strip()) < 10:
         return _empty("google")
-    snippet = text[:300]
-    # key 前綴 g2：2026-09-24 起回傳 similarity_score（舊 g: 快取無此欄，會讓錨定誤判 100%）
-    key = hashlib.sha1(("g2:" + snippet).encode("utf-8")).hexdigest()
+    # g2 前綴沿用（帶 similarity_score 世代）；再帶語言，中英查不同庫不可共用快取
+    lang = lang or _detect_lang(text)
+    snippet = ((_en_keywords(text) or text[:120]) if lang == "en"
+               else text[:300])
+    key = hashlib.sha1((f"g2:{lang}:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("google", key)
         if c:
@@ -119,7 +148,7 @@ def get_google_factcheck(text: str, use_cache: bool = True,
     try:
         r = requests.get(GOOGLE_EP, params={"key": GOOGLE_API_KEY,
                                             "query": snippet,
-                                            "languageCode": "zh"},
+                                            "languageCode": lang},
                          headers={"User-Agent": UA}, timeout=timeout_api)
         r.raise_for_status()
         data = r.json()
