@@ -30,7 +30,11 @@ UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
 COFACTS_MIN_SIM = float(os.environ.get("COFACTS_MIN_SIM", "0.72"))
 # 2026-10-01：召回下界。COFACTS_MIN_SIM 仍是「硬命中」線（clamp 只認它），
 # 低於這條才真的 not_found。中間那段交給 LLM rerank 裁決。
-COFACTS_SOFT_MIN_SIM = float(os.environ.get("COFACTS_SOFT_MIN_SIM", "0.45"))
+# 2026-10-05：召回下限從 0.45 提高到 0.55。
+# 理由：0.45 帶進太多同主題但不同事件的東西（檸檬水 0.518、空腹水果 0.648 都是噪音），
+# 用戶說「常給不相干的」就是這裡。0.55 砍掉低相關，只留真正相關的查核。
+# 同謠言家族實測 0.68+，0.55 不會砍掉真命中。
+COFACTS_SOFT_MIN_SIM = float(os.environ.get("COFACTS_SOFT_MIN_SIM", "0.55"))
 # 交叉確認：Top-N 候選一起給 LLM 讀（同家族謠言的不同角度查核）。
 COFACTS_TOP_K = int(os.environ.get("COFACTS_TOP_K", "4"))
 # 只帶與 Top-1 差距小於此值的候選（家族內）。0.15 只排除明顯掉隊者。
@@ -93,7 +97,8 @@ def _strong_entities(text: str) -> set:
     改判準：3 字候選必須**不含常用虛詞字**（醫/多/新/大/小/老/好/真/全…），
     那是人名不會用的字；真名如「陳惠仁」「沈伯洋」「范振宗」不含這類字。
     """
-    VIRTUAL = set("醫多新大小老好真全前後本該個些們等再又更沒不很最第")
+    VIRTUAL = set("醫多新大小老好真全前後本該個些們等再又更沒不很最第來西")
+    # ponytail: 來/西只為擋「馬來西(亞)」地名噪音；若未來真人名含此二字，改走逐名白名單
     ents = extract_entities(text)
     known = {'青鳥', '館長', '台積電', '高虹安', '柯建銘', '莊競程', '徐欣瑩'}
     return {e for e in ents
