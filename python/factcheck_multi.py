@@ -482,11 +482,16 @@ JFC_RSS = "https://www.factcheckcenter.jp/rss/"
 
 
 def _map_infact_title(title: str):
+    """InFact verdict 在標題末（は誤り／は正しい…）。
+    問句（は本当か？）與否定形（正しくない／とは言えない）不算肯定，
+    落 partial——裸「本当」「正しい」會把問句誤判 accurate（Murayama 實測）。"""
     t = title or ""
     if any(k in t for k in ["誤り", "誤解", "デマ", "虚偽", "捏造", "間違い",
-                            "不正確", "事実ではない"]):
+                            "不正確", "事実ではない", "正しくない",
+                            "とは言えない", "とはいえない"]):
         return "inaccurate"
-    if any(k in t for k in ["正しい", "正確", "事実です", "本当"]):
+    if any(k in t for k in ["は正しい", "が正しい", "正しいです", "は事実です",
+                            "本当です", "本当でした"]):
         return "accurate"
     return "partial"
 
@@ -496,7 +501,8 @@ def _map_jfc_title(title: str):
     if any(k in t for k in ["偽サイト", "偽情報", "誤情報", "詐欺", "デマ",
                             "根拠不明", "虚偽", "捏造", "誤り"]):
         return "inaccurate"
-    if any(k in t for k in ["正しい", "正確です", "事実です"]):
+    if any(k in t for k in ["は正しい", "が正しい", "正しいです", "正確です",
+                            "事実です"]):
         return "accurate"
     return "partial"
 
@@ -527,7 +533,8 @@ def get_infact(text: str, use_cache: bool = True,
     if not text or len(text.strip()) < 10:
         return _empty("infact")
     snippet = text[:120]
-    key = hashlib.sha1(("infact:" + snippet).encode("utf-8")).hexdigest()
+    # infact2: 2026-10-08 映射收緊（問句/否定形不再判 accurate），舊前綴快取作廢
+    key = hashlib.sha1(("infact2:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("infact", key)
         if c:
@@ -566,7 +573,8 @@ def get_jfc(text: str, use_cache: bool = True,
     if not text or len(text.strip()) < 10:
         return _empty("jfc")
     snippet = text[:120]
-    key = hashlib.sha1(("jfc:" + snippet).encode("utf-8")).hexdigest()
+    # jfc2: 同上（accurate 觸發收緊），舊前綴快取作廢
+    key = hashlib.sha1(("jfc2:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("jfc", key)
         if c:
