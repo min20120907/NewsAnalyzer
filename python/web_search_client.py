@@ -337,13 +337,13 @@ def search(query: str, max_results: int = MAX_RESULTS) -> List[Dict[str, str]]:
             continue
         seen.add(_r["url"])
         results.append(_r)
-    # 2026-10-08：數量夠但全是無摘要包裝連結（Google News RSS wrapper）時也補
-    # 瀏覽器——否則 _attach_web_bodies 無體可抓，deep prompt 只剩標題，
+    # 2026-10-08：數量夠但可抓正文的來源不足時也補瀏覽器——包裝連結
+    # （Google News RSS wrapper）永遠解析不出正文，有摘要也只算半個；
     # 短標題薄證據輸入永遠翻不了案（日文 28 FP、簡體 42 FP 的主因）。
-    # 有任一摘要就不觸發（正常查詢零成本）。
-    _has_snippet = any((r.get("snippet") or "").strip() for r in results)
+    # 有 2 筆以上帶摘要才算夠（正常查詢零成本）。
+    _n_snip = sum(1 for r in results if (r.get("snippet") or "").strip())
     _b = []
-    if ((len(results) < max_results or not _has_snippet)
+    if ((len(results) < max_results or _n_snip < 2)
             and os.environ.get("BROWSER_SEARCH", "1") != "0"):
         try:
             _b = search_browser_google(query, max_results=max_results) or []

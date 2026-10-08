@@ -649,10 +649,20 @@ def _attach_web_bodies(results: list, top_n: int = 2, min_chars: int = 120) -> N
     """
     if not results:
         return
+    # 包裝連結永遠解析不出正文，直連優先，別把 top_n 名額浪費在 wrapper 上
+    from urllib.parse import urlparse as _up
+    def _is_wrapper(_r):
+        try:
+            return _up(_r.get("url") or "").netloc.lower().endswith(
+                ("news.google.com", "google.com"))
+        except Exception:
+            return True
     cands = [r for r in results
              if r.get("url") and r.get("body") is None
              and r.get("source") != "google_news"
-             and len((r.get("snippet") or "").strip()) < min_chars][:top_n]
+             and len((r.get("snippet") or "").strip()) < min_chars]
+    cands.sort(key=lambda r: (1 if _is_wrapper(r) else 0))
+    cands = cands[:top_n]
     # 2026-10-05：並行抓（log 實測串行各 8~11s，web 19s 幾乎全是這裡）。
     # 同 _extract_from_url 同一函數，只是換並行，品質不變。
     import concurrent.futures as _cf
