@@ -11,6 +11,8 @@
   - cofacts : g0v Cofacts（GraphQL，免 key）            [always on]
   - google  : Google Fact Check Tools API（需免費 key）[有 key 才啟用]
   - mygopen : MyGoPen 站內搜尋爬蟲（免 key，處理反爬）  [always on]
+  - rumtoast: 蘭姆酒吐司 WP REST 搜尋＋內文 verdict（免 key）[always on]
+  - hkbu    : HKBU Fact Check WP REST 搜尋＋標題 verdict（免 key）[always on]
 
 status 對映（統一到 Cofacts 四類）：
   inaccurate | partial | accurate | not_found
@@ -20,6 +22,7 @@ MyGoPen 站內搜尋是爬蟲，可能偶爾被反爬擋住 → 失敗時該源�
 """
 import os
 import re
+import html
 import json
 import time
 import sqlite3
@@ -173,6 +176,26 @@ def _map_mygopen_title(title: str):
     return "partial"
 
 
+def _jieba_keywords(snippet: str, limit: int = 4) -> str:
+    """jieba 斷詞取空白分隔關鍵字（feed/站內搜尋用，整句直送會 0 筆）。"""
+    try:
+        import jieba as _jieba
+        _STOP = {"網傳", "宣稱", "真的", "請問", "消息", "影片", "圖片",
+                 "可以", "這是", "那是", "是否", "今天", "昨天"}
+        _toks, _seen = [], set()
+        for _t in _jieba.cut(snippet):
+            _t = _t.strip("，。、；：『』「」！？!?,. \t")
+            if 2 <= len(_t) <= 6 and _t not in _seen and _t not in _STOP and any(
+                    "一" <= _c <= "鿿" for _c in _t):
+                _seen.add(_t)
+                _toks.append(_t)
+            if len(_toks) >= limit:
+                break
+        return " ".join(_toks)
+    except Exception:
+        return ""
+
+
 def get_mygopen(text: str, use_cache: bool = True,
                 timeout_api: int = 15) -> dict:
     if not text or len(text.strip()) < 10:
@@ -186,22 +209,7 @@ def get_mygopen(text: str, use_cache: bool = True,
         if c:
             return c
     # feed 的 q 是嚴格片語比對：整句 120 字查永遠 0 筆，必須斷成空白分隔關鍵字
-    try:
-        import jieba as _jieba
-        _STOP = {"網傳", "宣稱", "真的", "請問", "消息", "影片", "圖片",
-                 "可以", "這是", "那是", "是否", "今天", "昨天"}
-        _toks, _seen = [], set()
-        for _t in _jieba.cut(snippet):
-            _t = _t.strip("，。、；：『』「」！？!?,. \t")
-            if 2 <= len(_t) <= 6 and _t not in _seen and _t not in _STOP and any(
-                    "一" <= _c <= "鿿" for _c in _t):
-                _seen.add(_t)
-                _toks.append(_t)
-            if len(_toks) >= 4:
-                break
-        query = " ".join(_toks) or snippet[:30]
-    except Exception:
-        query = snippet[:30]
+    query = _jieba_keywords(snippet) or snippet[:30]
     try:
         # 舊版爬 /search HTML，但該站主題改 JS 渲染後頁面無內文連結（200 空殼），一律 not_found；
         # 改打 Blogger 公開 feed（免 key、伺服器端回 JSON）：/feeds/posts/default?q=&alt=json
@@ -264,6 +272,160 @@ def get_mygopen(text: str, use_cache: bool = True,
 
 
 # ----------------------------------------------------------------------------
+# 蘭姆酒吐司 + HKBU Fact Check（WordPress REST 搜尋，免 key）
+# ----------------------------------------------------------------------------
+RUMTOAST_SEARCH = "https://rumtoast.com/wp-json/wp/v2/search"
+RUMTOAST_POST = "https://rumtoast.com/wp-json/wp/v2/posts"
+HKBU_SEARCH = "https://factcheck.hkbu.edu.hk/home/wp-json/wp/v2/search"
+
+# 兩站標題/內文都是 verdict-bearing（HKBU 標題、rumtoast 內文），沿用 mygopen
+# 的「標題關鍵詞映射 + SBERT 0.50 門控」形狀；粵語口語命中偏低只會 not_found，
+# 不會誤判（保守方向），閾值待粵語標註集重校。
+
+
+def _map_hkbu_title(title: str):
+    """HKBU 標題多半自帶 verdict（【錯誤】/…不實/實為…/並非…）；無標記的
+    專欄/評論（如【假新聞面面觀】問句、立法評論）落 partial，不硬判。"""
+    t = title or ""
+    if any(k in t for k in ["錯誤", "不實", "闢謠", "實為", "實際", "並非", "並未",
+                            "實經", "查無此事", "子虛烏有"]):
+        return "inaccurate"
+    if any(k in t for k in ["屬實", "是真的", "確實發生", "證實為真"]):
+        return "accurate"
+    return "partial"
+
+
+def _map_rumtoast_content(content: str):
+    """rumtoast verdict 在內文（破解段）。注意每篇頁尾固定有
+    「…對於謠言查證的努力」 boilerplate，單獨「謠言」二字不算數。"""
+    t = content or ""
+    if any(k in t for k in ["假消息", "是假的", "假的！", "錯誤的", "沒有這回事",
+                            "別信", "是錯誤", "誤導", "假訊息"]):
+        return "inaccurate"
+    if any(k in t for k in ["是真的", "確實如此", "真的有", "確有其事"]):
+        return "accurate"
+    return "partial"
+
+
+def _wp_search(url: str, query: str, timeout_api: int):
+    r = requests.get(url, params={"search": query, "per_page": 6},
+                     headers={"User-Agent": UA,
+                              "Accept-Language": "zh-TW,zh;q=0.9"},
+                     timeout=timeout_api)
+    r.raise_for_status()
+    items = r.json()
+    out = []
+    for it in items if isinstance(items, list) else []:
+        t = (it.get("title") or "").strip()
+        u = (it.get("url") or "").strip()
+        if t and u:
+            out.append((it.get("id"), t, u))
+    return out
+
+
+def _sbert_gate(snippet: str, candidates, threshold: float = 0.50):
+    """逐條 SBERT 驗、取首條通過者（同 mygopen 門控）；返回 (id, title, url, sim)。"""
+    try:
+        from cofacts_local import _sbert_sim
+    except Exception:
+        return candidates[0] + (None,) if candidates else None
+    for cid, t, u in candidates:
+        try:
+            _s = _sbert_sim(snippet, t) or 0.0
+        except Exception:
+            _s = 0.0
+        if _s >= threshold:
+            return (cid, t, u, round(float(_s), 4))
+    return None
+
+
+def get_hkbu(text: str, use_cache: bool = True,
+             timeout_api: int = 15) -> dict:
+    if not text or len(text.strip()) < 10:
+        return _empty("hkbu")
+    snippet = text[:120]
+    key = hashlib.sha1(("hkbu:" + snippet).encode("utf-8")).hexdigest()
+    if use_cache:
+        c = _mcache_get("hkbu", key)
+        if c:
+            return c
+    try:
+        cands = _wp_search(HKBU_SEARCH, _jieba_keywords(snippet) or snippet[:30],
+                           timeout_api)
+    except Exception as e:
+        return {"source": "hkbu", "status": "error",
+                "feedback_count": 0, "created_at": None,
+                "article_id": None, "matched_text": None, "url": None,
+                "reasons": [], "note": f"爬蟲錯誤: {e}"}
+    if not cands:
+        res = _empty("hkbu")
+        _mcache_put("hkbu", key, res)
+        return res
+    win = _sbert_gate(snippet, cands)
+    if not win:
+        res = _empty("hkbu")
+        _mcache_put("hkbu", key, res)
+        return res
+    _cid, top_title, top_url, win_sim = win
+    res = {"source": "hkbu", "status": _map_hkbu_title(top_title),
+           "feedback_count": len(cands), "created_at": None,
+           "article_id": None, "matched_text": top_title[:120],
+           "url": top_url, "similarity_score": win_sim,
+           "reasons": [{"type": "HKBU_TITLE",
+                        "text": top_title or top_url}]}
+    _mcache_put("hkbu", key, res)
+    return res
+
+
+def get_rumtoast(text: str, use_cache: bool = True,
+                 timeout_api: int = 15) -> dict:
+    if not text or len(text.strip()) < 10:
+        return _empty("rumtoast")
+    snippet = text[:120]
+    key = hashlib.sha1(("rt:" + snippet).encode("utf-8")).hexdigest()
+    if use_cache:
+        c = _mcache_get("rumtoast", key)
+        if c:
+            return c
+    try:
+        cands = _wp_search(RUMTOAST_SEARCH, _jieba_keywords(snippet) or snippet[:30],
+                           timeout_api)
+    except Exception as e:
+        return {"source": "rumtoast", "status": "error",
+                "feedback_count": 0, "created_at": None,
+                "article_id": None, "matched_text": None, "url": None,
+                "reasons": [], "note": f"爬蟲錯誤: {e}"}
+    if not cands:
+        res = _empty("rumtoast")
+        _mcache_put("rumtoast", key, res)
+        return res
+    win = _sbert_gate(snippet, cands)
+    if not win:
+        res = _empty("rumtoast")
+        _mcache_put("rumtoast", key, res)
+        return res
+    cid, top_title, top_url, win_sim = win
+    # rumtoast 標題多半是問句、無 verdict，抓內文映射（多一次 GET，約 +0.5s）
+    try:
+        r = requests.get(f"{RUMTOAST_POST}/{cid}",
+                         headers={"User-Agent": UA}, timeout=timeout_api)
+        r.raise_for_status()
+        raw = ((r.json().get("content") or {}).get("rendered") or "")
+        content = re.sub(r"<[^>]+>", "", html.unescape(raw))
+    except Exception:
+        content = ""
+    status = _map_rumtoast_content(content)
+    res = {"source": "rumtoast", "status": status,
+           "feedback_count": len(cands), "created_at": None,
+           "article_id": None, "matched_text": top_title[:120],
+           "url": top_url, "similarity_score": win_sim,
+           "reasons": [{"type": "RUMTOAST_CONTENT",
+                        "text": (content[:400] or top_title) or top_url}]}
+    _mcache_put("rumtoast", key, res)
+    return res
+
+
+# ----------------------------------------------------------------------------
 # 統一彙總
 # ----------------------------------------------------------------------------
 def _empty(source):
@@ -276,8 +438,9 @@ def get_all_fact_checks(text: str, use_cache: bool = True,
                         timeout_api: int = 15) -> list:
     """並行查詢所有源，回傳結果清單（含 disabled/error 狀態的源也列出）。
 
-    三源皆為 requests 呼叫＋各自 try/except，自行吞錯；快取每次開新連線，
-    例外同樣吞掉，因此 ThreadPool 並行安全。順序固定 [cofacts, google, mygopen]。
+    各源皆為 requests 呼叫＋各自 try/except，自行吞錯；快取每次開新連線，
+    例外同樣吞掉，因此 ThreadPool 並行安全。順序固定
+    [cofacts, google, mygopen, rumtoast, hkbu]。
     """
     import concurrent.futures as _cf
 
@@ -302,9 +465,24 @@ def get_all_fact_checks(text: str, use_cache: bool = True,
         except Exception as e:
             return {**_empty("mygopen"), "status": "error", "note": str(e)}
 
-    with _cf.ThreadPoolExecutor(max_workers=3) as _ex:
+    def _run_rumtoast():
+        try:
+            return get_rumtoast(text, use_cache=use_cache,
+                                timeout_api=timeout_api)
+        except Exception as e:
+            return {**_empty("rumtoast"), "status": "error", "note": str(e)}
+
+    def _run_hkbu():
+        try:
+            return get_hkbu(text, use_cache=use_cache,
+                            timeout_api=timeout_api)
+        except Exception as e:
+            return {**_empty("hkbu"), "status": "error", "note": str(e)}
+
+    with _cf.ThreadPoolExecutor(max_workers=5) as _ex:
         _fu = [_ex.submit(_run_cofacts), _ex.submit(_run_google),
-               _ex.submit(_run_mygopen)]
+               _ex.submit(_run_mygopen), _ex.submit(_run_rumtoast),
+               _ex.submit(_run_hkbu)]
         results = [_f.result() for _f in _fu]
     return results
 

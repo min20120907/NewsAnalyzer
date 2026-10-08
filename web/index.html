@@ -300,6 +300,41 @@
   .model-chip.disabled { opacity:.38; cursor:not-allowed; }
   .model-chip.disabled:hover { background:rgba(255,255,255,0.05); color:var(--text-dim); }
 
+  /* ---------- Debug 模式（2026-10-05）：模型選擇＋耗時只在登入後露出 ---------- */
+  .debug-bar {
+    display:flex; gap:8px; align-items:center; margin-top:14px;
+    padding:10px 12px; border:1px dashed rgba(255,255,255,0.18);
+    border-radius:8px; font-size:12.5px; color:var(--text-dim);
+  }
+  .debug-bar input {
+    flex:1; min-width:0; background:rgba(255,255,255,0.06); color:var(--text);
+    border:1px solid rgba(255,255,255,0.15); border-radius:6px;
+    padding:6px 8px; font-size:12.5px;
+  }
+  .debug-bar button {
+    background:rgba(255,255,255,0.08); color:var(--text);
+    border:1px solid rgba(255,255,255,0.15); border-radius:6px;
+    padding:6px 12px; font-size:12.5px; cursor:pointer; white-space:nowrap;
+  }
+  .debug-bar button:hover { background:rgba(255,255,255,0.14); }
+  .debug-bar .ok { color:var(--green); font-weight:700; }
+  .debug-bar .err { color:var(--red); }
+  .timings-table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  .timings-table td { padding:5px 4px; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .timings-table td:last-child { text-align:right; font-variant-numeric:tabular-nums; }
+  .timings-bar { height:5px; border-radius:3px; background:var(--accent-2); margin-top:3px; }
+
+  /* ---------- Debug 日誌（2026-10-06） ---------- */
+  .debug-logs { margin-top:10px; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.12);
+                border-radius:8px; padding:8px 10px; }
+  .debug-logs-head { display:flex; align-items:center; gap:8px; font-size:12.5px; color:#cbd5e1; }
+  .debug-logs-head button { margin-left:auto; background:rgba(255,255,255,0.08);
+                border:1px solid rgba(255,255,255,0.15); border-radius:5px; color:#cbd5e1;
+                cursor:pointer; font-size:11.5px; padding:3px 8px; }
+  .debug-logs-head button:hover { background:rgba(255,255,255,0.14); }
+  .debug-logs pre { margin:8px 0 0; max-height:260px; overflow:auto; font-size:11.5px;
+                line-height:1.45; white-space:pre-wrap; word-break:break-all; color:#a7b3c4; }
+
   /* ---------- Responsive ---------- */
   @media (max-width: 560px) {
     body { padding:24px 14px 40px; }
@@ -330,8 +365,29 @@
       <button class="btn btn-ghost" id="clearBtn">🗑️ 清除</button>
     </div>
 
-    <!-- 模型選擇（可複數）：勾 1 個＝單一評分；勾 2+ 個＝多模型共識投票 -->
-    <div class="model-picker" id="modelPicker">
+    <!-- Debug 登入：登入後才露出模型選擇（2026-10-05） -->
+    <div class="debug-bar" id="debugBar">
+      <span>🛠️</span>
+      <input id="debugAccount" placeholder="Debug 帳號" autocomplete="username">
+      <input id="debugPassword" type="password" placeholder="Debug 密碼" autocomplete="current-password">
+      <button id="debugLoginBtn" type="button">進入 Debug</button>
+      <span id="debugMsg"></span>
+      <button id="debugLogsToggleBtn" type="button" style="display:none;">📜 日誌</button>
+    </div>
+
+    <!-- Debug 日誌：預設收起，按「📜 日誌」才展開（2026-10-06） -->
+    <div class="debug-logs" id="debugLogsWrap" style="display:none;">
+      <div class="debug-logs-head">
+        <span>📜 伺服器日誌</span>
+        <span id="debugLogsCount" style="opacity:.6;"></span>
+        <button id="debugLogsPauseBtn" type="button">暫停</button>
+        <button id="debugLogsClearBtn" type="button">清畫面</button>
+      </div>
+      <pre id="debugLogText">（尚無日誌）</pre>
+    </div>
+
+    <!-- 模型選擇（可複數）：只在 debug 模式顯示。勾 1 個＝單一評分；勾 2+ 個＝多模型共識投票 -->
+    <div class="model-picker" id="modelPicker" style="display:none;">
       <div class="model-picker-head">
         <span class="model-picker-title">🧠 分析模型</span>
         <span class="model-hint" id="modelHint">載入中…</span>
@@ -369,6 +425,12 @@
     <div class="sources" id="scorePipeline" style="display:none;">
       <div class="sources-title">🧮 評分權重與計算過程分解</div>
       <div id="scorePipelineContent" class="pipeline-wrap"></div>
+    </div>
+
+    <!-- 各步驟耗時（只在 debug 模式有資料，2026-10-05） -->
+    <div class="sources" id="timingsWrap" style="display:none;">
+      <div class="sources-title">⏱️ 各步驟耗時</div>
+      <div id="timingsList"></div>
     </div>
 
     <!-- 多源查核結果 -->
@@ -450,6 +512,100 @@ clearBtn.addEventListener('click', () => {
 
 analyzeBtn.addEventListener('click', analyze);
 
+/* ---------- Debug 模式（2026-10-05）：登入後才露出模型選擇＋耗時 ---------- */
+const debugBar = $('debugBar'), debugMsg = $('debugMsg');
+const modelPicker = $('modelPicker');
+let debugToken = sessionStorage.getItem('na_debug_token') || '';
+function debugHeaders(extra) {
+  return debugToken ? { ...extra, 'X-Debug-Token': debugToken } : { ...extra };
+}
+function setDebug(on) {
+  modelPicker.style.display = on ? 'block' : 'none';
+  $('debugAccount').style.display = on ? 'none' : 'block';
+  $('debugPassword').style.display = on ? 'none' : 'block';
+  $('debugLoginBtn').textContent = on ? '登出 Debug' : '進入 Debug';
+  debugMsg.textContent = on ? '✅ Debug 模式' : '';
+  debugMsg.className = on ? 'ok' : '';
+  // 日誌面板預設收起（2026-10-06）：只在按下「📜 日誌」時才展開＋輪詢
+  $('debugLogsToggleBtn').style.display = on ? 'block' : 'none';
+  $('debugLogsWrap').style.display = 'none';
+  stopDebugLogs();
+}
+
+function toggleDebugLogs() {
+  const wrap = $('debugLogsWrap');
+  const opening = wrap.style.display === 'none';
+  wrap.style.display = opening ? 'block' : 'none';
+  $('debugLogsToggleBtn').textContent = opening ? '📜 收起日誌' : '📜 日誌';
+  if (opening) startDebugLogs(); else stopDebugLogs();
+}
+$('debugLogsToggleBtn').addEventListener('click', toggleDebugLogs);
+
+/* ---------- Debug 日誌：輪詢 /debug_logs（2026-10-06） ---------- */
+let debugLogTimer = null, debugLogsPaused = false, debugLogLineCount = 0;
+async function fetchDebugLogs() {
+  if (!debugToken || debugLogsPaused) return;
+  try {
+    const r = await fetch('/debug_logs', { headers: debugHeaders({}) });
+    if (!r.ok) return;
+    const d = await r.json();
+    const lines = d.lines || [];
+    // 內容沒變就不動 DOM，避免每次輪詢都把捲動位置拉走
+    if (lines.length === debugLogLineCount) return;
+    debugLogLineCount = lines.length;
+    const pre = $('debugLogText');
+    const atBottom = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 40;
+    pre.textContent = lines.length ? lines.join('\n') : '（尚無日誌）';
+    if (atBottom) pre.scrollTop = pre.scrollHeight;
+    $('debugLogsCount').textContent = lines.length + ' 行';
+  } catch (e) { /* 輪詢失敗就等下一輪 */ }
+}
+function startDebugLogs() {
+  stopDebugLogs();
+  debugLogsPaused = false;
+  $('debugLogsPauseBtn').textContent = '暫停';
+  fetchDebugLogs();
+  debugLogTimer = setInterval(fetchDebugLogs, 1500);
+}
+function stopDebugLogs() {
+  if (debugLogTimer) { clearInterval(debugLogTimer); debugLogTimer = null; }
+}
+$('debugLogsPauseBtn').addEventListener('click', () => {
+  debugLogsPaused = !debugLogsPaused;
+  $('debugLogsPauseBtn').textContent = debugLogsPaused ? '繼續' : '暫停';
+  if (!debugLogsPaused) fetchDebugLogs();
+});
+$('debugLogsClearBtn').addEventListener('click', () => {
+  $('debugLogText').textContent = '（畫面已清除，下一輪輪詢會補回）';
+  debugLogLineCount = -1;
+});
+async function debugLogin() {
+  if (debugToken) {  // 已登入 → 按鈕變登出
+    debugToken = ''; sessionStorage.removeItem('na_debug_token');
+    setDebug(false); return;
+  }
+  const account = $('debugAccount').value.trim();
+  const password = $('debugPassword').value;
+  debugMsg.textContent = '登入中…'; debugMsg.className = '';
+  try {
+    const r = await fetch('/debug_login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ account, password })
+    });
+    const d = await r.json();
+    if (!r.ok || !d.ok) throw new Error(d.error || '登入失敗');
+    debugToken = d.token; sessionStorage.setItem('na_debug_token', debugToken);
+    $('debugPassword').value = '';
+    setDebug(true); loadModels();
+  } catch (err) {
+    debugMsg.textContent = '❌ ' + err.message; debugMsg.className = 'err';
+  }
+}
+$('debugLoginBtn').addEventListener('click', debugLogin);
+$('debugPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') debugLogin();
+});
+
 /* ---------- 模型選擇 ---------- */
 const modelGroups = $('modelGroups');
 const modelHint = $('modelHint');
@@ -516,14 +672,18 @@ modelGroups.addEventListener('change', e => {
 
 async function loadModels() {
   try {
-    const r = await fetch('/models');
+    const r = await fetch('/models', { headers: debugHeaders({}) });
+    if (r.status === 403) {  // token 失效（伺服器重啟過）→ 回到未登入
+      debugToken = ''; sessionStorage.removeItem('na_debug_token');
+      setDebug(false); return;
+    }
     const d = await r.json();
     renderModelPicker(d.models || []);
   } catch (err) {
     modelHint.textContent = '模型清單載入失敗（將使用系統預設）';
   }
 }
-loadModels();
+if (debugToken) { setDebug(true); loadModels(); }  // 沿用上次登入的 token
 
 async function analyze() {
   const text = input.value.trim();
@@ -540,12 +700,13 @@ async function analyze() {
     ? { url: text }
     : { postText: text };
   // 勾 2+ 個 → 後端走多模型共識投票；勾 1 個或 0 個 → 沿用預設行為
-  if (picked.length) payload.llm_models = picked;
+  // 2026-10-05：只在 debug 模式送模型選擇
+  if (debugToken && picked.length) payload.llm_models = picked;
 
   try {
     const res = await fetch('/judge', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: debugHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(payload)
     });
     const data = await res.json();
@@ -735,7 +896,7 @@ function renderResult(data) {
   if (sources.length) {
     sourcesWrap.style.display = 'block';
     sourcesList.innerHTML = '';
-    const labelMap = { cofacts: 'Cofacts', google: 'Google 查核', mygopen: 'MyGoPen' };
+    const labelMap = { cofacts: 'Cofacts', google: 'Google 查核', mygopen: 'MyGoPen', rumtoast: '蘭姆酒吐司', hkbu: 'HKBU 查核' };
     const statusMap = {
       inaccurate: { t: '不實', c: 'hit' },
       partial:    { t: '部分正確', c: 'hit' },
@@ -818,7 +979,7 @@ function renderResult(data) {
   // 深入分析（本機 LLM）渲染
   const deepWrap = $('deepAnalysis');
   const da = data.deep_analysis || {};
-  if (da && ((da.key_points && da.key_points.length) || da.analysis || da.viewpoints)) {
+  if (da && ((da.key_points && da.key_points.length) || da.analysis || da.viewpoints || da.error)) {
     deepWrap.style.display = 'block';
     const score = parseInt(da.credibility_score, 10);
     const scoreValid = !isNaN(score);
@@ -844,6 +1005,13 @@ function renderResult(data) {
     });
     $('deepViewpoints').textContent = da.viewpoints || '—';
     $('deepAnalysisText').textContent = da.analysis || '—';
+
+    // 2026-10-06：分析失敗時不要留白。原本只靠 key_points/analysis 判斷顯示，
+    // 失敗時後端回 {} → 整段消失，使用者只看到「沒有 AI 分析」而不知原因。
+    if (!da.analysis && da.error) {
+      $('deepAnalysisText').textContent =
+        '⚠️ AI 深入分析失敗，本次已跳過 AI 加權（僅採用規則分）：' + da.error;
+    }
 
     // 主張摘要：讓使用者先看到「這次到底在查什麼」，而不是先看到一個分數
     const claimEl = $('deepClaim');
@@ -884,8 +1052,8 @@ function renderResult(data) {
     const detailsContainer = $('deepDetailsContainer');
     if (hasDetails) {
         toggleBtn.style.display = 'block';
-        detailsContainer.style.display = 'none'; // 預設隱藏，避免雜亂
-        toggleBtn.textContent = '🔍 查看進階分析細節 (AI 觀點與總結) ▾';
+        detailsContainer.style.display = 'block'; // AI 分析回覆預設直接顯示
+        toggleBtn.textContent = '隱藏進階分析細節 ▴';
         
         // 綁定點擊事件（先移除舊的，避免重複綁定）
         toggleBtn.onclick = function() {
@@ -917,6 +1085,30 @@ function renderResult(data) {
     }
   } else {
     deepWrap.style.display = 'none';
+  }
+
+  // 各步驟耗時（只在 debug 模式後端才回傳，2026-10-05）
+  const timingsWrap = $('timingsWrap'), timingsList = $('timingsList');
+  const timings = data.timings || {};
+  const stepNames = {
+    extract: '🔗 網址抓取', sentiment: '😊 情緒分析', fact_check: '✅ 事實查核',
+    similarity: '📊 相似度', web_search: '🔍 網路搜尋', deep_analyze: '🧠 AI 深入分析',
+    scoring: '🧮 計分融合', total: '🏁 總計',
+  };
+  const tKeys = Object.keys(stepNames).filter(k => timings[k] != null);
+  if (tKeys.length) {
+    timingsWrap.style.display = 'block';
+    const tMax = Math.max(...tKeys.map(k => Number(timings[k]) || 0), 1);
+    let tRows = '<table class="timings-table">';
+    for (const k of tKeys) {
+      const ms = Number(timings[k]) || 0;
+      const txt = ms >= 1000 ? (ms / 1000).toFixed(1) + ' s' : Math.round(ms) + ' ms';
+      const pct = Math.max(2, (ms / tMax) * 100);
+      tRows += `<tr><td>${stepNames[k]}<div class="timings-bar" style="width:${pct}%"></div></td><td><b>${txt}</b></td></tr>`;
+    }
+    timingsList.innerHTML = tRows + '</table>';
+  } else {
+    timingsWrap.style.display = 'none';
   }
 
   resultCard.classList.add('show');

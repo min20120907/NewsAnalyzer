@@ -50,6 +50,45 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPT_DIR not in _sys.path:
     _sys.path.insert(0, _SCRIPT_DIR)
 
+# Debug 模式要能看到日誌（2026-10-06）：把 stdout/stderr 分流進環形緩衝，
+# 由 GET /debug_logs（需 X-Debug-Token）讀出。只 tee，不改原本輸出目的地。
+import collections as _collections, threading as _threading
+_LOG_BUF = _collections.deque(maxlen=600)
+_LOG_LOCK = _threading.Lock()
+
+
+class _LogTee:
+    # 2026-10-06：環形緩衝只留有用的行。tqdm 權重載入條與 /debug_logs 自己的
+    # 輪詢紀錄會把緩衝洗掉（前端每 1.5s 輪詢一次 = 每 1.5s 多一行），故略過。
+    _SKIP = ("Loading weights:", "/debug_logs")
+
+    def __init__(self, real):
+        self._real = real
+
+    def write(self, s):
+        if s:
+            _LOG_LOCK.acquire()
+            try:
+                for _ln in s.splitlines():
+                    if _ln.strip() and not any(k in _ln for k in self._SKIP):
+                        _LOG_BUF.append(_ln)
+            finally:
+                _LOG_LOCK.release()
+        return self._real.write(s)
+
+    def flush(self):
+        try:
+            self._real.flush()
+        except Exception:
+            pass
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+
+_sys.stdout = _LogTee(_sys.stdout)
+_sys.stderr = _LogTee(_sys.stderr)
+
 # 網路評論搜尋客戶端（Serper → free-search bing → Google News RSS）
 # 失敗/無 key 時 web_search_client.search() 自動回退，web_results 為空 list
 try:
@@ -394,6 +433,36 @@ def _web_relevant_count(web_results: list, query: str) -> int:
     return n
 
 
+def _web_corr_outlets(web_results: list, query: str, self_host: str = "") -> list:
+    """多家同報：與 query 相關的 web_results 去重後 outlet 名單（排除自己）。
+
+    2026-10-05：新新聞本來就沒有查核，用獨立媒體交叉印證補位。
+    Google News RSS 的 url 全是 news.google.com 包裝，outlet 改從標題
+    尾綴「 - XX新聞」取；直連 url 則用 domain。
+    # ponytail: 標題尾綴啟發式，同集團轉稿會被算成多家；要更嚴就再比內文 sim。
+    """
+    core = _web_query_core(query).replace(" ", "").replace("　", "")
+    # 步長 1（_web_relevant_count 用 2 是舊行為不動；這裡要全覆蓋，否則「杜拜航空」
+    # 對不對得上純看出現在偶數還是奇數位，實測中央社案就這樣被漏掉）。
+    keys = None if len(core) < 8 else [core[i:i + 4] for i in range(0, len(core) - 3)]
+    outs, seen = [], set()
+    for r in web_results or []:
+        t = (r.get("title") or "").replace(" ", "").replace("　", "")
+        if keys is not None and not any(k in t for k in keys):
+            continue
+        h = urlparse(r.get("url") or "").netloc.lower().replace("www.", "")
+        if h in ("news.google.com", "google.com"):
+            suf = (r.get("title") or "").split(" - ")[-1].strip().lower()
+            outlet = suf if suf else h
+        else:
+            outlet = h
+        if not outlet or outlet == (self_host or "").lower() or outlet in seen:
+            continue
+        seen.add(outlet)
+        outs.append(outlet)
+    return outs
+
+
 def _web_search_fallback(query: str, web_results: list, max_results: int = 6) -> list:
     """相關 < 2 筆時觸發：縮短查詢再查並去重合併。失敗回原結果。"""
     if not (WEB_SEARCH_AVAILABLE and _wsc is not None):
@@ -405,7 +474,7 @@ def _web_search_fallback(query: str, web_results: list, max_results: int = 6) ->
         short = core.split()[0] if core.split() else core
         if len(short) < 6 or short == query:
             return web_results
-        extra = _wsc.search(short, max_results=max_results) or []
+        extra = _wsc.search(short, max_results=min(max_results, 3)) or []
         seen = {r.get("url") for r in web_results}
         merged = list(web_results)
         for r in extra:
@@ -525,7 +594,10 @@ def _web_search_multi(queries: list, max_results: int = 6, ref_title: str = "") 
         if not q or len(q) < 4:
             continue
         try:
-            res = _wsc.search(q, max_results=max_results) or []
+            # 2026-10-05：單查詢只取 3（合併後本來就截 6＋sim 過濾，取 6 只是
+            # 逼 search() 在 RSS 不足 6 時去開瀏覽器——實測單次 6.6s，2 筆來自瀏覽器）。
+            # 真缺貨時（<3）瀏覽器照樣補，稀缺覆蓋不變。
+            res = _wsc.search(q, max_results=min(max_results, 3)) or []
         except Exception as _e:
             print(f"[judge] web search failed: {_e}")
             continue
@@ -546,7 +618,7 @@ def _web_search_multi(queries: list, max_results: int = 6, ref_title: str = "") 
                       for r in merged]
             _sims = _similarity_batch(_texts, [ref_title])
             _ranked = sorted(zip(_sims, merged), key=lambda t: t[0], reverse=True)
-            _kept = [r for s, r in _ranked if s >= 0.45]
+            _kept = [r for s, r in _ranked if s >= 0.5]
             if len(_kept) < 2:
                 _kept = [r for _, r in _ranked[:2]]
             _dropped = len(merged) - len(_kept)
@@ -570,23 +642,38 @@ def _attach_web_bodies(results: list, top_n: int = 2, min_chars: int = 120) -> N
     分數沒有鑑別力。這裡重用既有的 _extract_from_url（trafilatura → newspaper3k →
     Playwright → Selenium），只抓前 top_n 筆以控延遲。
 
-    ponytail: top_n=2 的取捨；抓全部會讓單則延遲從 ~12s 漲到 40s+。
-    若之後發現「前 2 筆都是低相關」是主要失效模式，再提高到 3 筆並加背景預抓快取。
+    Google News RSS 連結只是包裝頁（HTTP 302 回自己的 wrapper；trafilatura 抽不到正文，
+    Playwright 實測會等約 20 秒仍只抓到 wrapper），因此不送進 body extractor；
+    這類結果在 prompt 明標「正文未載入」，讓模型保守 abstain。其他直連結果仍抓 top_n，
+    保留正文證據路徑。
     """
     if not results:
         return
-    cands = [r for r in results if r.get("url") and r.get("body") is None][:top_n]
-    for r in cands:
+    cands = [r for r in results
+             if r.get("url") and r.get("body") is None
+             and r.get("source") != "google_news"
+             and len((r.get("snippet") or "").strip()) < min_chars][:top_n]
+    # 2026-10-05：並行抓（log 實測串行各 8~11s，web 19s 幾乎全是這裡）。
+    # 同 _extract_from_url 同一函數，只是換並行，品質不變。
+    import concurrent.futures as _cf
+
+    def _one(_r):
         try:
-            ex = _extract_from_url(r["url"])
+            # 2026-10-05：body 都是 Google News 包裝連結，newspaper 必空轉 15s
+            # 超時才交棒（實測 trafilatura 秒掛→newspaper 15s→Playwright 才抓到）。
+            # Playwright 能力覆蓋 newspaper，直接跳過它。
+            ex = _extract_from_url(_r["url"], skip_newspaper=True)
         except Exception as _e:
             print(f"[judge] web body extract failed: {_e}")
-            continue
+            return
         if isinstance(ex, dict):
             txt = (ex.get("text") or ex.get("content") or "").strip()
             if len(txt) >= min_chars:
-                r["body"] = txt[:2000]
-                print(f"[judge] web body attached len={len(r['body'])} src={r.get('source','?')}", flush=True)
+                _r["body"] = txt[:2000]
+                print(f"[judge] web body attached len={len(_r['body'])} src={_r.get('source','?')}", flush=True)
+
+    with _cf.ThreadPoolExecutor(max_workers=min(top_n, 2)) as _ex:
+        list(_ex.map(_one, cands))
 
 
 # ---------------------------------------------------------------
@@ -721,17 +808,21 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
     lines = []
     for i, r in enumerate(web_results[:5], 1):
         t = (r.get("title") or "").strip()
-        s = (r.get("body") or r.get("snippet") or "").strip()
-        if len(s) > 400:
-            s = s[:400] + "…"
+        body_text = (r.get("body") or "").strip()
+        snippet = (r.get("snippet") or "").strip()
+        s = body_text or snippet
+        status = "來源正文已載入" if body_text else ("搜尋摘要" if snippet else "僅標題，正文未載入")
+        if len(s) > 220:
+            s = s[:220] + "…"
         if not (t or s):
             continue
-        lines.append(f"{i}. {t}\n   {s}" if s else f"{i}. {t}")
+        lines.append(f"{i}. [{status}] {t}\n   {s}" if s else f"{i}. [{status}] {t}")
     web_summary = "\n".join(lines) or "（無網路搜尋結果）"
     # 查核源摘要：把機構回覆原文（reasons）一起給模型，否則它只能讀到 status 標籤，
     # 輸出就退化成「把 status 翻譯成分數」，這是分數沒有鑑別力與敘述模糊的根因。
     fc_lines = []
-    label_map = {"cofacts": "Cofacts", "google": "Google查核", "mygopen": "MyGoPen"}
+    label_map = {"cofacts": "Cofacts", "google": "Google查核", "mygopen": "MyGoPen",
+                 "rumtoast": "蘭姆酒吐司", "hkbu": "HKBU查核"}
     for s in sources:
         st = s.get("status", "not_found")
         nm = label_map.get(s.get("source", ""), s.get("source", ""))
@@ -920,6 +1011,8 @@ def deep_analyze(title: str, web_results: list, sources: list,
                             parsed = json.loads(m.group(0))
                         except:
                             pass
+            if not parsed:
+                print(f"[judge] deep_analyze JSON parse failed, resp[:300]={resp[:300]}", flush=True)
         else:
             parsed = resp or {}
             
@@ -967,7 +1060,6 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
         return {}
     n = int(samples if samples is not None else os.environ.get("DEEP_ANALYZE_SAMPLES", "1"))
     n = max(1, min(n, 5))
-    to = timeout or DEEP_ANALYZE_TIMEOUT
 
     # 排隊感知：只在後端是 :8088（單槽，常被 Hermes 長上下文佔用 100-330s）時才檢查；
     # deep-proxy（DeepSeek Web）走雲端排隊，不適用此邏輯。
@@ -981,6 +1073,11 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
             _skip_url = _reg.resolve(model_id)[2]["base_url"]
         except Exception:
             pass
+    # 2026-10-06：逾時依後端分開。本機 :8088 單次 12–20s，60s 足夠；
+    # 雲端（agy shim）實測同一則新聞要 119s，被 60s 砍掉後 deep={} →
+    # 前端整段「AI 深入分析」消失（使用者回報：gemini 沒有 ai 分析）。
+    to = timeout or (DEEP_ANALYZE_TIMEOUT if "8088" in _skip_url
+                     else float(os.environ.get("DEEP_ANALYZE_TIMEOUT_CLOUD", "180")))
     if "8088" in _skip_url:
         eta = qwen_queue_eta()
         if eta > QWEN_BUSY_ETA_SKIP:
@@ -1008,7 +1105,11 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
                     pass
     valid = [r for r in results if isinstance(r, dict) and r.get("credibility_score") is not None]
     if not valid:
-        return {}
+        # 2026-10-06：全數失敗時把原因帶回去，前端才顯示得出來。
+        # 這裡是所有呼叫路徑的唯一交會點（單次／串行／並發都經過），修一次就夠。
+        _err = next((r.get("error") for r in results
+                     if isinstance(r, dict) and r.get("error")), "")
+        return {"error": _err} if _err else {}
     scores = [float(r["credibility_score"]) for r in valid]
     avg = sum(scores) / len(scores)
     std = (sum((s - avg) ** 2 for s in scores) / len(scores)) ** 0.5
@@ -1070,6 +1171,21 @@ DEFAULT_WEIGHTS = {
 }
 
 
+def _feedback_from_sources(sources: list) -> tuple[float, str]:
+    """Only count actual fact-check replies from sources still accepted as matches."""
+    n_reply = sum(
+        1 for r in sources
+        if r.get("status") in ("inaccurate", "partial", "accurate")
+        for it in (r.get("reasons") or [])[:3]
+        if (it.get("text") or "").strip()
+    )
+    if n_reply:
+        return min(DEFAULT_WEIGHTS["feedback"], 1.0 + 3.0 * n_reply), f"{n_reply}則查核回覆"
+    if any(r.get("status") in ("inaccurate", "partial", "accurate") for r in sources):
+        return 0.0, "命中但無回覆原文"
+    return 0.0, "none"
+
+
 def _samples_for(mode: str) -> int:
     """模式 → 取樣數。deep 的 3 不靠 systemd override（拿掉就會靜默退回 n=1）。"""
     mode = (mode or "fast").lower()
@@ -1087,8 +1203,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     """
     res: Dict[str, Dict] = {}
     total = 0.0; avail = sum(DEFAULT_WEIGHTS.values())
-    timings: Dict[str, float] = {}   # 各階段耗時（ms）：延遲診斷用，隨 /judge 回傳
-    _t0 = time.perf_counter()
+    timings: Dict[str, float] = {}   # 子階段耗時（ms）
 
     # Pre-resolve Domain info for downstream metric logic (supports Google News RSS title/content publisher resolution)
     MEDIA_NAME_TO_DOMAIN = {
@@ -1259,14 +1374,12 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
             # 所有源都是 not_found/disabled/error → 視為查無資料 (即時新聞中性基準分 15.0)
             fc_desc = "not_found"
             fc_pts = DEFAULT_WEIGHTS["fact_check"] * 0.5
-        # 4) 用戶回饋（網路評論）→ 改為生成搜尋連結，不依賴回饋數
-        #    有任一源命中（inaccurate/partial/accurate）視為有討論度，給部分分
-        hit = any(r.get("status") in ("inaccurate", "partial", "accurate") for r in sources)
-        if hit:
-            fb_pts = DEFAULT_WEIGHTS["feedback"]
-            fb_desc = "有查核討論"
-        else:
-            fb_desc = "none"
+        # 4) 用戶回饋（查核回覆數分級，2026-10-05）：
+        #    舊制任一命中即滿分，一則回覆就顯示 100%，沒有鑑別力。
+        #    改數 sources 已有的 reasons 回覆原文：有回覆才給分，零新 I/O。
+        # ponytail: 每則 3 分是啟發式（1則=4，2則=7，3則+=10）；立場明確度未單獨
+        # 計，日後要精確就對回覆文本接 stance 分類。
+        fb_pts, fb_desc = _feedback_from_sources(sources)
         # 6) 時效性：優先文章發布時間 publish_date，其次 Cofacts 命中文章建立時間
         tl_date = None
         tl_src = None
@@ -1313,7 +1426,26 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         mode = "fast"
     n_samples = _samples_for(mode)
     deep = {}
-    if web_results or sources:
+    # 快速路徑只在未指定單一模型（或走多模型 consensus）時啟用。
+    # 明確單選模型必須執行該模型，不能被 JEV/Laya triage 靜默跳過。
+    _tri = None
+    if (web_results or sources) and (not llm_model or llm_model == "consensus"):
+        try:
+            _t0 = time.perf_counter()
+            import triage_cascade as _tc
+            _tri = _tc.triage(content)
+            timings["triage_cascade"] = round((time.perf_counter() - _t0) * 1000, 1)
+        except Exception as _e:
+            print(f"[judge] triage failed: {_e}", flush=True)
+            _tri = None
+    if _tri:
+        deep = {"claim": (_title_clean or content[:60]),
+                "evidence_state": "cascade_triage", "evidence_used": [],
+                "key_points": [], "viewpoints": "",
+                "credibility_score": 75 if _tri["verdict"] == "likely_real" else 25,
+                "abstain": False, "route": "cascade", "triage": _tri}
+        timings["deep_analyze"] = timings.get("triage_cascade") or 0
+    elif web_results or sources:
         try:
             _t = time.perf_counter()
             deep = deep_analyze_ensemble(_title_clean or content[:60], web_results, sources,
@@ -1322,7 +1454,10 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
             timings["deep_analyze"] = round((time.perf_counter() - _t) * 1000, 1)
         except Exception as _e:
             print(f"[judge] deep_analyze failed: {_e}", flush=True)
-            deep = {}
+            # 2026-10-06：不要靜默變空。前端要能看到失敗原因，
+            # 否則整段「AI 深入分析」消失，使用者只覺得「沒有分析」。
+            deep = {"error": f"{type(_e).__name__}: {_e}"}
+    _fusion_t0 = time.perf_counter()
     # 融合：LLM 可信度分動態加權進總評
     # - 查核命中：規則已強證據，LLM 僅微調 (w=0.10)
     # - 查核全 not_found：規則維度無信號，LLM 成主要依據 (w=0.60)
@@ -1353,8 +1488,21 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
             _s["soft_hit_sim"] = _s.get("similarity_score")
             _s["llm_promoted"] = _promote
             if not _promote:
+                # 軟命中未被 LLM 接納，不得再當成查核回覆、分數依據或 UI 證據展示。
                 _s["status"] = "not_found"
                 _s["feedback_count"] = 0
+                _s["reasons"] = []
+                _s["matched_text"] = None
+                _s["url"] = None
+                _s.pop("alternatives", None)
+        if not _promote:
+            _new_fb_pts, _new_fb_desc = _feedback_from_sources(sources)
+            total += _new_fb_pts - fb_pts
+            fb_pts, fb_desc = _new_fb_pts, _new_fb_desc
+            res["user_feedback"] = {"score": fb_pts, "desc": fb_desc,
+                                    "weight": DEFAULT_WEIGHTS["feedback"]}
+            final = max(0.0, (total / avail) * 100) if avail > 0 else 0.0
+            rule_score = final
         if _promote:
             # 升級後 fact_check 要重算：走最嚴重取樣
             _worst = max((s.get("soft_hit_status") for s in _soft),
@@ -1389,6 +1537,13 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     post_fusion_score = final
     clamped = False
     clamp_reason = ""
+    # 2026-10-05：多家同報。新新聞本來就沒有查核（查核庫只收網傳謠言），
+    # ≥3 家獨立媒體同報 = 交叉印證：abstain 上限 55→70，仍是暫時分數、不視為可信。
+    # key 用標題＋內文頭（只用標題會漏掉換句話說的同報，實例：中央社寫「杜拜航空機長遇襲」，
+    # 標題與三立原標零重疊，要靠內文的「杜拜航空」才連得起來）。
+    # 內文放前面：_web_query_core 會按「|」切（標題本有站台後綴），放後面會被切掉。
+    _corr_outlets = _web_corr_outlets(web_results, f"{content[:80]}。{_query_src}", host)
+    _corr_n = len(_corr_outlets)
     if ai_cs is not None:
         try:
             cs = float(ai_cs)
@@ -1417,6 +1572,9 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
                 final = final * (1 - fusion_weight) + cs * fusion_weight
                 _abstain_cap = 55.0
                 _ev_label = str((deep or {}).get("evidence_state") or "unknown")
+                if _corr_n >= 3 and not fc_hit:
+                    _abstain_cap = 70.0  # 2026-10-05：多家同報交叉印證，放寬但仍是暫時分數
+                    _ev_label += f"（{_corr_n}家媒體同報交叉印證）"
                 if final > _abstain_cap:
                     clamped = True
                     clamp_reason = (clamp_reason + "；" if clamp_reason else "") + (
@@ -1480,6 +1638,8 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     elif ai_abstain and deep:
         basis = ("AI 模型判定證據不足，本次為暫時分數（非查核結論）："
                  f"{(deep.get('evidence_state') or '未載入正文')}")
+        if _corr_n >= 3:  # 2026-10-05：讓多家同報看得見（沒被 clamp 也留痕）
+            basis += f"｜{_corr_n}家媒體同報交叉印證（{ '、'.join(_corr_outlets[:6])}）"
         if deep.get("evidence_state_disputed"):
             # 2026-10-01：跨次取樣對證據狀態不一致 → 不給結論（selective prediction）。
             # 擺動本身就是「模型不確定」的訊號，比它自報的分數可靠。
@@ -1489,6 +1649,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         basis = f"無查核證據，由本機 AI 模型補位評分（{deep.get('samples','?')}次取樣）"
     else:
         basis = "無查核證據且 AI 評分失敗，僅依規則分"
+    timings["scoring"] = round((time.perf_counter() - _fusion_t0) * 1000, 1)
     return {
         **res,
         "total_raw_score": total,
@@ -1504,10 +1665,11 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         "is_provisional": bool(ai_abstain),
         "evidence_state": (deep.get("evidence_state") or "") if isinstance(deep, dict) else "",
         "sources": sources,
+        "corroboration": {"count": _corr_n, "outlets": _corr_outlets},
         "review_links": review_links,
         "web_results": web_results,
         "deep_analysis": deep,
-        "timings": {**timings, "scoring": round((time.perf_counter() - _t0) * 1000, 1)},
+        "timings": timings,
     }
 
 # ---------------------------------------------------------------
@@ -1564,6 +1726,42 @@ def analyze_article_data(title: str = "", url: str = "", content: str = "", publ
 
 # --------------------------- Flask -----------------------------
 app = Flask(__name__)
+
+# --------------------------- Debug 模式 ---------------------------
+# 2026-10-05：模型選擇 + 各步驟耗時只在 debug 模式露出，一般使用者看不到。
+# 登入成功發 token（in-memory，重啟失效）；/judge 靠 X-Debug-Token 標頭驗，
+# 非 debug 請求的 llm_model/llm_models/mode 一律忽略、timings 不回傳。
+import hmac as _hmac, secrets as _secrets
+_DEBUG_USER = os.environ.get("NEWSANALYZER_DEBUG_USER", "min20120907")
+_DEBUG_PASS = os.environ.get("NEWSANALYZER_DEBUG_PASSWORD", "jefflin123")
+_DEBUG_TOKENS: set = set()
+
+def _is_debug(req) -> bool:
+    return (req.headers.get("X-Debug-Token") or "") in _DEBUG_TOKENS
+
+@app.route("/debug_login", methods=["POST"])
+def debug_login():
+    data = request.get_json(force=True, silent=True) or {}
+    ok = _hmac.compare_digest(str(data.get("account", "")), _DEBUG_USER) and \
+         _hmac.compare_digest(str(data.get("password", "")), _DEBUG_PASS)
+    if not ok:
+        return {"ok": False, "error": "帳號或密碼錯誤"}, 401
+    tok = _secrets.token_urlsafe(24)
+    _DEBUG_TOKENS.add(tok)
+    return {"ok": True, "token": tok}
+
+
+@app.route("/debug_logs", methods=["GET"])
+def debug_logs():
+    # 只給 debug 模式；回最近 600 行 stdout/stderr（環形緩衝，見 _LogTee）。
+    if not _is_debug(request):
+        return {"error": "debug only"}, 403
+    _LOG_LOCK.acquire()
+    try:
+        lines = list(_LOG_BUF)
+    finally:
+        _LOG_LOCK.release()
+    return {"ok": True, "lines": lines}
 
 def _is_facebook_url(url: str) -> bool:
     """Check if URL is a Facebook/Meta link."""
@@ -1812,7 +2010,7 @@ def _extract_facebook_selenium(url: str) -> Dict:
                 "publish_date": pub,
             }
 
-def _extract_from_url(url: str) -> Dict:
+def _extract_from_url(url: str, skip_newspaper: bool = False) -> Dict:
     """Multi-strategy URL content extractor.
 
     Fallback chain:
@@ -1820,6 +2018,9 @@ def _extract_from_url(url: str) -> Dict:
     2. newspaper3k (legacy, still works for some sites)
     3. Playwright (JS-rendered pages, paywalls with accessible content)
     4. Selenium headless (last resort, for heavily JS sites)
+
+    skip_newspaper：給 Google News 包裝連結用——newspaper 在包裝頁上必空轉
+    超時，能力又被 Playwright 覆蓋，直接跳過省 15s。
     """
     if not (url and url.startswith(("http://", "https://"))):
         return {"error": "無效的網址"}
@@ -1879,7 +2080,7 @@ def _extract_from_url(url: str) -> Dict:
             pass
 
     # --- Strategy 2: newspaper3k ---
-    if NEWSPAPER3K_AVAILABLE:
+    if NEWSPAPER3K_AVAILABLE and not skip_newspaper:
         art = fetch_article(url)
         if art is not None and art.text and len(art.text.strip()) >= 30:
             pub = None
@@ -1974,7 +2175,10 @@ def list_models():
 
     回 llm_registry 的完整目錄（含停用項，前端自行顯示標記）。
     探測狀態若已有 model_probe.json 就附上（前端灰掉掛掉的模型）。
+    2026-10-05：只在 debug 模式回應（X-Debug-Token），一般使用者不露出選單。
     """
+    if not _is_debug(request):
+        return {"error": "debug only"}, 403
     try:
         import llm_registry as _reg
     except Exception as e:
@@ -2061,13 +2265,16 @@ def judge_news():
         title = _clean_fb_title(title) or title
 
     # 2026-10-01：mode=fast（預設，n=1 約 12s）| deep（n=3 跨次一致性，約 40s）
-    mode = data.get("mode") or "fast"
+    # 2026-10-05：模型與模式選擇只在 debug 模式生效，非 debug 一律預設
+    # （擋掉繞過前端直接打 API 指定模型的請求）。
+    _debug = _is_debug(request)
+    mode = (data.get("mode") or "fast") if _debug else "fast"
     # 2026-10-02：前端選單傳 'backend/model'，空字串＝沿用 QWEN_URL（行為不變）
-    llm_model = data.get("llm_model") or ""
+    llm_model = (data.get("llm_model") or "") if _debug else ""
     # 2026-10-02：前端勾選多個模型 → 共識投票。
     # 勾 1 個＝該模型單獨評分；勾 2+ 個＝多模型共識（分歧時 abstain）。
     # 前端若未帶此欄位，行為與修正前完全相同（空字串＝沿用 QWEN_URL）。
-    _picked = [m for m in (data.get("llm_models") or []) if isinstance(m, str) and m]
+    _picked = [m for m in (data.get("llm_models") or []) if isinstance(m, str) and m] if _debug else []
     consensus_models = []
     if len(_picked) > 1:
         llm_model = "consensus"
@@ -2116,6 +2323,7 @@ def judge_news():
             "timeliness": score["timeliness"],
         },
         "sources": score.get("sources", []),
+        "corroboration": score.get("corroboration", {}),
         "review_links": score.get("review_links", {}),
         "web_results": score.get("web_results", []),
         "deep_analysis": score.get("deep_analysis", {}),
@@ -2130,7 +2338,8 @@ def judge_news():
         "is_provisional": score.get("is_provisional", False),
         "evidence_state": score.get("evidence_state", ""),
         "mode": mode,        # 2026-10-01：fast | deep，前端據此顯示暫時性
-        "timings": timings,
+        "timings": timings if _debug else {},  # 2026-10-05：各步驟耗時只給 debug
+        "debug": _debug,
     }
 
 def generate_test_results_page():
