@@ -1,0 +1,573 @@
+{
+  "sghk": {
+    "pass": true,
+    "n_ok": 22,
+    "n_total": 22,
+    "detail": [
+      {
+        "q": "馬來西亞首相安華宣布內閣改組",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "馬來西亞令吉匯率創新高",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "新加坡總理黃循財訪問中國",
+        "strong": [
+          "黃循財"
+        ],
+        "pass": false,
+        "ok": true
+      },
+      {
+        "q": "新加坡樟宜機場擴建第三跑道",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "香港特首李家超發表施政報告",
+        "strong": [
+          "李家超"
+        ],
+        "pass": false,
+        "ok": true
+      },
+      {
+        "q": "香港股市恒生指數大漲",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "安華會見習近平討論南海議題",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "穆希丁批評安華政府經濟政策",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "馬來西亞羽毛球公開賽李梓嘉奪冠",
+        "strong": [
+          "李梓嘉"
+        ],
+        "pass": false,
+        "ok": true
+      },
+      {
+        "q": "新加坡航空新航線直飛高雄",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "馬來西亞榴槤出口中國創新高",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "香港迪士尼樂園萬聖節活動開幕",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "新加坡食品局批准新型培養肉上市",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "馬來西亞國會通過反跳槽法修正案",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "香港中文大學研發登革熱快篩",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "李顯龍資政會見馬來西亞元首",
+        "strong": [
+          "李顯龍"
+        ],
+        "pass": false,
+        "ok": true
+      },
+      {
+        "q": "新加坡濱海灣跨年煙火吸引十萬人",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "香港機場三跑系統全面啟用",
+        "strong": [],
+        "pass": true,
+        "ok": true
+      },
+      {
+        "q": "沈伯洋批評藍白法案",
+        "strong": [
+          "沈伯洋"
+        ],
+        "ok": true
+      },
+      {
+        "q": "陳惠仁醫師談疫苗副作用",
+        "strong": [
+          "苗副作",
+          "陳惠仁"
+        ],
+        "ok": true
+      },
+      {
+        "q": "范振宗鄭麗文爭執",
+        "strong": [
+          "范振宗",
+          "鄭麗文"
+        ],
+        "ok": true
+      },
+      {
+        "conflict_still_blocks": false,
+        "ok": true
+      }
+    ]
+  },
+  "rumhk": {
+    "pass": true,
+    "n_ok": 20,
+    "n_total": 20,
+    "detail": [
+      {
+        "src": "rumtoast",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "手臂有雞皮疙瘩一直消不掉？這是「 毛孔角化症 」，小心被錯誤迷思誤導啊",
+        "ok": true
+      },
+      {
+        "src": "rumtoast",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "最新詐騙手法 ，開車族請小心？阿伯和假警察聯手騙？是假消息在騙你啦！",
+        "ok": true
+      },
+      {
+        "src": "rumtoast",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "轉發「 洗臉小竅門 」助姊妹永保年輕？滿滿的錯誤迷思小心皮膚遭殃",
+        "ok": true
+      },
+      {
+        "src": "rumtoast",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "7-11 100週年慶典 ，有機會獲得10000新臺幣？假的！類似手法騙過好多次",
+        "ok": true
+      },
+      {
+        "src": "rumtoast",
+        "status": "accurate",
+        "sim": 1.0,
+        "t": "網傳「 新的詐騙電話 ，按《0》新台幣就飛了」，有正確觀念就不怕詐騙！",
+        "ok": true
+      },
+      {
+        "src": "rumtoast",
+        "status": "accurate",
+        "sim": 1.0,
+        "t": "感染新冠肺炎 皮膚可能會冒出紅疹？專業皮膚科醫師來解答",
+        "ok": true
+      },
+      {
+        "src": "rumtoast",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "行政院決議， 每人補助疫情援助金 上萬塊？不要轉發啦，這謠言在唬爛你！",
+        "ok": true
+      },
+      {
+        "src": "rumtoast",
+        "status": "accurate",
+        "sim": 1.0,
+        "t": "久治不愈的灰指甲 ，原來只要花椒大蒜醋溶液就搞定？錯！專業治療才是解方",
+        "ok": true
+      },
+      {
+        "src": "rumtoast",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "昨天俄羅斯航空展 ，義大利飛行表演隊發生了意外？別被謠言誤導了！",
+        "ok": true
+      },
+      {
+        "src": "rumtoast",
+        "status": "partial",
+        "sim": 1.0,
+        "t": "皮膚紅腫癢到不行！「 蕁麻疹 」不請自來，該怎麼辦呢？",
+        "ok": true
+      },
+      {
+        "src": "hkbu",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "網傳美國聯合航空推出「高比·拜仁」致敬塗裝飛機，實為概念設計圖，並非真實",
+        "ok": true
+      },
+      {
+        "src": "hkbu",
+        "status": "partial",
+        "sim": 1.0,
+        "t": "網傳照片確為富士康測試人員，惟身分及拍照緣由等細節未獲證實",
+        "ok": true
+      },
+      {
+        "src": "hkbu",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "網傳影片稱為世界盃法國對摩洛哥賽前商舖防護，實為今年5月歐聯決賽前的部署",
+        "ok": true
+      },
+      {
+        "src": "hkbu",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "網傳世界盃決賽後燃放阿根廷藍白煙花，實為白色煙花",
+        "ok": true
+      },
+      {
+        "src": "hkbu",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "網傳為AI生成的無人機秀，實為深圳無人機表演現場畫面",
+        "ok": true
+      },
+      {
+        "src": "hkbu",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "網傳「人造假雞蛋」影片 實為多段畫面拼接，其中一段為仿真玩具蛋製作",
+        "ok": true
+      },
+      {
+        "src": "hkbu",
+        "status": "partial",
+        "sim": 1.0,
+        "t": "網傳新加坡政府倡導國民每日食三個榴蓮 內容來自惡搞網站，純屬捏造",
+        "ok": true
+      },
+      {
+        "src": "hkbu",
+        "status": "partial",
+        "sim": 1.0,
+        "t": "網傳夏蘭特倒地翻身後入球的畫面 或為人工智能生成",
+        "ok": true
+      },
+      {
+        "src": "hkbu",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "網傳英格蘭球員在補水暫停期間飲茶的畫面，並非真實場景，應為AI生成",
+        "ok": true
+      },
+      {
+        "src": "hkbu",
+        "status": "inaccurate",
+        "sim": 1.0,
+        "t": "網傳特朗普國宴「偷看」習近平文件不實，實為翻閱本人講稿",
+        "ok": true
+      }
+    ]
+  },
+  "en": {
+    "pass": false,
+    "n_ok": 19,
+    "n_total": 20,
+    "detail": [
+      {
+        "stmt": "Donald Trump is against marriage equality. He want",
+        "truth": "REAL",
+        "pred": "REAL",
+        "sim": 0.9792,
+        "ok": true
+      },
+      {
+        "stmt": "Says 57 percent of federal spending goes to the mi",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 0.9943,
+        "ok": true
+      },
+      {
+        "stmt": "The United States has a low voter turnout rate.",
+        "truth": "REAL",
+        "pred": "REAL",
+        "sim": 0.954,
+        "ok": true
+      },
+      {
+        "stmt": "Says delegates cant legally change the Republican ",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 0.972,
+        "ok": true
+      },
+      {
+        "stmt": "The decision for the United States to buy heavy wa",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 0.9809,
+        "ok": true
+      },
+      {
+        "stmt": "Says Donald Trump said of women, And you can tell ",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 0.9898,
+        "ok": true
+      },
+      {
+        "stmt": "I did not I did not I do not say that. I do not sa",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 0.9196,
+        "ok": true
+      },
+      {
+        "stmt": "Virginia has made no progress on jobs since Bob Mc",
+        "truth": "FAKE",
+        "pred": "?",
+        "sim": null,
+        "ok": false
+      },
+      {
+        "stmt": "Social Security has nothing to do with the federal",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 0.7697,
+        "ok": true
+      },
+      {
+        "stmt": "About 1 percent of all the gun sellers are respons",
+        "truth": "REAL",
+        "pred": "REAL",
+        "sim": 0.7852,
+        "ok": true
+      },
+      {
+        "stmt": "Local bakery in Ohio wins national pie contest thi",
+        "expect": "not_found",
+        "got": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "Federal Reserve holds interest rates steady amid i",
+        "expect": "not_found",
+        "got": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "NASA schedules Artemis moon landing for late next ",
+        "expect": "not_found",
+        "got": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "Premier League results: Arsenal beats Chelsea 2-0 ",
+        "expect": "not_found",
+        "got": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "County fair in Iowa sets attendance record with co",
+        "expect": "not_found",
+        "got": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "台積電宣布在高雄擴廠徵才三千人，市政府表示歡迎",
+        "expect": "not_found",
+        "got": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "中央氣象署發布海上颱風警報，請民眾注意防範",
+        "expect": "not_found",
+        "got": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "台北市捷運板南線延長段通車，票價維持不變",
+        "expect": "not_found",
+        "got": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "台灣代表隊在亞運羽球男雙奪金，全國歡騰",
+        "expect": "not_found",
+        "got": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "立法院三讀通過住宅法修正案，租屋補貼加碼",
+        "expect": "not_found",
+        "got": "not_found",
+        "ok": true
+      }
+    ]
+  },
+  "ja": {
+    "pass": true,
+    "n_ok": 20,
+    "n_total": 20,
+    "detail": [
+      {
+        "src": "infact",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 1.0,
+        "ok": true
+      },
+      {
+        "src": "infact",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 1.0,
+        "ok": true
+      },
+      {
+        "src": "infact",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 1.0,
+        "ok": true
+      },
+      {
+        "src": "infact",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 1.0,
+        "ok": true
+      },
+      {
+        "src": "infact",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 1.0,
+        "ok": true
+      },
+      {
+        "src": "infact",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 1.0,
+        "ok": true
+      },
+      {
+        "src": "infact",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 1.0,
+        "ok": true
+      },
+      {
+        "src": "infact",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 1.0,
+        "ok": true
+      },
+      {
+        "src": "infact",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 1.0,
+        "ok": true
+      },
+      {
+        "src": "infact",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 0.5213,
+        "ok": true
+      },
+      {
+        "stmt": "トヨタが新型プリウスを発表、燃費は過去最高",
+        "infact": "not_found",
+        "jfc": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "気象庁が関東地方に大雨警報を発表",
+        "infact": "not_found",
+        "jfc": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "日銀が金融政策の現状維持を決定",
+        "infact": "not_found",
+        "jfc": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "大谷翔平がドジャースで今季30号ホームラン",
+        "infact": "not_found",
+        "jfc": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "新幹線のぞみ号が一部区間で運転見合わせ",
+        "infact": "not_found",
+        "jfc": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "台積電宣布在高雄擴廠徵才三千人，市政府表示歡迎",
+        "infact": "not_found",
+        "jfc": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "中央氣象署發布海上颱風警報，請民眾注意防範",
+        "infact": "not_found",
+        "jfc": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "台北市捷運板南線延長段通車，票價維持不變",
+        "infact": "not_found",
+        "jfc": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "台灣代表隊在亞運羽球男雙奪金，全國歡騰",
+        "infact": "not_found",
+        "jfc": "not_found",
+        "ok": true
+      },
+      {
+        "stmt": "立法院三讀通過住宅法修正案，租屋補貼加碼",
+        "infact": "not_found",
+        "jfc": "not_found",
+        "ok": true
+      }
+    ]
+  }
+}

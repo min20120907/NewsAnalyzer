@@ -90,7 +90,8 @@ def _mcache_put(source, key, payload):
 def _map_google_rating(text: str):
     """把 Google claimReview 的 rating text 對映到四類。"""
     t = (text or "").lower()
-    if any(k in t for k in ["false", "fake", "錯誤", "不實", "謠言", "假"]):
+    if any(k in t for k in ["false", "fake", "pants on fire", "pants-fire",
+                            "錯誤", "不實", "謠言", "假"]):
         return "inaccurate"
     if any(k in t for k in ["true", "correct", "正確", "屬實", "真"]):
         return "accurate"
@@ -120,7 +121,8 @@ _EN_STOP = {"the", "a", "an", "in", "on", "of", "to", "is", "are",
             "was", "were", "be", "been", "and", "or", "for", "with",
             "that", "this", "it", "as", "by", "from", "says", "said",
             "say", "claim", "claims", "claimed", "new", "over", "amid",
-            "will", "would", "has", "have", "had", "do", "does", "did"}
+            "will", "would", "has", "have", "had", "do", "does", "did",
+            "not", "no", "nor", "s", "t", "nt"}
 
 
 def _en_keywords(text: str, limit: int = 6) -> str:
@@ -159,7 +161,9 @@ def get_google_factcheck(text: str, use_cache: bool = True,
     lang = lang or _detect_lang(text)
     snippet = ((_en_keywords(text) or text[:120]) if lang == "en"
                else text[:300])
-    key = hashlib.sha1((f"g2:{lang}:" + snippet).encode("utf-8")).hexdigest()
+    # g5 世代（2026-10-08）：en 改 Top-K 自選＋0.60 門控，選 claim 不同故全換；
+    # 舊 g2 欄缺門控語義會讓錨定誤判（同 2026-09-24 g→g2 教訓）
+    key = hashlib.sha1((f"g5:{lang}:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("google", key)
         if c:
@@ -177,12 +181,55 @@ def get_google_factcheck(text: str, use_cache: bool = True,
                 "article_id": None, "matched_text": None, "url": None,
                 "reasons": [], "note": f"API 錯誤: {e}"}
     claims = data.get("claims", [])
-    if not claims:
-        res = _empty("google")
-        _mcache_put("google", key, res)
-        return res
-    # 取第一筆 claim 的第一個 review
-    claim = claims[0]
+    # Top-K 自選函式（2026-10-08，僅 en 用）：逐條 SBERT 比全文取最高者。
+    # API 排序會抖（同查詢不同時間 claims[0] 不同），只取首筆等於賭運氣。
+    # 中文沿用 claims[0]，行為不動。
+    def _pick_best(cands):
+        try:
+            from cofacts_local import _sbert_sim as _gsim
+        except Exception:
+            _gsim = None
+        ranked = []
+        for cl in cands[:10]:
+            ct = cl.get("text") or ""
+            try:
+                s = float(_gsim(text[:300], ct)) if _gsim else None
+            except Exception:
+                s = None
+            ranked.append((s if s is not None else -1.0, cl))
+        ranked.sort(key=lambda x: x[0], reverse=True)
+        return ranked[0] if ranked else (None, None)
+    if lang == "en":
+        best_sim, claim = _pick_best(claims)
+        if snippet != text[:300] and (best_sim is None or best_sim < 0.60):
+            # tier-2 全文查詢：關鍵詞路最佳 <0.60 才付第二次成本；
+            # 兩路贏面不同（關鍵詞救長尾、全文救斷片），取兩路最佳者
+            try:
+                r2 = requests.get(
+                    GOOGLE_EP, params={"key": GOOGLE_API_KEY,
+                                       "query": text[:300],
+                                       "languageCode": lang},
+                    headers={"User-Agent": UA}, timeout=timeout_api)
+                r2.raise_for_status()
+                claims2 = r2.json().get("claims", [])
+            except Exception:
+                claims2 = []
+            if claims2:
+                best2, claim2 = _pick_best(claims2)
+                if best2 is not None and best2 > (best_sim or -1.0):
+                    best_sim, claim = best2, claim2
+        if claim is None:
+            res = _empty("google")
+            _mcache_put("google", key, res)
+            return res
+    else:
+        if not claims:
+            res = _empty("google")
+            _mcache_put("google", key, res)
+            return res
+        claim = claims[0]
+        best_sim = None
+    # 取選定 claim 的第一個 review（沿用舊語義）
     reviews = claim.get("claimReview", [])
     reasons = []
     status = "not_found"
@@ -200,13 +247,24 @@ def get_google_factcheck(text: str, use_cache: bool = True,
            "article_id": None,
            "matched_text": (claim.get("text") or "")[:120],
            "url": url, "reasons": reasons}
-    # 2026-09-24：回傳輸入與命中 claim 的語意相似度，供錨定用真實信心（缺此欄會被當 100%）
-    try:
-        from cofacts_local import _sbert_sim
-        _gs = _sbert_sim(snippet, claim.get("text") or "")
-        res["similarity_score"] = round(float(_gs), 4) if _gs is not None else None
-    except Exception:
-        res["similarity_score"] = None
+    # similarity_score：en 用 Top-K 自選的全文比；zh 沿用舊算法（claims[0] 全文比），
+    # 兩邊缺模型時為 None（下游視為 0 信心，保守方向）
+    if lang == "en":
+        _bs = best_sim if best_sim is not None and best_sim >= 0.0 else None
+    else:
+        try:
+            from cofacts_local import _sbert_sim
+            _bs = _sbert_sim(text[:300], claim.get("text") or "")
+        except Exception:
+            _bs = None
+    res["similarity_score"] = round(float(_bs), 4) if _bs is not None else None
+    # 2026-10-08：英文短查詢常召回無關 claim（LIAR 斷片），sim<0.60 降為
+    # not_found（小樣本定值：真命中 0.74+／誤召回 0.41~0.54，待大樣本重校）。
+    # 只擋 en，中文行為不動。
+    if (lang == "en" and res["similarity_score"] is not None
+            and res["similarity_score"] < 0.60):
+        res = _empty("google")
+        res["note"] = "英文命中相似度不足（<0.60），視為無相關查核"
     _mcache_put("google", key, res)
     return res
 
