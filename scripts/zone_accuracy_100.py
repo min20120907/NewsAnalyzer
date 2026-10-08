@@ -220,7 +220,7 @@ def main():
             summary = json.load(open(summary_path, encoding="utf-8"))
         except Exception:
             summary = {}
-    for zone in ["tw", "en", "ja", "cn"]:
+    for zone in SAMPLERS:
         if only and zone != only:
             continue
         s = run_zone(zone)

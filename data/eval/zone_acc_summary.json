@@ -1,0 +1,50 @@
+{
+  "tw": {
+    "n": 100,
+    "valid": 100,
+    "skipped": 0,
+    "accuracy": 0.9,
+    "P_fake": 0.8333,
+    "R_fake": 1.0,
+    "TP": 50,
+    "TN": 40,
+    "FP": 10,
+    "FN": 0
+  },
+  "en": {
+    "n": 100,
+    "valid": 100,
+    "skipped": 0,
+    "accuracy": 0.82,
+    "P_fake": 0.7797,
+    "R_fake": 0.902,
+    "TP": 46,
+    "TN": 36,
+    "FP": 13,
+    "FN": 5
+  },
+  "ja": {
+    "n": 81,
+    "valid": 81,
+    "skipped": 0,
+    "accuracy": 0.963,
+    "P_fake": 0.962,
+    "R_fake": 1.0,
+    "TP": 76,
+    "TN": 2,
+    "FP": 3,
+    "FN": 0
+  },
+  "ja_real": {
+    "n": 50,
+    "valid": 50,
+    "skipped": 0,
+    "accuracy": 0.44,
+    "P_fake": 0.0,
+    "R_fake": 0.0,
+    "TP": 0,
+    "TN": 22,
+    "FP": 28,
+    "FN": 0
+  }
+}

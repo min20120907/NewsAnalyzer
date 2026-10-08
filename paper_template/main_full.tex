@@ -555,7 +555,23 @@ The broader consequence is that this experiment cannot measure the discriminatio
 
 \subsection{Multilingual Retrieval Evaluation}
 \label{sec:multieval}
-Each non-Chinese source is evaluated on the benchmark closest to its language, reporting coverage before accuracy per the selective-prediction discipline of Section~2. End-to-end pipeline accuracy on stratified $100$-item samples per language is in progress at the time of writing; the retrieval-layer figures below are measured and final.
+Each non-Chinese source is evaluated on the benchmark closest to its language, reporting coverage before accuracy per the selective-prediction discipline of Section~2. Table~\ref{tab:multieval} reports end-to-end pipeline accuracy on stratified true--fake $1$:$1$ samples per language (decision cutoff $60$); the retrieval-layer figures below it are measured and final.
+
+\begin{table}[!htbp]
+\caption{End-to-end accuracy per language zone (true--fake $1$:$1$, cutoff $60$). Japanese REAL items are mainstream headlines (Murayama holds only five); Mainland simplified is cross-domain transfer, reported as such.}
+\label{tab:multieval}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Zone (benchmark)} & \textbf{$n$} & \textbf{Accuracy} & \textbf{TP / FN} & \textbf{TN / FP} \\
+\midrule
+TW mainstream (Cofacts corpus) & 100 & 90.0\% & 50 / 0 & 40 / 10 \\
+English (\textsc{Liar} test) & 100 & 82.0\% & 46 / 5 & 36 / 13 \\
+Japanese (Murayama + headlines) & 100 & 72.0\% & 50 / 0 & 22 / 28 \\
+Mainland simplified (WSDM) & 100 & 52.6\% & 45 / 4 & 6 / 42 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 For English we sample $200$ \textsc{Liar} test statements ($12{,}814$-item benchmark~\cite{wang2017liar}) through the Google claim-search path. Coverage is $6.5\%$ ($13$ decided) with a selective accuracy of $84.6\%$ ($11$ of $13$). The low coverage is a property of the benchmark, not of the source: \textsc{Liar} statements are decontextualised speaker quotes (``On the Bush tax cuts.''), and the aggregator's keyword index cannot recall a claim from four words with no proposition. On viral-shaped English input---the actual deployment distribution---the same path returns verdict-bearing claims with similarities above $0.74$. A 2011 PolitiFact check missing from Google's index for lack of ClaimReview markup is recovered by the PolitiFact site-search source at similarity $0.95$.
 
