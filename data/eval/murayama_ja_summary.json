@@ -1,17 +1,17 @@
 {
-  "n": 100,
+  "n": 307,
   "infact": {
-    "coverage": 0.5,
-    "selective_acc": 0.8462,
-    "decided": 26,
-    "partial": 22,
-    "not_found": 50
+    "coverage": 0.4267,
+    "selective_acc": 0.9032,
+    "decided": 62,
+    "partial": 64,
+    "not_found": 176
   },
   "jfc": {
-    "coverage": 0.34,
-    "selective_acc": 1.0,
-    "decided": 13,
-    "partial": 17,
-    "not_found": 66
+    "coverage": 0.3518,
+    "selective_acc": 0.9592,
+    "decided": 49,
+    "partial": 52,
+    "not_found": 199
   }
 }
