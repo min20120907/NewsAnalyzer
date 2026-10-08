@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import base64
+import html
 import json
 import os
 import re
@@ -30,6 +31,9 @@ from typing import List, Dict, Optional
 
 SERPER_API_KEY = os.environ.get("SERPER_API_KEY", "")
 SERPER_ENDPOINT = "https://google.serper.dev/search"
+GOOGLE_CSE_KEY = os.environ.get("GOOGLE_CSE_KEY", "")
+GOOGLE_CSE_CX = os.environ.get("GOOGLE_CSE_CX", "")
+GOOGLE_CSE_ENDPOINT = "https://www.googleapis.com/customsearch/v1"
 SERPAPI_API_KEY = os.environ.get("SERPAPI_API_KEY", "")
 SERPAPI_ENDPOINT = "https://serpapi.com/search"
 DEFAULT_BASE = os.environ.get("WEB_SEARCH_BASE", "http://127.0.0.1:3030")
@@ -40,6 +44,56 @@ MAX_RESULTS = 8
 # 瀏覽器搜尋節流鎖（模組級全域，避免併發觸發 Google bot 偵測）
 _BROWSER_LOCK = threading.Lock()
 _BROWSER_LAST = 0.0
+
+# eval 語料凍結：NA_WEB_SNAPSHOT 指向 jsonl 快照檔時，search() 對同一 query
+# 直接回快照（read-through write-back：miss 才打 live，打到非空才寫檔）。
+# production 不設此變數 → 全 live，不受影響。只快取非空，避免單次網路抖動
+# 把空結果凍進去污染後續重跑。
+_SNAP_PATH = os.environ.get("NA_WEB_SNAPSHOT", "")
+_SNAP_LOCK = threading.Lock()
+_SNAP_CACHE: Optional[Dict[str, List[Dict[str, str]]]] = None
+
+
+def _snap_load() -> Dict[str, List[Dict[str, str]]]:
+    global _SNAP_CACHE
+    if _SNAP_CACHE is not None:
+        return _SNAP_CACHE
+    d: Dict[str, List[Dict[str, str]]] = {}
+    if _SNAP_PATH:
+        try:
+            with open(_SNAP_PATH, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        rec = json.loads(line)
+                        if rec.get("query") and isinstance(rec.get("results"), list):
+                            d[rec["query"]] = rec["results"]
+                    except Exception:
+                        continue
+        except FileNotFoundError:
+            pass
+        except Exception as e:
+            print(f"[web_search_client] snapshot load failed: {e}")
+    _SNAP_CACHE = d
+    return d
+
+
+def _snap_save(query: str, results: List[Dict[str, str]]) -> None:
+    if not _SNAP_PATH or not results:
+        return
+    with _SNAP_LOCK:
+        cache = _snap_load()
+        if query in cache:
+            return
+        cache[query] = results
+        try:
+            with open(_SNAP_PATH, "a", encoding="utf-8") as f:
+                f.write(json.dumps({"query": query, "results": results},
+                                   ensure_ascii=False) + "\n")
+        except Exception as e:
+            print(f"[web_search_client] snapshot save failed: {e}")
 
 
 def _decode_bing_url(raw: str) -> str:
@@ -191,18 +245,76 @@ def search_google_news(query: str, max_results: int = MAX_RESULTS,
         return []
 
 
-def search(query: str, max_results: int = MAX_RESULTS) -> List[Dict[str, str]]:
-    """主入口：快源並行（News RSS + bing，約 1 秒）→ 不足才補瀏覽器 Google。
+def search_google_cse(query: str, max_results: int = MAX_RESULTS,
+                       timeout: int = DEFAULT_TIMEOUT) -> List[Dict[str, str]]:
+    """Google Custom Search JSON API（每天 100 次免費，需 GOOGLE_CSE_KEY/CX）。失敗回空。"""
+    if not GOOGLE_CSE_KEY or not GOOGLE_CSE_CX or not query:
+        return []
+    try:
+        params = {"key": GOOGLE_CSE_KEY, "cx": GOOGLE_CSE_CX, "q": query,
+                  "hl": "zh-TW", "gl": "tw", "num": min(max_results, 10)}
+        url = GOOGLE_CSE_ENDPOINT + "?" + urllib.parse.urlencode(params)
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (NewsAnalyzer)"})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            data = json.loads(r.read().decode("utf-8", "ignore"))
+        return [{"title": it.get("title", ""), "url": it.get("link", ""),
+                 "snippet": it.get("snippet", ""), "source": "google_cse"}
+                for it in data.get("items", [])[:max_results]]
+    except Exception as e:
+        print(f"[web_search_client] google cse failed: {e}")
+        return []
 
-    瀏覽器啟動一次約 2.8 秒，只當備援；合併順序為 News RSS > bing > 瀏覽器
+
+def search_duckduckgo(query: str, max_results: int = MAX_RESULTS,
+                       timeout: int = DEFAULT_TIMEOUT) -> List[Dict[str, str]]:
+    """DuckDuckGo html 端點（免 key、無配額）。被擋（202/空）回空 list。"""
+    if not query:
+        return []
+    try:
+        url = "https://html.duckduckgo.com/html/?q=" + urllib.parse.quote(query)
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (NewsAnalyzer)"})
+        raw = urllib.request.urlopen(req, timeout=timeout).read().decode("utf-8", "ignore")
+        out: List[Dict[str, str]] = []
+        for m in re.finditer(r'<a[^>]+class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>',
+                             raw, re.S):
+            href, title = m.group(1), re.sub(r"<[^>]+>", "", m.group(2)).strip()
+            um = re.search(r"[?&]uddg=([^&]+)", href)
+            link = urllib.parse.unquote(um.group(1)) if um else href
+            if link.startswith("http") and title:
+                out.append({"title": html.unescape(title), "url": link,
+                            "snippet": "", "source": "duckduckgo"})
+            if len(out) >= max_results:
+                break
+        return out
+    except Exception as e:
+        print(f"[web_search_client] duckduckgo failed: {e}")
+        return []
+
+
+def search(query: str, max_results: int = MAX_RESULTS) -> List[Dict[str, str]]:
+    """主入口：快源並行（Google CSE + News RSS + bing + duckduckgo，約 1 秒）→ 不足才補瀏覽器 Google。
+
+    瀏覽器啟動一次約 2.8 秒，只當備援；合併順序為 Google CSE > News RSS > bing > duckduckgo > 瀏覽器
     （去重後截斷，快源優先）。
     SerpApi / Serper 已停用（配額燒完、key 失效），函式保留以備未來恢復。
     各源內部已自行吞錯回空 list。
     """
+    key = (query or "").strip()
+    if _SNAP_PATH and key:
+        hit = _snap_load().get(key)
+        if hit:
+            return [dict(r) for r in hit[:max_results]]
     import concurrent.futures as _cf
-    with _cf.ThreadPoolExecutor(max_workers=2) as _ex:
+    with _cf.ThreadPoolExecutor(max_workers=4) as _ex:
+        _f_c = _ex.submit(search_google_cse, query, max_results)
         _f_n = _ex.submit(search_google_news, query, max_results)
         _f_g = _ex.submit(search_bing, query=query, max_results=max_results)
+        _f_d = _ex.submit(search_duckduckgo, query, max_results)
+        try:
+            _cse = _f_c.result() or []
+        except Exception as _e:
+            print(f"[web_search_client] cse failed: {_e}")
+            _cse = []
         try:
             _news = _f_n.result() or []
         except Exception as _e:
@@ -213,14 +325,26 @@ def search(query: str, max_results: int = MAX_RESULTS) -> List[Dict[str, str]]:
         except Exception as _e:
             print(f"[web_search_client] bing failed: {_e}")
             _bing = []
+        try:
+            _ddg = _f_d.result() or []
+        except Exception as _e:
+            print(f"[web_search_client] ddg failed: {_e}")
+            _ddg = []
     results: List[Dict[str, str]] = []
     seen: set = set()
-    for _r in _news + _bing:
+    for _r in _cse + _news + _bing + _ddg:
         if _r["url"] in seen:
             continue
         seen.add(_r["url"])
         results.append(_r)
-    if len(results) < max_results and os.environ.get("BROWSER_SEARCH", "1") != "0":
+    # 2026-10-08：數量夠但全是無摘要包裝連結（Google News RSS wrapper）時也補
+    # 瀏覽器——否則 _attach_web_bodies 無體可抓，deep prompt 只剩標題，
+    # 短標題薄證據輸入永遠翻不了案（日文 28 FP、簡體 42 FP 的主因）。
+    # 有任一摘要就不觸發（正常查詢零成本）。
+    _has_snippet = any((r.get("snippet") or "").strip() for r in results)
+    _b = []
+    if ((len(results) < max_results or not _has_snippet)
+            and os.environ.get("BROWSER_SEARCH", "1") != "0"):
         try:
             _b = search_browser_google(query, max_results=max_results) or []
         except Exception as _e:
@@ -232,7 +356,11 @@ def search(query: str, max_results: int = MAX_RESULTS) -> List[Dict[str, str]]:
             seen.add(_r["url"])
             _r["source"] = "browser_google"
             results.append(_r)
-    return results[:max_results]
+    if _SNAP_PATH and key and results:
+        _snap_save(key, results)
+    # 瀏覽器補位不被截斷（否則快源填滿時補的全被切掉＝白跑 2.8s）；
+    # 下游 sim-filter 會重排＋截斷，無瀏覽器結果時維持舊截斷。
+    return results if _b else results[:max_results]
 
 
 def search_browser_google(query: str, max_results: int = MAX_RESULTS,
