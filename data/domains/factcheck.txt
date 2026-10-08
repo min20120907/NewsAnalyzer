@@ -6,3 +6,5 @@ cofacts.tw
 cofacts.g0v.tw
 rumtoast.com
 factcheck.hkbu.edu.hk
+infact.press
+factcheckcenter.jp

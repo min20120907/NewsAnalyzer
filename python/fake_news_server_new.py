@@ -822,7 +822,8 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
     # 輸出就退化成「把 status 翻譯成分數」，這是分數沒有鑑別力與敘述模糊的根因。
     fc_lines = []
     label_map = {"cofacts": "Cofacts", "google": "Google查核", "mygopen": "MyGoPen",
-                 "rumtoast": "蘭姆酒吐司", "hkbu": "HKBU查核"}
+                 "rumtoast": "蘭姆酒吐司", "hkbu": "HKBU查核",
+                 "infact": "InFact", "jfc": "日本FCセンター"}
     for s in sources:
         st = s.get("status", "not_found")
         nm = label_map.get(s.get("source", ""), s.get("source", ""))

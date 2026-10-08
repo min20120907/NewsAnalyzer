@@ -13,6 +13,8 @@
   - mygopen : MyGoPen 站內搜尋爬蟲（免 key，處理反爬）  [always on]
   - rumtoast: 蘭姆酒吐司 WP REST 搜尋＋內文 verdict（免 key）[always on]
   - hkbu    : HKBU Fact Check WP REST 搜尋＋標題 verdict（免 key）[always on]
+  - infact  : InFact WP REST 搜尋＋標題 verdict（免 key）[always on]
+  - jfc     : 日本FCセンター RSS＋本地 SBERT 比對（免 key）[always on]
 
 status 對映（統一到 Cofacts 四類）：
   inaccurate | partial | accurate | not_found
@@ -101,13 +103,15 @@ def _map_google_rating(text: str):
 
 
 def _detect_lang(text: str) -> str:
-    """語言路由（免依賴）：CJK 字佔比 >10% 視為中文，否則走英文。
+    """語言路由（免依賴）：假名→日文；CJK 佔比 >10%→中文；否則英文。
     英文不換 SBERT 模型——現役 paraphrase-multilingual-MiniLM 本就含英文；
     換 all-MiniLM 必須重算全部門控 margin（見 embedding-margin-bench 教訓），
-    v1 先只切證據源語言。"""
+    v1 先只切證據源語言。日文同理（多語言模型含日文；sup-simcse-ja 是優化項）。"""
     t = text or ""
     if not t.strip():
         return "zh"
+    if re.search(r"[ぁ-んァ-ヶ]", t):
+        return "ja"
     cjk = sum(1 for c in t if "一" <= c <= "鿿")
     return "zh" if cjk / max(len(t), 1) > 0.10 else "en"
 
@@ -125,6 +129,21 @@ def _en_keywords(text: str, limit: int = 6) -> str:
     toks = re.findall(r"[A-Za-z0-9][A-Za-z0-9'\-]*", text or "")
     out = [t for t in toks if t.lower() not in _EN_STOP and len(t) > 1]
     return " ".join(out[:limit])
+
+
+def _ja_keywords(text: str, limit: int = 4) -> str:
+    """日文查詢詞：漢字 2 字以上 run＋片假名 3 字以上 run＋英數。
+    平假名多半是助詞、跳過；jieba 不懂日文，不走 _jieba_keywords。"""
+    toks = re.findall(r"[一-鿿]{2,}|[ァ-ヶー]{3,}|[A-Za-z0-9][A-Za-z0-9'\-]*",
+                      text or "")
+    out, seen = [], set()
+    for t in toks:
+        if t not in seen:
+            seen.add(t)
+            out.append(t)
+        if len(out) >= limit:
+            break
+    return " ".join(out)
 
 
 def get_google_factcheck(text: str, use_cache: bool = True,
@@ -455,6 +474,135 @@ def get_rumtoast(text: str, use_cache: bool = True,
 
 
 # ----------------------------------------------------------------------------
+# 日文區：InFact（WP REST 搜尋）＋ JFC（RSS 本地 SBERT 比對，免 key）
+# JFC 無 REST（404），RSS 15 篇；verdict 都在標題（は誤り／偽情報／詐欺…）。
+# ----------------------------------------------------------------------------
+INFACT_SEARCH = "https://infact.press/wp-json/wp/v2/search"
+JFC_RSS = "https://www.factcheckcenter.jp/rss/"
+
+
+def _map_infact_title(title: str):
+    t = title or ""
+    if any(k in t for k in ["誤り", "誤解", "デマ", "虚偽", "捏造", "間違い",
+                            "不正確", "事実ではない"]):
+        return "inaccurate"
+    if any(k in t for k in ["正しい", "正確", "事実です", "本当"]):
+        return "accurate"
+    return "partial"
+
+
+def _map_jfc_title(title: str):
+    t = title or ""
+    if any(k in t for k in ["偽サイト", "偽情報", "誤情報", "詐欺", "デマ",
+                            "根拠不明", "虚偽", "捏造", "誤り"]):
+        return "inaccurate"
+    if any(k in t for k in ["正しい", "正確です", "事実です"]):
+        return "accurate"
+    return "partial"
+
+
+_JFC_FEED_TTL = 3600
+_jfc_feed_cache = {"ts": 0.0, "items": []}
+
+
+def _rss_titles(url: str, timeout_api: int, limit: int = 20):
+    """抓 RSS 列出 (title, link)。解析失敗回空（上游轉址/改版不炸管線）。"""
+    import xml.etree.ElementTree as ET
+    r = requests.get(url, headers={"User-Agent": UA}, timeout=timeout_api)
+    r.raise_for_status()
+    root = ET.fromstring(r.content)
+    out = []
+    for it in root.iter("item"):
+        t = (it.findtext("title") or "").strip()
+        u = (it.findtext("link") or "").strip()
+        if t and u:
+            out.append((t, u))
+        if len(out) >= limit:
+            break
+    return out
+
+
+def get_infact(text: str, use_cache: bool = True,
+               timeout_api: int = 15) -> dict:
+    if not text or len(text.strip()) < 10:
+        return _empty("infact")
+    snippet = text[:120]
+    key = hashlib.sha1(("infact:" + snippet).encode("utf-8")).hexdigest()
+    if use_cache:
+        c = _mcache_get("infact", key)
+        if c:
+            return c
+    try:
+        cands = _wp_search(INFACT_SEARCH,
+                           _ja_keywords(snippet) or snippet[:30],
+                           timeout_api)
+    except Exception as e:
+        return {"source": "infact", "status": "error",
+                "feedback_count": 0, "created_at": None,
+                "article_id": None, "matched_text": None, "url": None,
+                "reasons": [], "note": f"爬蟲錯誤: {e}"}
+    if not cands:
+        res = _empty("infact")
+        _mcache_put("infact", key, res)
+        return res
+    win = _sbert_gate(snippet, cands)
+    if not win:
+        res = _empty("infact")
+        _mcache_put("infact", key, res)
+        return res
+    _cid, top_title, top_url, win_sim = win
+    res = {"source": "infact", "status": _map_infact_title(top_title),
+           "feedback_count": len(cands), "created_at": None,
+           "article_id": None, "matched_text": top_title[:120],
+           "url": top_url, "similarity_score": win_sim,
+           "reasons": [{"type": "INFACT_TITLE",
+                        "text": top_title or top_url}]}
+    _mcache_put("infact", key, res)
+    return res
+
+
+def get_jfc(text: str, use_cache: bool = True,
+            timeout_api: int = 15) -> dict:
+    if not text or len(text.strip()) < 10:
+        return _empty("jfc")
+    snippet = text[:120]
+    key = hashlib.sha1(("jfc:" + snippet).encode("utf-8")).hexdigest()
+    if use_cache:
+        c = _mcache_get("jfc", key)
+        if c:
+            return c
+    try:
+        now = time.time()
+        if now - _jfc_feed_cache["ts"] > _JFC_FEED_TTL:
+            _jfc_feed_cache["items"] = _rss_titles(JFC_RSS, timeout_api)
+            _jfc_feed_cache["ts"] = now
+        items = _jfc_feed_cache["items"]
+    except Exception as e:
+        return {"source": "jfc", "status": "error",
+                "feedback_count": 0, "created_at": None,
+                "article_id": None, "matched_text": None, "url": None,
+                "reasons": [], "note": f"爬蟲錯誤: {e}"}
+    if not items:
+        res = _empty("jfc")
+        _mcache_put("jfc", key, res)
+        return res
+    win = _sbert_gate(snippet, [(None, t, u) for t, u in items])
+    if not win:
+        res = _empty("jfc")
+        _mcache_put("jfc", key, res)
+        return res
+    _cid, top_title, top_url, win_sim = win
+    res = {"source": "jfc", "status": _map_jfc_title(top_title),
+           "feedback_count": len(items), "created_at": None,
+           "article_id": None, "matched_text": top_title[:120],
+           "url": top_url, "similarity_score": win_sim,
+           "reasons": [{"type": "JFC_TITLE",
+                        "text": top_title or top_url}]}
+    _mcache_put("jfc", key, res)
+    return res
+
+
+# ----------------------------------------------------------------------------
 # 統一彙總
 # ----------------------------------------------------------------------------
 def _empty(source):
@@ -469,7 +617,7 @@ def get_all_fact_checks(text: str, use_cache: bool = True,
 
     各源皆為 requests 呼叫＋各自 try/except，自行吞錯；快取每次開新連線，
     例外同樣吞掉，因此 ThreadPool 並行安全。順序固定
-    [cofacts, google, mygopen, rumtoast, hkbu]。
+    [cofacts, google, mygopen, rumtoast, hkbu, infact, jfc]。
     """
     import concurrent.futures as _cf
 
@@ -508,10 +656,25 @@ def get_all_fact_checks(text: str, use_cache: bool = True,
         except Exception as e:
             return {**_empty("hkbu"), "status": "error", "note": str(e)}
 
-    with _cf.ThreadPoolExecutor(max_workers=5) as _ex:
+    def _run_infact():
+        try:
+            return get_infact(text, use_cache=use_cache,
+                              timeout_api=timeout_api)
+        except Exception as e:
+            return {**_empty("infact"), "status": "error", "note": str(e)}
+
+    def _run_jfc():
+        try:
+            return get_jfc(text, use_cache=use_cache,
+                           timeout_api=timeout_api)
+        except Exception as e:
+            return {**_empty("jfc"), "status": "error", "note": str(e)}
+
+    with _cf.ThreadPoolExecutor(max_workers=7) as _ex:
         _fu = [_ex.submit(_run_cofacts), _ex.submit(_run_google),
                _ex.submit(_run_mygopen), _ex.submit(_run_rumtoast),
-               _ex.submit(_run_hkbu)]
+               _ex.submit(_run_hkbu), _ex.submit(_run_infact),
+               _ex.submit(_run_jfc)]
         results = [_f.result() for _f in _fu]
     return results
 

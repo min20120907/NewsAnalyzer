@@ -1,0 +1,17 @@
+{
+  "n": 100,
+  "infact": {
+    "coverage": 0.5,
+    "selective_acc": 0.8462,
+    "decided": 26,
+    "partial": 22,
+    "not_found": 50
+  },
+  "jfc": {
+    "coverage": 0.34,
+    "selective_acc": 1.0,
+    "decided": 13,
+    "partial": 17,
+    "not_found": 66
+  }
+}
