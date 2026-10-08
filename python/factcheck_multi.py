@@ -669,6 +669,85 @@ def get_jfc(text: str, use_cache: bool = True,
 
 
 # ----------------------------------------------------------------------------
+# 英文 P1：PolitiFact 站內搜尋（Google Claim Search 補不上的老查核）
+# 背景：2011 年 PolitiFact 頁無 ClaimReview 標記 → Google 索引結構性缺失，
+# 任何 query 寫法都召回不到（virginia 案實測）。站內搜尋是服務端渲染，
+# 結果卡（div.py-4.border-bottom）自帶 meter verdict（alt="False" 等）。
+# ----------------------------------------------------------------------------
+POLITIFACT_SEARCH = "https://politifact.com/search/"
+
+
+def _parse_politifact_cards(html_text: str):
+    """拆搜尋結果卡，回 [(claim, url, verdict_alt)]。"""
+    cards = re.split(r'<div class="py-4 border-bottom">', html_text or "")
+    out = []
+    for c in cards[1:]:
+        m = re.search(
+            r'<a href="(https://politifact\.com/factchecks/[^"]+)"'
+            r'[^>]*alt="([^"]+)"', c)
+        if not m:
+            m = re.search(
+                r'<a href="(https://politifact\.com/factchecks/[^"]+)"[^>]*>\s*'
+                r'([^<]{10,200})', c)
+        v = re.search(r'meter-[a-z-]+\.jpg" alt="([^"]+)"', c)
+        if m:
+            claim = (m.group(2) or "").replace("&quot;", '"').strip()
+            if claim and v:
+                out.append((claim, m.group(1),
+                            v.group(1).strip().rstrip("!")))
+        if len(out) >= 6:
+            break
+    return out
+
+
+def get_politifact(text: str, use_cache: bool = True,
+                   timeout_api: int = 15) -> dict:
+    if not text or len(text.strip()) < 10:
+        return _empty("politifact")
+    if _detect_lang(text) != "en":
+        return _empty("politifact")
+    snippet = text[:120]
+    key = hashlib.sha1(("pf:" + snippet).encode("utf-8")).hexdigest()
+    if use_cache:
+        c = _mcache_get("politifact", key)
+        if c:
+            return c
+    try:
+        r = requests.get(POLITIFACT_SEARCH,
+                         params={"q": _en_keywords(snippet) or snippet[:60]},
+                         headers={"User-Agent": UA,
+                                  "Accept-Language": "en-US,en;q=0.9"},
+                         timeout=timeout_api)
+        r.raise_for_status()
+        cards = _parse_politifact_cards(r.text)
+    except Exception as e:
+        return {"source": "politifact", "status": "error",
+                "feedback_count": 0, "created_at": None,
+                "article_id": None, "matched_text": None, "url": None,
+                "reasons": [], "note": f"爬蟲錯誤: {e}"}
+    if not cards:
+        res = _empty("politifact")
+        _mcache_put("politifact", key, res)
+        return res
+    win = _sbert_gate(snippet,
+                      [(None, t, u) for t, u, _v in cards])
+    if not win:
+        res = _empty("politifact")
+        _mcache_put("politifact", key, res)
+        return res
+    _cid, top_title, top_url, win_sim = win
+    verdict = next((v for t, u, v in cards if u == top_url), "")
+    res = {"source": "politifact", "status": _map_google_rating(verdict),
+           "feedback_count": len(cards), "created_at": None,
+           "article_id": None, "matched_text": top_title[:120],
+           "url": top_url, "similarity_score": win_sim,
+           "reasons": [{"type": "POLITIFACT_METER",
+                        "text": f"{verdict} — {top_title}" or top_url}]}
+    _mcache_put("politifact", key, res)
+    return res
+
+
+# ----------------------------------------------------------------------------
 # 統一彙總
 # ----------------------------------------------------------------------------
 def _empty(source):
@@ -683,7 +762,7 @@ def get_all_fact_checks(text: str, use_cache: bool = True,
 
     各源皆為 requests 呼叫＋各自 try/except，自行吞錯；快取每次開新連線，
     例外同樣吞掉，因此 ThreadPool 並行安全。順序固定
-    [cofacts, google, mygopen, rumtoast, hkbu, infact, jfc]。
+    [cofacts, google, mygopen, rumtoast, hkbu, infact, jfc, politifact]。
     """
     import concurrent.futures as _cf
 
@@ -736,11 +815,19 @@ def get_all_fact_checks(text: str, use_cache: bool = True,
         except Exception as e:
             return {**_empty("jfc"), "status": "error", "note": str(e)}
 
-    with _cf.ThreadPoolExecutor(max_workers=7) as _ex:
+    def _run_politifact():
+        try:
+            return get_politifact(text, use_cache=use_cache,
+                                  timeout_api=timeout_api)
+        except Exception as e:
+            return {**_empty("politifact"), "status": "error",
+                    "note": str(e)}
+
+    with _cf.ThreadPoolExecutor(max_workers=8) as _ex:
         _fu = [_ex.submit(_run_cofacts), _ex.submit(_run_google),
                _ex.submit(_run_mygopen), _ex.submit(_run_rumtoast),
                _ex.submit(_run_hkbu), _ex.submit(_run_infact),
-               _ex.submit(_run_jfc)]
+               _ex.submit(_run_jfc), _ex.submit(_run_politifact)]
         results = [_f.result() for _f in _fu]
     return results
 

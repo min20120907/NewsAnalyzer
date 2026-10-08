@@ -8,3 +8,4 @@ rumtoast.com
 factcheck.hkbu.edu.hk
 infact.press
 factcheckcenter.jp
+politifact.com

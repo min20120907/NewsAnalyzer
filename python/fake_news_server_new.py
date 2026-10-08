@@ -823,7 +823,8 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
     fc_lines = []
     label_map = {"cofacts": "Cofacts", "google": "Google查核", "mygopen": "MyGoPen",
                  "rumtoast": "蘭姆酒吐司", "hkbu": "HKBU查核",
-                 "infact": "InFact", "jfc": "日本FCセンター"}
+                 "infact": "InFact", "jfc": "日本FCセンター",
+                 "politifact": "PolitiFact"}
     for s in sources:
         st = s.get("status", "not_found")
         nm = label_map.get(s.get("source", ""), s.get("source", ""))

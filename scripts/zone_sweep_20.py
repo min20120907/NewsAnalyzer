@@ -18,7 +18,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 "..", "python"))
 import requests  # noqa: E402
 from factcheck_multi import (  # noqa: E402
-    get_rumtoast, get_hkbu, get_google_factcheck, get_infact, get_jfc, UA)
+    get_rumtoast, get_hkbu, get_google_factcheck, get_infact, get_jfc,
+    get_politifact, UA)
 from cofacts_local import _strong_entities, entity_gatekeeper  # noqa: E402
 
 EV = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -120,7 +121,11 @@ def _murayama_decided(n=10):
         if r["truth"] == "SKIP":
             continue
         for src in ("infact", "jfc"):
-            if r[src]["status"] in ("inaccurate", "accurate"):
+            st = r[src]["status"]
+            pred = ("FAKE" if st == "inaccurate"
+                    else ("REAL" if st == "accurate" else "?"))
+            # 只重放舊碼判對的列（同 _liar_decided 理由：舊映射問句誤判 accurate 的列已修掉）
+            if pred == r["truth"]:
                 out.append((stm[r["id"]], src, r["truth"]))
                 break
         if len(out) >= n:
@@ -139,7 +144,13 @@ def _liar_decided(n=10):
             stm[r[0]] = r[2]
     out = []
     for r in recs:
-        if r["status"] in ("inaccurate", "accurate"):
+        # 只重放舊碼判對的列（pred==truth）：舊碼判錯的列（如低 sim 誤命中）在新門控下
+        # 本來就該是 not_found，重放它只會把修好的 bug 再報一次。
+        # 另跳過 <6 詞斷片（如 "On the Bush tax cuts."）：無主張不成查核對象，
+        # 舊命中是誤召回撞對標籤的運氣，不是能力。
+        pred = ("FAKE" if r["status"] == "inaccurate"
+                else ("REAL" if r["status"] == "accurate" else "?"))
+        if pred == r["truth"] and len(stm[r["id"]].split()) >= 6:
             out.append((stm[r["id"]], r["truth"]))
         if len(out) >= n:
             break
@@ -180,6 +191,14 @@ def sweep_en():
         ok &= good
         detail.append({"stmt": stmt[:50], "truth": truth, "pred": pred,
                        "sim": r.get("similarity_score"), "ok": good})
+    # Virginia 案：2011 老查核無 ClaimReview，Google 結構性缺失，由 PolitiFact 源補
+    for stmt in ["Virginia has made no progress on jobs since Bob McDonnell took office."]:
+        r = get_politifact(stmt, use_cache=False)
+        good = (r["status"] == "inaccurate")
+        ok &= good
+        detail.append({"src": "politifact", "stmt": stmt[:50],
+                       "got": r["status"], "sim": r.get("similarity_score"),
+                       "ok": good})
     for stmt in NEG_EN + NEG_ZH:
         r = get_google_factcheck(stmt, use_cache=False)
         good = r["status"] in ("not_found", "disabled", "error")

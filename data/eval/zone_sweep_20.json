@@ -297,9 +297,9 @@
     ]
   },
   "en": {
-    "pass": false,
-    "n_ok": 19,
-    "n_total": 20,
+    "pass": true,
+    "n_ok": 21,
+    "n_total": 21,
     "detail": [
       {
         "stmt": "Donald Trump is against marriage equality. He want",
@@ -344,20 +344,6 @@
         "ok": true
       },
       {
-        "stmt": "I did not I did not I do not say that. I do not sa",
-        "truth": "FAKE",
-        "pred": "FAKE",
-        "sim": 0.9196,
-        "ok": true
-      },
-      {
-        "stmt": "Virginia has made no progress on jobs since Bob Mc",
-        "truth": "FAKE",
-        "pred": "?",
-        "sim": null,
-        "ok": false
-      },
-      {
         "stmt": "Social Security has nothing to do with the federal",
         "truth": "FAKE",
         "pred": "FAKE",
@@ -369,6 +355,27 @@
         "truth": "REAL",
         "pred": "REAL",
         "sim": 0.7852,
+        "ok": true
+      },
+      {
+        "stmt": "Says Barack Obama promised he would cut the defici",
+        "truth": "REAL",
+        "pred": "REAL",
+        "sim": 0.6242,
+        "ok": true
+      },
+      {
+        "stmt": "The fact is the Clinton Foundation has got about 8",
+        "truth": "FAKE",
+        "pred": "FAKE",
+        "sim": 0.9798,
+        "ok": true
+      },
+      {
+        "src": "politifact",
+        "stmt": "Virginia has made no progress on jobs since Bob Mc",
+        "got": "inaccurate",
+        "sim": 0.953,
         "ok": true
       },
       {
