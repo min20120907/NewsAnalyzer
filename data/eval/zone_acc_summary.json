@@ -39,12 +39,24 @@
     "n": 50,
     "valid": 50,
     "skipped": 0,
-    "accuracy": 0.44,
+    "accuracy": 0.34,
     "P_fake": 0.0,
     "R_fake": 0.0,
     "TP": 0,
-    "TN": 22,
-    "FP": 28,
+    "TN": 17,
+    "FP": 33,
+    "FN": 0
+  },
+  "ja_real_deep": {
+    "n": 50,
+    "valid": 50,
+    "skipped": 0,
+    "accuracy": 0.38,
+    "P_fake": 0.0,
+    "R_fake": 0.0,
+    "TP": 0,
+    "TN": 19,
+    "FP": 31,
     "FN": 0
   }
 }
