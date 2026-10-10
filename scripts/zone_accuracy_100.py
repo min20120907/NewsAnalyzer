@@ -27,13 +27,38 @@ SEED = 42
 # 單筆上限 300s：病態輸入會疊滿萃取＋deep 逾時（實測 CN 探針撞過 150s 牆）；
 # 逾時記 error 排除，不重試（重試只會再燒一次配額與 slot）
 TIMEOUT = 300
+# deep 模式要 X-Debug-Token（/debug_login 取；帳密見服務端 NEWSANALYZER_DEBUG_*
+# env，無則為源碼預設值）。非 debug 一律 fast（n=1），回應掛 mode=deep 也一樣。
+_DEBUG_TOKEN = ""
 
 
-def _post(title, content):
+def _debug_login():
+    global _DEBUG_TOKEN
+    user = os.environ.get("NEWSANALYZER_DEBUG_USER", "min20120907")
+    pw = os.environ.get("NEWSANALYZER_DEBUG_PASSWORD", "jefflin123")
+    try:
+        r = requests.post(f"{SERVER}/debug_login",
+                          json={"account": user, "password": pw}, timeout=20)
+        if r.status_code == 200 and r.json().get("ok"):
+            _DEBUG_TOKEN = r.json().get("token", "")
+            print("debug login ok")
+            return True
+    except Exception as e:  # noqa: BLE001
+        print(f"debug login failed: {e}")
+    return False
+
+
+def _post(title, content, mode="fast"):
+    headers = {}
+    if mode == "deep":
+        if not _DEBUG_TOKEN and not _debug_login():
+            return {"error": "debug login failed, cannot run deep mode"}
+        headers = {"X-Debug-Token": _DEBUG_TOKEN}
     try:
         r = requests.post(f"{SERVER}/judge",
-                          json={"title": title, "content": content},
-                          timeout=TIMEOUT)
+                          json={"title": title, "content": content,
+                                "mode": mode},
+                          headers=headers, timeout=TIMEOUT)
         if r.status_code != 200:
             return {"error": f"HTTP {r.status_code}"}
         return r.json()
@@ -158,9 +183,10 @@ SAMPLERS = {"tw": _sample_tw, "en": _sample_en,
             "ja_real": lambda: _sample_ja_real(50)}
 
 
-def run_zone(zone):
+def run_zone(zone, mode="fast"):
     os.makedirs(EV, exist_ok=True)
-    out_path = os.path.join(EV, f"zone_acc_{zone}.jsonl")
+    suffix = "" if mode == "fast" else f"_{mode}"
+    out_path = os.path.join(EV, f"zone_acc_{zone}{suffix}.jsonl")
     done = set()
     if os.path.exists(out_path):
         with open(out_path, encoding="utf-8") as f:
@@ -175,7 +201,7 @@ def run_zone(zone):
     for i, (text, truth) in enumerate(samples):
         if i in done:
             continue
-        d = _post(text[:60], text)
+        d = _post(text[:60], text, mode=mode)
         v = _verdict(d)
         src_map = None
         if isinstance(d.get("sources"), list):
@@ -213,6 +239,8 @@ def run_zone(zone):
 def main():
     only = (sys.argv[sys.argv.index("--only") + 1]
             if "--only" in sys.argv else None)
+    mode = (sys.argv[sys.argv.index("--mode") + 1]
+            if "--mode" in sys.argv else "fast")
     summary_path = os.path.join(EV, "zone_acc_summary.json")
     summary = {}
     if os.path.exists(summary_path):
@@ -223,8 +251,8 @@ def main():
     for zone in SAMPLERS:
         if only and zone != only:
             continue
-        s = run_zone(zone)
-        summary[zone] = s
+        s = run_zone(zone, mode=mode)
+        summary[zone if mode == "fast" else f"{zone}_{mode}"] = s
         print(zone, json.dumps(s, ensure_ascii=False), flush=True)
         json.dump(summary, open(summary_path, "w", encoding="utf-8"),
                   ensure_ascii=False, indent=2)
