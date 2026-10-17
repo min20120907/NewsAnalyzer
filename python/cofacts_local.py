@@ -116,6 +116,10 @@ def entity_gatekeeper(query_text: str, candidate_text: str) -> bool:
     真人名在正文通常出現 2 次以上，噪音詞只出現一次。
     """
     q_ents = _strong_entities(query_text[:300])
+    # 2026-10-16：只信出現≥2 次的實體。單次出現的多半是切詞噪音（「路段將在」→
+    # 「段將在」），拿它判主題衝突會丟掉 sim 0.81 的真命中。短查詢無重複實體就
+    # 放行，後面還有關鍵詞門控＋SBERT 雙保險。
+    q_ents = {e for e in q_ents if query_text.count(e) >= 2}
     if not q_ents:
         return True  # 查詢無明確強實體，放行給 SBERT 判定
     
@@ -300,7 +304,14 @@ def _classify_candidate(node) -> "dict | None":
     if not reasons:
         return None
     raw_text = node.get("text") or ""
-    if _is_bare_url(raw_text) and reasons:
+    # 2026-10-16：比對文本優先用最長的查核回覆原文（查核員正式重述事件），
+    # 轉傳原文多半是口語粉專文，改寫查詢（正式語域）對它 sim 系統性偏低
+    # （明潭案：對轉傳文 0.527、對回覆文 0.926）。短回覆(<20字)無事件資訊，
+    #  fallback 回轉傳原文。
+    _best_reply = max((r.get("text") or "" for r in reasons), key=len, default="")
+    if len(_best_reply) >= 20:
+        matched = _best_reply[:200]
+    elif _is_bare_url(raw_text) and reasons:
         # 純連結文：用最長的回覆內文當比對文本（內文本體是 URL，SBERT 無法比）
         matched = max((r.get("text") or "" for r in reasons), key=len)
     else:
@@ -308,6 +319,9 @@ def _classify_candidate(node) -> "dict | None":
     return {"status": status, "feedback_count": total_fb,
             "created_at": created_at, "article_id": article_id,
             "matched_text": matched[:200],
+            # 2026-10-16：門控專用文本＝轉傳原文（事件本體）。matched 已換成
+            # 查核回覆文（語域匹配用），拿它跑門控會放行同領域不同事件。
+            "gate_text": raw_text[:400],
             "url": url, "reasons": reasons[:3]}
 
 
@@ -355,6 +369,9 @@ def local_match_candidates(query: str, top_k: int = 5) -> list:
             # 拿到 89.61 高度可信。
             if m_text and not entity_gatekeeper(query, m_text):
                 continue
+            # 2026-10-16：本地路徑同步加關鍵詞交集門控（同上）。
+            if m_text and not _keyword_overlap_gate(query, m_text):
+                continue
             results.append({
                 "status": row[0], "feedback_count": row[1],
                 "created_at": row[2], "article_id": row[3],
@@ -380,17 +397,8 @@ def _recall_queries(snippet: str) -> list:
     return qs[:2]
 
 
-def _keyword_queries(snippet: str) -> list:
-    """jieba 關鍵字查詢（最後備援）：回傳多個**各自獨立**的短查詢詞。
-
-    2026-10-01（實測對照，同一則檸檬水查核）：
-      '檸檬水' → 8 usable    '治癌' → 7    '癌症' → 6
-      '檸檬水 癌症' → 6      '檸檬水 治癌' → 1
-      '檸檬水 癌症 治癌' → 1  '檸檬水治癌' → 0  ← 詞一多/一長就失配
-    moreLikeThis 對短輸入最敏感、對多詞 AND 語義最脆弱，所以逐詞各打一次再合併，
-    而不是拼成一個查詢。取最長的 5 個（實體詞訊息量最高，「水能」這種黏邊
-    殘渣長度短會自然排後面）。lazy 載入 jieba，失敗回 []。
-    """
+def _keywords(snippet: str) -> list:
+    """jieba 切關鍵詞（2-6 字實體詞，去停用詞），最長的排前面。失敗回 []。"""
     try:
         import jieba as _jieba
         _STOP = {"推出", "符合", "資格", "表示", "指出", "認為", "今天", "昨天",
@@ -408,9 +416,65 @@ def _keyword_queries(snippet: str) -> list:
             seen.add(t)
             toks.append(t)
         toks.sort(key=len, reverse=True)
-        return toks[:5]
+        return toks
     except Exception:
         return []
+
+
+def _keyword_overlap_gate(query_text: str, candidate_text: str, min_overlap: int = 1) -> bool:
+    """關鍵詞交集門控（補實體門控只看人名的缺口）。
+
+    無人名查詢門控全放行，同領域不同事件（GEO投毒 vs AI詐騙話術 sim 0.76、
+    特斯拉自燃 vs 9V電池 sim 0.56）一路殺到 LLM 還判 full。
+    實體詞交集 < min_overlap 直接丟，SBERT 都不跑。
+    """
+    # ponytail: 只看 3 字以上詞＋交集≥1（calib_gate.py 4 組全對）。
+    # 2 字通用詞（推薦/模型/電池）到處都是會誤放；要精確就看 ROC 挑。
+    q = {w for w in _keywords(query_text[:300]) if len(w) >= 3}
+    if not q:
+        return True
+    c = {w for w in _keywords(candidate_text[:400]) if len(w) >= 3}
+    return len(q & c) >= min_overlap
+
+
+def _keyword_queries(snippet: str) -> list:
+    """jieba 關鍵字查詢（最後備援）：回傳多個**各自獨立**的短查詢詞。
+
+    2026-10-01（實測對照，同一則檸檬水查核）：
+      '檸檬水' → 8 usable    '治癌' → 7    '癌症' → 6
+      '檸檬水 癌症' → 6      '檸檬水 治癌' → 1
+      '檸檬水 癌症 治癌' → 1  '檸檬水治癌' → 0  ← 詞一多/一長就失配
+    moreLikeThis 對短輸入最敏感、對多詞 AND 語義最脆弱，所以逐詞各打一次再合併，
+    而不是拼成一個查詢。取最長的 5 個（實體詞訊息量最高，「水能」這種黏邊
+    殘渣長度短會自然排後面）。lazy 載入 jieba，失敗回 []。
+    """
+    return _keywords(snippet)[:5]
+
+
+def _post_graphql(filter_obj: dict, timeout_api: int):
+    """GraphQL POST 交會點：403/429/5xx 或壞 JSON 就退避重試兩次。
+
+    2026-10-16：連打會吃 Cloudflare 間歇 403，舊碼非 200 直接 continue，
+    備援請求被靜默丟掉 → 召回池縮水 → not_found 假結果。成功路徑零成本。
+    """
+    # ponytail: 固定退避 1s/3s，不是 exponential——Cofacts 限流是短窗口，夠用就好。
+    payload = {"query": _GRAPHQL, "variables": {"filter": filter_obj}}
+    headers = {"User-Agent": UA, "Content-Type": "application/json"}
+    for wait in (0, 1, 3):
+        if wait:
+            time.sleep(wait)
+        try:
+            r = requests.post(COFACTS_API_URL, json=payload,
+                              headers=headers, timeout=timeout_api + 5)
+            if r.status_code != 200:
+                continue
+            data = r.json()
+            if (data.get("data") or {}).get("ListArticles") is None:
+                continue
+            return data
+        except Exception:
+            continue
+    return None
 
 
 def _graphql_recall(snippet: str, timeout_api: int) -> list:
@@ -428,14 +492,9 @@ def _graphql_recall(snippet: str, timeout_api: int) -> list:
             if len(nodes) >= 16:
                 break
             before = len(nodes)
-            r = requests.post(COFACTS_API_URL, json={
-                "query": _GRAPHQL, "variables": {
-                    "filter": {"moreLikeThis": {"like": q}}}},
-                headers={"User-Agent": UA, "Content-Type": "application/json"},
-                timeout=timeout_api + 5)
-            if r.status_code != 200:
+            data = _post_graphql({"moreLikeThis": {"like": q}}, timeout_api)
+            if not data:
                 continue
-            data = r.json()
             edges = (data.get("data") or {}).get("ListArticles", {}).get("edges") or []
             for edge in edges:
                 node = edge.get("node") or {}
@@ -454,19 +513,19 @@ def _graphql_recall(snippet: str, timeout_api: int) -> list:
     _usable = sum(1 for nd in nodes
                   if any((r.get("reply") or {}).get("text", "").strip()
                          for r in (nd.get("articleReplies") or [])))
-    if _usable < 3:
+    # 2026-10-16：改寫查詢撈到的 usable 常是別的文章（同主題噪音），真文排不上，
+    # usable>=3 讓關鍵詞備援整段被跳過 → 改寫後召回率 40%。實體詞不受改寫影響，
+    # 前 2 個最長關鍵詞總是跑（+2 請求約 +1s），剩下的仍只在 usable<3 跑。
+    _kws = [k for k in filter(None, _keyword_queries(snippet))]
+    _must = _kws[:2] if _usable >= 3 else _kws
+    if _must:
         # 最後備援：jieba 關鍵字查詢（lazy，只在前面撈不到時觸發）
         try:
-            for kq in filter(None, _keyword_queries(snippet)):
+            for kq in _must:
                 before_k = len(nodes)
-                r = requests.post(COFACTS_API_URL, json={
-                    "query": _GRAPHQL, "variables": {
-                        "filter": {"moreLikeThis": {"like": kq}}}},
-                    headers={"User-Agent": UA, "Content-Type": "application/json"},
-                    timeout=timeout_api + 5)
-                if r.status_code != 200:
+                data = _post_graphql({"moreLikeThis": {"like": kq}}, timeout_api)
+                if not data:
                     continue
-                data = r.json()
                 edges = (data.get("data") or {}).get("ListArticles", {}).get("edges") or []
                 for edge in edges:
                     node = edge.get("node") or {}
@@ -536,8 +595,12 @@ def get_fact_check(text: str, use_cache: bool = True,
         if not m_text:
             continue
         
-        # 第一重：實體過濾門控 Check
-        if not entity_gatekeeper(snippet, m_text):
+        # 第一重：實體過濾門控 Check（比轉傳原文，事件本體）
+        if not entity_gatekeeper(snippet, cand.get("gate_text") or m_text):
+            continue
+        # 第一重半：關鍵詞交集門控（2026-10-16：實體門控只看人名，無人名
+        # 查詢全放行，同領域不同事件一路殺到 LLM 還判 full）
+        if not _keyword_overlap_gate(snippet, cand.get("gate_text") or m_text):
             continue
             
         # 第二重：SBERT 精準相似度計算

@@ -729,7 +729,7 @@ def qwen_queue_eta() -> float:
 _DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只能使用下方實際提供的材料判斷，不得使用內建知識補當前事實或人物職稱。
 
 輸出規則：只輸出一個 JSON 物件，不要任何其他文字：
-{{"claim":"把本次要查核的主張濃縮成一句話","evidence_state":"full_body_evidence | search_hit_body_missing | no_evidence | unrelated_evidence","evidence_used":["實際引用的來源名稱"],"key_points":["2 到 4 條具體質疑或確認點，每條須指明來源或內文依據"],"viewpoints":"正反雙方立場摘要，須指明各方依據，不得只寫單方","credibility_score":0到100的整數,"analysis":"2 到 4 句完整結論，必須點名來源、指出關鍵事實、給出明確可信或可疑理由","abstain":true 或 false}}
+{{"claim":"把本次要查核的主張濃縮成一句話","evidence_state":"full_body_evidence | search_hit_body_missing | no_evidence | unrelated_evidence","evidence_used":["實際引用的來源名稱"],"key_points":["2 到 4 條具體質疑或確認點，每條須指明來源或內文依據"],"viewpoints":"正反雙方立場摘要，須指明各方依據，不得只寫單方","credibility_score":0到100的整數,"analysis":"2 到 4 句完整結論，必須點名來源、指出關鍵事實、給出明確可信或可疑理由","abstain":true 或 false,"title_bait":true 或 false,"title_bait_reason":"一句話，只在 title_bait 為 true 時必填"}}
 
 【語言】所有欄位一律使用繁體中文完整句子，嚴禁出現英文單字或中英夾雜（外來專有名詞也譯為中文）。
 【時間】今天日期：{today}。人物職稱、時事現況一律以下方實際提供的材料為準，嚴禁憑內建知識斷言。
@@ -795,6 +795,14 @@ _DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只
 - 不得只寫「無相關佐證」「無法確認」「僅依摘要判斷」「建議查閱完整原文」這類空話；每條結論都要指名來源或內文依據。
 - 不得因為「查不到」就給低分；查不到只能以 abstain 為 true 表現。
 - 內文若只有網址、幾個字或無實質陳述，不得據此給高分；此時應視為證據不足並 abstain。
+
+【標題檢查】另外比對「新聞標題」與「新聞內文」：標題是否誇大、斷章取義或片面解讀內文
+（例如內文說「建議提早出門」，標題寫成「一定搭不上車」；內文說動線改變，標題寫成「舊站不能上車」）。
+內文能支撐標題的每個斷言才算相符；標題有內文找不到依據的斷言，或把條件、範圍拿掉，就判 title_bait 為 true，
+並在 title_bait_reason 用一句話指出哪個斷言內文沒說。沒有內文時判 false。
+標題用詞聳動、但每個斷言都有內文依據，不算 title_bait。
+注意：疑問句、驚嘆句只是包裝，裡面的斷言同樣要核對（例如「舊站不能上車？」就是在斷言舊站不能上車，
+不能因為是問號就放過；內文說「要走棧橋繞路」不等於「不能上車」）。
 
 新聞標題：{title}
 新聞內文：
@@ -986,6 +994,13 @@ def deep_analyze(title: str, web_results: list, sources: list,
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.2,
+        # 2026-10-14(A2)：固定 seed＋收緊 top_p/top_k。/slots 實測沿用 server
+        # seed=4294967295（隨機），同一輸入跑出 23.83/60.92/81.37 的 58 分擺動。
+        # ponytail: llama.cpp prompt cache 本身不保證 bit-for-bit，固定 seed
+        # 只能縮小變異、不能保證分數完全一致，日後要更穩就加多次取樣聚合。
+        "seed": 0,
+        "top_p": 0.9,
+        "top_k": 20,
         # 900 對 reasoning 型模型不夠：實測 nemotron-ultra 把 3233 token 全花在
         # 英文推理上，finish_reason=length，JSON 產出為 0。2000 是實測安全值。
         "max_tokens": 2000,
@@ -1053,6 +1068,10 @@ def deep_analyze(title: str, web_results: list, sources: list,
             "abstain": abstain,
             "is_provisional": bool(abstain),
             "analysis": str(parsed.get("analysis") or ""),
+            # 2026-10-16：標題黨語義判定透傳（斷章取義是語義問題，關鍵詞攔不住）。
+            # 新欄位預設 false，舊模型沒輸出也不影響。
+            "title_bait": bool(parsed.get("title_bait")) if isinstance(parsed.get("title_bait"), bool) else False,
+            "title_bait_reason": str(parsed.get("title_bait_reason") or "")[:200],
             # 2026-10-04：原本硬寫 QWEN_MODEL，導致選雲端模型時前端仍顯示 qwen3.8-27b。
             "model": model_name,
         }
@@ -1161,6 +1180,9 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
         "abstain": abst,
         "is_provisional": abst,
         "analysis": best.get("analysis", ""),
+        # 2026-10-16：多樣本任一判 bait 就採信（recall 導向）；理由取 best 的。
+        "title_bait": any(bool(r.get("title_bait")) for r in valid),
+        "title_bait_reason": str(best.get("title_bait_reason") or "")[:200],
         "model": best.get("model", OLLAMA_MODEL),
         "samples": len(valid),
         "score_std": round(std, 1),
@@ -1181,6 +1203,23 @@ DEFAULT_WEIGHTS = {
     "similarity": 15.0,
     "timeliness": 5.0,
 }
+
+
+CLICKBAIT_KEYWORDS = [
+    "震撼", "網全嚇傻", "竟然", "不看會後悔", "會後悔", "急了", "震撼彈", "太誇張",
+    "傻眼", "敗類", "割韭菜",
+    # 2026-10-16：釣魚標題拿高分，擴表。只收釣魚味濃的（寧小漏不大誤傷，
+    # 「崩潰」「打臉」「真相」等正常新聞也常用，不收）。
+    "驚傳", "瘋傳", "洗版", "嚇呆", "驚呆", "全網", "嚇傻", "傻了", "震驚",
+    "踢爆", "細思極恐", "不轉不是", "沉默了", "嚇壞", "慘了", "出事了",
+    "出大事", "天塌了",
+]
+
+
+def _is_clickbait(title: str, content: str) -> bool:
+    """釣魚標題啟發式：標題＋內文前300字掃關鍵詞。"""
+    # ponytail: 子字串掃描，中文無詞邊界；誤傷靠「只收濃詞」控制，要精確就接分類器。
+    return any(kw in ((title or "") + (content or "")[:300]) for kw in CLICKBAIT_KEYWORDS)
 
 
 def _feedback_from_sources(sources: list) -> tuple[float, str]:
@@ -1271,15 +1310,15 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     timings["sentiment"] = round((time.perf_counter() - _t) * 1000, 1)
     abs_s = abs(s); sent_pts = DEFAULT_WEIGHTS["sentiment"]
     
-    clickbait_keywords = ["震撼", "網全嚇傻", "竟然", "不看會後悔", "急了", "震撼彈", "太誇張", "傻眼", "敗類", "割韭菜"]
-    has_clickbait = any(kw in (title + content[:300]) for kw in clickbait_keywords)
+    has_clickbait = _is_clickbait(title, content)
     is_mainstream = (main in TAIWAN_MAINSTREAM_DOMAINS or host in TAIWAN_MAINSTREAM_DOMAINS or main in FACT_CHECK_DOMAINS)
     is_blocked = (main in DYNAMIC_BLOCKLIST_DOMAINS or host in DYNAMIC_BLOCKLIST_DOMAINS)
-    
+
     if abs_s <= 0.6:
-        sent_pts = DEFAULT_WEIGHTS["sentiment"]
+        # 2026-10-16：釣魚標題中性情緒照拿滿分是高分主因之一，有命中就半分。
+        sent_pts = 7.5 if has_clickbait else DEFAULT_WEIGHTS["sentiment"]
     elif abs_s <= 0.85:
-        sent_pts = 12.0
+        sent_pts = 6.0 if has_clickbait else 12.0
     else:
         if is_mainstream and not has_clickbait:
             sent_pts = 10.0
@@ -1290,6 +1329,8 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
     total += sent_pts
     # 2026-09-24：desc 加注區間語義，免得「-0.53 卻滿分」看起來像 bug（|s|≤0.6 中性不扣分是刻意設計：負面新聞報導≠情緒操弄）
     _sent_note = "（中性區間，不扣分）" if abs_s <= 0.6 else ""
+    if has_clickbait:
+        _sent_note += "（疑似釣魚標題，已扣分）"
     res["sentiment"] = {"score": sent_pts, "desc": f"{s:.2f}{_sent_note}", "weight": DEFAULT_WEIGHTS["sentiment"]}
 
     # 2) Domain (simple rules with redirect resolution support)
@@ -1438,26 +1479,17 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         mode = "fast"
     n_samples = _samples_for(mode)
     deep = {}
-    # 快速路徑只在未指定單一模型（或走多模型 consensus）時啟用。
-    # 明確單選模型必須執行該模型，不能被 JEV/Laya triage 靜默跳過。
-    _tri = None
-    if (web_results or sources) and (not llm_model or llm_model == "consensus"):
-        try:
-            _t0 = time.perf_counter()
-            import triage_cascade as _tc
-            _tri = _tc.triage(content)
-            timings["triage_cascade"] = round((time.perf_counter() - _t0) * 1000, 1)
-        except Exception as _e:
-            print(f"[judge] triage failed: {_e}", flush=True)
-            _tri = None
-    if _tri:
-        deep = {"claim": (_title_clean or content[:60]),
-                "evidence_state": "cascade_triage", "evidence_used": [],
-                "key_points": [], "viewpoints": "",
-                "credibility_score": 75 if _tri["verdict"] == "likely_real" else 25,
-                "abstain": False, "route": "cascade", "triage": _tri}
-        timings["deep_analyze"] = timings.get("triage_cascade") or 0
-    elif web_results or sources:
+    # 2026-10-14：移除 triage_cascade（OpenRouter JEV）呼叫。
+    # 它自己的評測已否證其能力（data/eval/jev_*）：平衡集 60 則嚴格樹決定 0/60，
+    # 放寬也只有 6/60 且全是 REAL → recall_fake=0.000；500 則那組 coverage 0.328、
+    # 164 個決定裡 161 個喊 FAKE、balanced accuracy 0.208（純喊 FAKE 的常數分類器
+    # 同集合 0.888）。而它成本實測 12.6–13.0s／最壞 30.9s（9/25 實測僅 0.77s）。
+    # 更早的版本更糟：JEV 一給 likely_real/likely_fake（信心低到 0.23 也算）就把
+    # 整段 deep 換成空殼，前端顯示條件（web/index.html:982）因此隱藏整段
+    # 「AI 深入分析」—— 使用者看到的就是「沒有 LLM 解說」，而信心 0.23 的擲骰
+    # 被硬寫成 credibility_score 75/25 再以 w=0.60 加權進總分。
+    # 檔與評測資料保留，paper 對照用離線腳本跑，不在每筆 /judge 上付這筆帳。
+    if web_results or sources:
         try:
             _t = time.perf_counter()
             deep = deep_analyze_ensemble(_title_clean or content[:60], web_results, sources,
@@ -1622,10 +1654,25 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
                 final = min(final, 50.0)
                 break
         elif _st == 'partial':
-            if final > 55.0:
+            # 2026-10-14(B1)：partial clamp 也要求 sim>=0.72。舊版無條件 clamp 到
+            # 55，日文真新聞被 jfc partial 弱命中（sim<0.72）壓進待查證帶再被二值化
+            # 算成 FAKE；inaccurate 本來就有 0.72/0.85 門控，partial 補齊一致。
+            if sim_score >= 0.72 and final > 55.0:
                 clamped = True
                 clamp_reason = f"查核機構 ({_s.get('source', '查核庫')}) 判定部分不實，觸發上限錨定 (最高 55.0)"
-            final = min(final, 55.0)
+                final = min(final, 55.0)
+    # 2026-10-16：釣魚標題上限錨定。標題黨＋查無查核時，主流 domain 滿分＋中性
+    # 情緒滿分＋標題內文高相似會疊出 75＋「高度可信」；壓到 60（最多「大致可信」）。
+    # ponytail: 只壓上限不判假，誤傷成本有限；要分級就把 _is_clickbait 換成分數。
+    # 訊號二路：關鍵詞（快、會漏）＋ LLM 標題內文比對（慢、抓斷章取義）。
+    _llm_bait = isinstance(deep, dict) and bool(deep.get("title_bait"))
+    _llm_bait_reason = str((deep or {}).get("title_bait_reason") or "")
+    if (has_clickbait or _llm_bait) and final > 60.0:
+        clamped = True
+        _bait_why = f"（AI判定：{_llm_bait_reason}）" if _llm_bait and _llm_bait_reason else ""
+        clamp_reason = (clamp_reason + "；" if clamp_reason else "") + \
+            f"標題疑似釣魚式標題{_bait_why}，已觸發上限錨定 (最高 60.0)"
+        final = min(final, 60.0)
     # 5 級評級（PolitiFact-style 序數標籤）- adjusted for higher precision
     if final >= 75:
         rating = "高度可信"
@@ -2168,6 +2215,35 @@ def _extract_from_url(url: str, skip_newspaper: bool = False) -> Dict:
                     }
         except Exception as e:
             print(f"[Archive Fallback] 錯誤: {e}")
+
+    # --- Strategy 6: archive.today 付費牆 fallback (2026-10-14 C2) ---
+    # 只在前面全失敗時跑：archive.ph/newest/{url} 實測 NYT 回 200 全文。
+    # ponytail: 14.6s 比抽取慢，只當最後手段；公開服務只取標題摘要、不重製全文（ToS）。
+    try:
+        import urllib.request as _urlreq
+        _areq = _urlreq.Request(
+            "https://archive.ph/newest/" + url,
+            headers={"User-Agent": ("Mozilla/5.0 (X11; Linux x86_64) "
+                                     "AppleWebKit/537.36 Chrome/126 Safari/537.36")})
+        with _urlreq.urlopen(_areq, timeout=30) as _arp:
+            _ahtml = _arp.read().decode("utf-8", "ignore")
+        if _ahtml and len(_ahtml) > 5000 and TRAFILATURA_AVAILABLE:
+            _atext = trafilatura.extract(_ahtml, include_comments=False,
+                                         include_tables=True)
+            if _atext and len(_atext.strip()) >= 100:
+                _atitle = ""
+                try:
+                    from trafilatura.metadata import extract_metadata as _xmeta
+                    _am = _xmeta(_ahtml)
+                    if _am:
+                        _atitle = _am.title or ""
+                except Exception:
+                    pass
+                print(f"[Archive.today] 成功還原內文 ({len(_atext.strip())} 字元)")
+                return {"title": _atitle, "content": _atext[:4000],
+                        "source": url, "publish_date": None}
+    except Exception as _ae:
+        print(f"[Archive.today] fallback failed: {_ae}")
 
     return {"error": "無法從此網址抓取內容。可能原因：需要登入、非新聞頁面、或網站封鎖自動抓取。請嘗試直接貼上文章內容。"}
 
