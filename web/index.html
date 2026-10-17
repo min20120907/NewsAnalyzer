@@ -765,7 +765,8 @@ function renderResult(data) {
     urlEl.innerHTML = '';
   }
 
-  // 各維度
+  // 四維度正交契約渲染（若後端提供 data.dimensions 則優先渲染四正交維度，否則向下相容舊 6 分項）
+  const dimensions = data.dimensions || null;
   const metrics = data.metrics || {};
   const defs = {
     sentiment:     { name: '情緒傾向',   icon: '😊', max: 15 },
@@ -804,6 +805,57 @@ function renderResult(data) {
         row.querySelector('.bar-fill').style.width = (isNA ? 0 : pct) + '%';
       });
     });
+  }
+
+  // 若有四正交維度 (data.dimensions)，覆寫 mEl 為具備「我在量什麼／錯了會怎樣」契約的四維度卡片
+  if (dimensions && Object.keys(dimensions).length === 4) {
+    mEl.innerHTML = '';
+    const dimOrder = [
+      ['evidence_verdict', '✅', 'D1 查核證據蘊涵度'],
+      ['source_corroboration', '🏛️', 'D2 跨源報導佐證度'],
+      ['headline_faithfulness', '🎯', 'D3 標題內文忠實度'],
+      ['rhetorical_risk', '🛡️', 'D4 內文修辭與可驗性風險'],
+    ];
+    for (const [dKey, icon, titleText] of dimOrder) {
+      const d = dimensions[dKey];
+      if (!d) continue;
+      let pct = 50, valText = '', barColor = 'var(--yellow)';
+      if (dKey === 'evidence_verdict') {
+        if (d.status_label === 'supports') { pct = Math.round(d.confidence * 100); valText = `屬實 (信心 ${pct}%)`; barColor = 'var(--green)'; }
+        else if (d.status_label === 'refutes') { pct = Math.round(d.confidence * 100); valText = `不實 (信心 ${pct}%)`; barColor = 'var(--red)'; }
+        else if (d.status_label === 'partially_refutes') { pct = 50; valText = '部分不實'; barColor = 'var(--yellow)'; }
+        else if (d.status_label === 'unrelated') { pct = 0; valText = '無關已剔除'; barColor = '#94a3b8'; }
+        else { pct = 0; valText = '無查核紀錄'; barColor = '#94a3b8'; }
+      } else if (dKey === 'source_corroboration') {
+        pct = Math.round(d.value * 100);
+        valText = `${pct}% (${d.status_label === 'corroborated' ? '跨源佐證' : d.status_label === 'blocked' ? '黑名單' : '單一/未佐證'})`;
+        barColor = pct >= 60 ? 'var(--green)' : (d.status_label === 'blocked' ? 'var(--red)' : 'var(--yellow)');
+      } else if (dKey === 'headline_faithfulness') {
+        pct = Math.round(d.value * 100);
+        valText = d.impact_pts < 0 ? `扣分 ${d.impact_pts} 分` : '忠實 (0 扣分)';
+        barColor = d.impact_pts < 0 ? 'var(--red)' : 'var(--green)';
+      } else if (dKey === 'rhetorical_risk') {
+        const safetyPct = Math.round((1 - d.value) * 100);
+        pct = safetyPct;
+        valText = `風險 R=${Number(d.value).toFixed(2)}`;
+        barColor = d.value >= 0.5 ? 'var(--red)' : (d.value >= 0.3 ? 'var(--yellow)' : 'var(--green)');
+      }
+      const row = document.createElement('div');
+      row.className = 'metric';
+      row.innerHTML = `
+        <div class="metric-top">
+          <span class="metric-name"><span class="icon">${icon}</span> ${titleText}</span>
+          <span class="metric-val" style="color:${barColor}">${valText}</span>
+        </div>
+        <div class="bar"><div class="bar-fill" style="background:${barColor}; width:${pct}%"></div></div>
+        <div class="metric-desc"><b>本篇依據：</b>${escapeHtml(d.explanation || '—')}</div>
+        <div class="metric-desc" style="font-size:11px; color:#94a3b8; margin-top:3px;">
+          📏 <b>測量定義：</b>${escapeHtml(d.what_it_measures || '')}<br>
+          ⚠️ <b>失效邊界：</b>${escapeHtml(d.what_if_wrong || '')}
+        </div>
+      `;
+      mEl.appendChild(row);
+    }
   }
 
   // 渲染評分計算過程管道 (Calculation Pipeline)

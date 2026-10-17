@@ -50,6 +50,32 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPT_DIR not in _sys.path:
     _sys.path.insert(0, _SCRIPT_DIR)
 
+try:
+    from orthogonal_scorer import (
+        score_orthogonal,
+        compute_d1_evidence_verdict,
+        compute_d2_source_corroboration,
+        compute_d3_headline_faithfulness,
+        compute_d4_rhetorical_risk,
+        is_evidence_unrelated as _orth_is_evidence_unrelated,
+    )
+except ImportError:
+    import importlib.util as _ilu
+    _orth_spec = _ilu.spec_from_file_location(
+        "orthogonal_scorer",
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "orthogonal_scorer.py")
+    )
+    if _orth_spec and _orth_spec.loader:
+        _orth_mod = _ilu.module_from_spec(_orth_spec)
+        _orth_spec.loader.exec_module(_orth_mod)
+        score_orthogonal = _orth_mod.score_orthogonal
+        compute_d1_evidence_verdict = _orth_mod.compute_d1_evidence_verdict
+        compute_d2_source_corroboration = _orth_mod.compute_d2_source_corroboration
+        compute_d3_headline_faithfulness = _orth_mod.compute_d3_headline_faithfulness
+        compute_d4_rhetorical_risk = _orth_mod.compute_d4_rhetorical_risk
+        _orth_is_evidence_unrelated = _orth_mod.is_evidence_unrelated
+
+
 # Debug 模式要能看到日誌（2026-10-06）：把 stdout/stderr 分流進環形緩衝，
 # 由 GET /debug_logs（需 X-Debug-Token）讀出。只 tee，不改原本輸出目的地。
 import collections as _collections, threading as _threading
@@ -106,8 +132,15 @@ try:
     from flask import Flask, request, make_response
     FLASK_AVAILABLE = True
 except ImportError:
-    print("[CRITICAL] Flask not installed – `pip install flask`.")
-    raise
+    FLASK_AVAILABLE = False
+    class _DummyFlask:
+        def route(self, *_a, **_k):
+            return lambda fn: fn
+        def run(self, *_a, **_k):
+            raise RuntimeError("Flask not installed")
+    Flask = lambda *_a, **_k: _DummyFlask()
+    request = None
+    make_response = lambda x, *a: (x, *a)
 
 lib_errors = []
 try:
@@ -136,6 +169,8 @@ try:
     from newspaper import Article, ArticleException
     NEWSPAPER3K_AVAILABLE = True
 except ImportError:
+    Article = object
+    ArticleException = Exception
     NEWSPAPER3K_AVAILABLE = False
     lib_errors.append("newspaper3k")
 
@@ -1246,118 +1281,31 @@ def _samples_for(mode: str) -> int:
 
 
 def _score_single(title: str, url: str, content: str, refs: List[str], publish_date=None, target_url: str = None, mode: str = "fast", llm_model: str = "") -> Dict:
-    """Return full metric dict for one article (fast, GPU‑ready).
+    """Return full orthogonal 4-dimension + 3-regime verdict dict for one article.
 
-    mode: "fast"（n=1，約 12s）或 "deep"（n=3 跨次一致性，約 40s）。
-    2026-10-01：預設 fast。deep 換掉 evidence_state 的整段擺動。
-    llm_model: 2026-10-02，'backend/model'，空字串＝沿用 QWEN_URL（行為不變）。
+    架構升級（四維度正交評分＋三態路由）：
+      - D1 `evidence_verdict`      : 查核證據蘊涵度（直接整合回覆數信心與無關證據剔除，不再做 total/avail 事後回補）
+      - D2 `source_corroboration`  : 跨源報導佐證度（網域信譽＋獨立媒體同報數＋文章自身 publish_date，絕不混用 Cofacts created_at）
+      - D3 `headline_faithfulness` : 標題內文忠實度（純扣分/警示因子，修正 [title, content] 自相似灌水，文題相符不額外加分）
+      - D4 `rhetorical_risk`       : 內文修辭與可驗性風險（僅在無查核且無同報的 Regime C 內決定 [10, 58] 落點）
     """
-    res: Dict[str, Dict] = {}
-    total = 0.0; avail = sum(DEFAULT_WEIGHTS.values())
-    timings: Dict[str, float] = {}   # 子階段耗時（ms）
-
-    # Pre-resolve Domain info for downstream metric logic (supports Google News RSS title/content publisher resolution)
-    MEDIA_NAME_TO_DOMAIN = {
-        "自由時報": "ltn.com.tw", "自由電子報": "ltn.com.tw", "自由體育": "ltn.com.tw", "自由健康網": "ltn.com.tw", "自由財經": "ltn.com.tw",
-        "中央社": "cna.com.tw", "CNA": "cna.com.tw",
-        "聯合報": "udn.com", "UDN": "udn.com", "經濟日報": "udn.com",
-        "中時": "chinatimes.com", "中國時報": "chinatimes.com",
-        "TVBS": "tvbs.com.tw", "news.tvbs.com.tw": "tvbs.com.tw",
-        "ETtoday": "ettoday.net", "東森新聞": "ebc.net.tw",
-        "三立": "setn.com", "SETN": "setn.com",
-        "風傳媒": "storm.mg", "Storm": "storm.mg",
-        "公視": "pts.org.tw", "華視": "cts.com.tw", "台視": "ttv.com.tw",
-        "民視": "ftvnews.com.tw", "鏡週刊": "mirrormedia.mg", "鏡新聞": "mnews.tw",
-        "NOWnews": "nownews.com", "今日新聞": "nownews.com",
-        "蘋果": "nextapple.com", "壹蘋": "nextapple.com",
-        "天下雜誌": "cw.com.tw", "商業周刊": "businesstoday.com.tw",
-        "關鍵評論": "thenewslens.com", "科技新報": "technews.tw", "TechNews": "technews.tw",
-        "鉅亨網": "cnyes.com", "Yahoo": "tw.news.yahoo.com",
-        "巴哈姆特": "gamer.com.tw", "GNN": "gamer.com.tw",
-        "PChome": "pchome.com.tw", "遠見": "gvm.com.tw",
-        # 2026-10-01：48 則主流媒體掃描實測補齊（缺這些 → domain 拿不到真網域，
-        # 全部吃預設 15 分，白名單的優質媒體跟黑名單的假新聞站拿到一樣分）。
-        "Newtalk": "newtalk.tw", "台灣新聞雲": "tnews.com.tw",
-        "匯流": "houtong.com", "蕃新聞": "fnn.com.tw",
-        "工商時報": "ctwant.com", "中國評論": "cri.com.tw",
-        "娛樂星聞": "star.stock.yahoo.com", "今周刊": "todaynews.com",
-        "商傳媒": "businessweekly.com.tw", "台灣華報": "taiwan-hwa.net",
-        "世界新聞網": "worldjournal.com", "旺得富": "wdfm.com.tw",
-        "放言": "fount.asia", "TechNews": "technews.tw",
-        "FTNN": "ftnn.com", "Verse": "verse.town", "7Car": "7car.com.tw",
-    }
+    timings: Dict[str, float] = {}
 
     eval_url = target_url or url
-    parsed = urlparse(eval_url); host = parsed.netloc.lower().replace("www.", "")
+    parsed = urlparse(eval_url)
+    host = parsed.netloc.lower().replace("www.", "")
     if host in ("news.google.com", "google.com", "bit.ly", "t.co", "tinyurl.com") and target_url:
         parsed = urlparse(target_url)
         host = parsed.netloc.lower().replace("www.", "")
-    parts = host.split(".")
-    main = _registrable_domain(host)
 
-    # If domain is generic google.com aggregator or unknown, resolve media outlet from title/content
-    if main in ("google.com", "unknown", "") or host == "news.google.com":
-        search_text = (title or "") + " " + (content[:500] if content else "")
-        for m_name, m_dom in MEDIA_NAME_TO_DOMAIN.items():
-            if m_name in search_text:
-                main = m_dom
-                host = m_dom
-                break
-
-    # 1) Sentiment (Decoupled negative news reporting penalty)
+    # 1) Sentiment 原始特徵抽取（供 D4 修辭風險使用）
     _t = time.perf_counter()
-    s = _sentiment_batch([content])[0]
+    s_val = _sentiment_batch([content])[0]
     timings["sentiment"] = round((time.perf_counter() - _t) * 1000, 1)
-    abs_s = abs(s); sent_pts = DEFAULT_WEIGHTS["sentiment"]
-    
-    has_clickbait = _is_clickbait(title, content)
-    is_mainstream = (main in TAIWAN_MAINSTREAM_DOMAINS or host in TAIWAN_MAINSTREAM_DOMAINS or main in FACT_CHECK_DOMAINS)
-    is_blocked = (main in DYNAMIC_BLOCKLIST_DOMAINS or host in DYNAMIC_BLOCKLIST_DOMAINS)
 
-    if abs_s <= 0.6:
-        # 2026-10-16：釣魚標題中性情緒照拿滿分是高分主因之一，有命中就半分。
-        sent_pts = 7.5 if has_clickbait else DEFAULT_WEIGHTS["sentiment"]
-    elif abs_s <= 0.85:
-        sent_pts = 6.0 if has_clickbait else 12.0
-    else:
-        if is_mainstream and not has_clickbait:
-            sent_pts = 10.0
-        elif has_clickbait or main in UGC_DOMAINS or is_blocked:
-            sent_pts = -DEFAULT_WEIGHTS["sentiment"]
-        else:
-            sent_pts = 5.0
-    total += sent_pts
-    # 2026-09-24：desc 加注區間語義，免得「-0.53 卻滿分」看起來像 bug（|s|≤0.6 中性不扣分是刻意設計：負面新聞報導≠情緒操弄）
-    _sent_note = "（中性區間，不扣分）" if abs_s <= 0.6 else ""
-    if has_clickbait:
-        _sent_note += "（疑似釣魚標題，已扣分）"
-    res["sentiment"] = {"score": sent_pts, "desc": f"{s:.2f}{_sent_note}", "weight": DEFAULT_WEIGHTS["sentiment"]}
-
-    # 2) Domain (simple rules with redirect resolution support)
-    
-    dom_pts = 15.0  # Default for unknown standard HTTPS sites
-    if main in FACT_CHECK_DOMAINS or host in FACT_CHECK_DOMAINS:
-        dom_pts = DEFAULT_WEIGHTS["domain"]  # 滿分 (查核機構)
-    elif main in TAIWAN_MAINSTREAM_DOMAINS or host in TAIWAN_MAINSTREAM_DOMAINS:
-        dom_pts = DEFAULT_WEIGHTS["domain"]
-    elif main in UGC_DOMAINS or host in UGC_DOMAINS or is_blocked:
-        dom_pts = 0.0  # UGC platforms (social media) have 0 inherent credibility
-        
-    if parsed.scheme == "http":
-        dom_pts -= 10.0  # Penalize plain HTTP
-        
-    dom_pts = max(0.0, dom_pts)  # Don't go below 0 for this metric to avoid UI weirdness
-    total += dom_pts
-    res["domain"] = {"score": dom_pts, "desc": main, "weight": DEFAULT_WEIGHTS["domain"]}
-
-    # 查詢詞先算好（只依賴 title/content，供下面並行任務共用）
+    # 查詢詞組裝（供多源查核與 web_search 共用）
     _title_clean = (title or "").strip()
-    if _title_clean in ("", "N/A"):
-        _query_src = content[:80].strip()
-    else:
-        _query_src = _title_clean
-    # 2026-09-24：消融定案改走 tiered 查詢（jieba 關鍵詞先查，不足才補 core 首段）；
-    # _query_src 保留給 review_links 與 fallback 相關性判斷。
+    _query_src = content[:80].strip() if _title_clean in ("", "N/A") else _title_clean
     _web_queries = _build_web_queries(title, content) or [_query_src]
     web_review_query = quote_plus(_query_src)
     review_links = {
@@ -1365,28 +1313,35 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         "duckduckgo": f"https://duckduckgo.com/?q={web_review_query}+評論+討論",
     }
 
-    # 3)/4)/6) 多源事實查核 + 5) Similarity + web_search 並行送出（網路 I/O 與 GPU 推理重疊）
+    # 修正舊版 refs=[title, content] 自相似 50% 保底 Bug：只比對 title vs content
+    title_refs = [_title_clean] if _title_clean not in ("", "N/A") else []
+
+    # 2) 多源事實查核 + 標題內文語義相似度 + web_search 並行執行
     def _timed(_fn, *_a, **_k):
         _s = time.perf_counter()
         return (_fn(*_a, **_k), round((time.perf_counter() - _s) * 1000, 1))
+
     import concurrent.futures as _cf
-    sources = []
-    sim = 0.0
+    sources: List[Dict] = []
+    title_body_sim: Optional[float] = None
     web_results: List[Dict] = []
+
     with _cf.ThreadPoolExecutor(max_workers=3) as _ex:
-        # 事實查核吃「標題＋內文」：抓取器常把站台宣傳字留在內文開頭，
-        # 只傳 content 會讓 snippet[:300] 與關鍵字被垃圾污染（實例：UDN 經濟日報 LINE 烤肉文 → cofacts 誤報 not_found）
         _fc_text = (f"{title}。{content}" if title else content)
-        _fu_fc = _ex.submit(_timed, get_all_fact_checks, _fc_text, timeout_api=15) \
-            if MULTI_FC_AVAILABLE else None
-        _fu_sim = _ex.submit(_timed, _similarity_batch, [content], refs)
-        _fu_web = _ex.submit(_timed, _web_search_multi, _web_queries, 6,
-                             _title_clean if _title_clean != "N/A" else "") \
-            if (WEB_SEARCH_AVAILABLE and _wsc is not None) else None
+        _fu_fc = _ex.submit(_timed, get_all_fact_checks, _fc_text, timeout_api=15) if MULTI_FC_AVAILABLE else None
+        _fu_sim = _ex.submit(_timed, _similarity_batch, [content], title_refs) if title_refs else None
+        _fu_web = _ex.submit(
+            _timed, _web_search_multi, _web_queries, 6,
+            _title_clean if _title_clean != "N/A" else ""
+        ) if (WEB_SEARCH_AVAILABLE and _wsc is not None) else None
+
         if _fu_fc is not None:
             sources, timings["fact_check"] = _fu_fc.result()
-        _sim_list, timings["similarity"] = _fu_sim.result()
-        sim = _sim_list[0]
+        if _fu_sim is not None:
+            _sim_list, timings["similarity"] = _fu_sim.result()
+            title_body_sim = _sim_list[0] if _sim_list else None
+        else:
+            timings["similarity"] = 0.0
         if _fu_web is not None:
             try:
                 web_results, timings["web_search"] = _fu_web.result()
@@ -1396,335 +1351,88 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
             except Exception as _e:
                 print(f"[judge] web_search failed: {_e}")
 
-    # 3)/4)/6) 多源事實查核（Cofacts + Google + MyGoPen）共用一次查詢
-    fc_pts = 0.0; fc_desc = "not_checked"
-    fb_pts = 0.0; fb_desc = "none"
-    tl_pts = 0.0; tl_desc = "unknown"
-    if MULTI_FC_AVAILABLE:
-        # 2026-10-01：軟命中（sim 0.45～0.72）完全不參與 fact_check 計分。
-        # 判定交給 LLM 的 evidence_state（PFCD two-stage）；LLM 若判
-        # full_body_evidence，1035 那段會把 soft_hit_status 升級並重算 fact_check。
-        # sources 保持原樣不變，這樣 prompt 組裝仍看得到原始 status 與回覆原文。
-        # 實測沒有這一步時 fact_check 仍吃 partial 的 9 分、而 LLM 已經判
-        # unrelated_evidence——自相矛盾。
-        _fc_pool = [r for r in sources if not r.get("needs_llm_verdict")]
-        # 取最嚴重的查核結論（inaccurate > partial > accurate > not_found/disabled）
-        sev = {"inaccurate": 3, "partial": 2, "accurate": 1, "not_found": 0, "disabled": 0, "error": 0}
-        worst = None
-        for r in _fc_pool:
-            if r.get("status") in ("inaccurate", "partial", "accurate") and \
-               (worst is None or sev[r["status"]] > sev[worst["status"]]):
-                worst = r
-        if worst:
-            fc_desc = worst["status"]
-            if worst["status"] == "inaccurate":
-                fc_pts = -DEFAULT_WEIGHTS["fact_check"]
-            elif worst["status"] == "partial":
-                fc_pts = DEFAULT_WEIGHTS["fact_check"] * 0.3
-            elif worst["status"] == "accurate":
-                fc_pts = DEFAULT_WEIGHTS["fact_check"]
-        else:
-            # 所有源都是 not_found/disabled/error → 視為查無資料 (即時新聞中性基準分 15.0)
-            fc_desc = "not_found"
-            fc_pts = DEFAULT_WEIGHTS["fact_check"] * 0.5
-        # 4) 用戶回饋（查核回覆數分級，2026-10-05）：
-        #    舊制任一命中即滿分，一則回覆就顯示 100%，沒有鑑別力。
-        #    改數 sources 已有的 reasons 回覆原文：有回覆才給分，零新 I/O。
-        # ponytail: 每則 3 分是啟發式（1則=4，2則=7，3則+=10）；立場明確度未單獨
-        # 計，日後要精確就對回覆文本接 stance 分類。
-        fb_pts, fb_desc = _feedback_from_sources(sources)
-        # 6) 時效性：優先文章發布時間 publish_date，其次 Cofacts 命中文章建立時間
-        tl_date = None
-        tl_src = None
-        if publish_date:
-            try:
-                pd_dt = datetime.fromisoformat(publish_date.replace("Z", "+00:00"))
-                tl_date = pd_dt.timestamp()
-                tl_src = "article"
-            except Exception:
-                tl_date = None
-        if tl_date is None:
-            for r in sources:
-                if r.get("created_at"):
-                    tl_date = r["created_at"]; tl_src = r.get("source"); break
-        if tl_date is not None:
-            age_days = (time.time() - tl_date) / 86400.0
-            tl_pts = max(0.0, DEFAULT_WEIGHTS["timeliness"] * (1.0 - min(age_days, 365) / 365.0))
-            if tl_src == "article":
-                tl_desc = (publish_date or "")[:10]
-            else:
-                tl_desc = f"{age_days:.0f} 天前"
-    total += fc_pts + fb_pts + tl_pts
-    res["fact_check"] = {"score": fc_pts, "desc": fc_desc, "weight": DEFAULT_WEIGHTS["fact_check"]}
-    res["user_feedback"] = {"score": fb_pts, "desc": fb_desc, "weight": DEFAULT_WEIGHTS["feedback"]}
+    # 預標記軟命中（0.55 <= sim < 0.72），讓 _deep_analyze_build_prompt 能顯示軟命中提示給 LLM 審核
+    for _s in (sources or []):
+        if _s.get("needs_llm_verdict"):
+            _s["soft_hit_status"] = _s.get("status")
+            _s["soft_hit_sim"] = _s.get("similarity_score")
 
-    # 5) Similarity（已在上面並行算好）
-    sim_pts = sim * DEFAULT_WEIGHTS["similarity"]
-    total += sim_pts
-    res["similarity"] = {"score": sim_pts, "desc": f"{sim:.2%}（標題—內文一致性，非真實性）", "weight": DEFAULT_WEIGHTS["similarity"]}
-
-    # 6) Timeliness 寫入
-    res["timeliness"] = {"score": tl_pts, "desc": tl_desc, "weight": DEFAULT_WEIGHTS["timeliness"]}
-
-    # web_results 已在上面並行取得（失敗則為空 list，前端自動隱藏該區塊）
-
-    final = (total / avail) * 100 if avail > 0 else 0.0
-    rule_score = final
-    # 深入分析：本機 LLM 把 web_results + 查核源結論轉為結構化分析
-    # 2026-10-01：兩種模式。快速=n=1 單次取樣（約 12s），深度=n=3 跨次一致性
-    # （約 40s，不一致就 abstain）。深度模式多花 3 倍時間換掉整段擺動——
-    # 實測快速模式的 sw0 同一輸入三次跑出 23.83 / 60.92 / 81.37。
+    # 3) 本機 LLM 深入分析（證據接地與觀點抽取）
     mode = (mode or "fast").lower()
     if mode not in ("fast", "deep"):
         mode = "fast"
     n_samples = _samples_for(mode)
-    deep = {}
-    # 2026-10-14：移除 triage_cascade（OpenRouter JEV）呼叫。
-    # 它自己的評測已否證其能力（data/eval/jev_*）：平衡集 60 則嚴格樹決定 0/60，
-    # 放寬也只有 6/60 且全是 REAL → recall_fake=0.000；500 則那組 coverage 0.328、
-    # 164 個決定裡 161 個喊 FAKE、balanced accuracy 0.208（純喊 FAKE 的常數分類器
-    # 同集合 0.888）。而它成本實測 12.6–13.0s／最壞 30.9s（9/25 實測僅 0.77s）。
-    # 更早的版本更糟：JEV 一給 likely_real/likely_fake（信心低到 0.23 也算）就把
-    # 整段 deep 換成空殼，前端顯示條件（web/index.html:982）因此隱藏整段
-    # 「AI 深入分析」—— 使用者看到的就是「沒有 LLM 解說」，而信心 0.23 的擲骰
-    # 被硬寫成 credibility_score 75/25 再以 w=0.60 加權進總分。
-    # 檔與評測資料保留，paper 對照用離線腳本跑，不在每筆 /judge 上付這筆帳。
+    deep: Dict = {}
     if web_results or sources:
         try:
             _t = time.perf_counter()
-            deep = deep_analyze_ensemble(_title_clean or content[:60], web_results, sources,
-                                         content=content, samples=n_samples,
-                                         model_id=llm_model)
+            deep = deep_analyze_ensemble(
+                _title_clean or content[:60], web_results, sources,
+                content=content, samples=n_samples, model_id=llm_model
+            )
             timings["deep_analyze"] = round((time.perf_counter() - _t) * 1000, 1)
         except Exception as _e:
             print(f"[judge] deep_analyze failed: {_e}", flush=True)
-            # 2026-10-06：不要靜默變空。前端要能看到失敗原因，
-            # 否則整段「AI 深入分析」消失，使用者只覺得「沒有分析」。
             deep = {"error": f"{type(_e).__name__}: {_e}"}
+
+    # 4) 四維度正交評分與三態決策路由
     _fusion_t0 = time.perf_counter()
-    # 融合：LLM 可信度分動態加權進總評
-    # - 查核命中：規則已強證據，LLM 僅微調 (w=0.10)
-    # - 查核全 not_found：規則維度無信號，LLM 成主要依據 (w=0.60)
-    # 2026-09-25：模型自己宣告 abstain 時，該分數只是暫時值，不拿來改寫查核結論。
-    # 否則「正文未載入」會被當成低分證據，正是先前 TFC 截圖那種誤導來源。
-    ai_cs = deep.get('credibility_score') if isinstance(deep, dict) else None
-    ai_abstain = bool(deep.get('abstain')) if isinstance(deep, dict) else False
-    # 2026-10-01：模型判 unrelated_evidence 時回捋該次命中的全部處置。deep 在 fact_check
-    # 之後才算得出來，閘門只能事後生效：扣回 fact_check 的 -30、把 total 補回來，
-    # 下方 clamp/basis 各自讀同一個 _ev_unrelated。
-    _ev_unrelated = _evidence_is_unrelated(deep)
-    # 2026-10-01：軟命中帶（0.45～COFACTS_MIN_SIM）降級成 not_found，但保留原始 status
-    # 到 soft_hit_status —— prompt 組裝（fc_lines）會把它顯示成「軟命中待裁決」餵給
-    # LLM，讓 LLM 用 evidence_state 判相關性（PFCD two-stage：召回放寬 → semantic
-    # rerank 由 LLM 做）。只有標籤不夠——「央視國慶晚會」sim 0.862 命中「李登輝不姓李」，
-    # 兩者 status 都是 inaccurate，得看到回覆原文才分得出。
-    _soft = [s for s in (sources or []) if s.get("needs_llm_verdict")]
-    if _soft:
-        # LLM 判「證據完整且相關」就升為硬命中：此時 similarity_score 仍低於 0.72，
-        # clamp 的 0.72 條件不會觸發（clamp 另有 unrelated 閘門擋反向誤判），只吃 -30。
-        # 必須同時通過 _evidence_is_unrelated 的一致性檢查：實測 LLM 的狀態欄填
-        # full_body_evidence、analysis 卻說「與本主張無關」，只看狀態欄會鎖死真新聞。
-        _promote = (isinstance(deep, dict)
-                    and deep.get("evidence_state") == "full_body_evidence"
-                    and not _evidence_is_unrelated(deep))
-        for _s in _soft:
-            _s["soft_hit_status"] = _s.get("status")
-            _s["soft_hit_sim"] = _s.get("similarity_score")
-            _s["llm_promoted"] = _promote
-            if not _promote:
-                # 軟命中未被 LLM 接納，不得再當成查核回覆、分數依據或 UI 證據展示。
-                _s["status"] = "not_found"
-                _s["feedback_count"] = 0
-                _s["reasons"] = []
-                _s["matched_text"] = None
-                _s["url"] = None
-                _s.pop("alternatives", None)
-        if not _promote:
-            _new_fb_pts, _new_fb_desc = _feedback_from_sources(sources)
-            total += _new_fb_pts - fb_pts
-            fb_pts, fb_desc = _new_fb_pts, _new_fb_desc
-            res["user_feedback"] = {"score": fb_pts, "desc": fb_desc,
-                                    "weight": DEFAULT_WEIGHTS["feedback"]}
-            final = max(0.0, (total / avail) * 100) if avail > 0 else 0.0
-            rule_score = final
-        if _promote:
-            # 升級後 fact_check 要重算：走最嚴重取樣
-            _worst = max((s.get("soft_hit_status") for s in _soft),
-                         key=lambda x: {"inaccurate": 3, "partial": 2,
-                                        "accurate": 1}.get(x, 0), default=0)
-            _d = {"inaccurate": -DEFAULT_WEIGHTS["fact_check"],
-                  "partial": DEFAULT_WEIGHTS["fact_check"] * 0.3,
-                  "accurate": DEFAULT_WEIGHTS["fact_check"]}.get(_worst, 0) \
-                - DEFAULT_WEIGHTS["fact_check"] * 0.5
-            res["fact_check"] = {"score": DEFAULT_WEIGHTS["fact_check"] * 0.5 + _d,
-                                 "desc": _worst,
-                                 "weight": DEFAULT_WEIGHTS["fact_check"]}
-            # 只動 total，不動 avail。avail 是「可用權重總和」，扣分項加進分母會讓
-            # total/avail 變成負數——實測軟命中升級 + mygopen 同時命中時 total=−31
-            # （avail 被扣到負值）。clamp 後的分數本來就該被 clamp 收斂，不是被 avg 拖到負。
-            total += _d
-            final = max(0.0, (total / avail) * 100) if avail > 0 else 0.0
-            rule_score = final
-    if _ev_unrelated:
-        _fc0 = res.get("fact_check") or {}
-        if _fc0.get("desc") == "inaccurate":
-            # fact_check 從 -30 改回 not_found 的中性基準 15：total 與 avail 同額位移，
-            # final=(total/avail)*100 才會真的變高（只改 total 會被 avg 稀釋掉）。
-            _d = DEFAULT_WEIGHTS["fact_check"] * 0.5 - (_fc0.get("score") or 0.0)
-            total += _d
-            avail += _d
-            res["fact_check"] = {**_fc0, "score": DEFAULT_WEIGHTS["fact_check"] * 0.5,
-                                 "desc": "not_found"}
-            final = (total / avail) * 100 if avail > 0 else 0.0
-            rule_score = final
-    fusion_weight = 0.0
-    post_fusion_score = final
-    clamped = False
-    clamp_reason = ""
-    # 2026-10-05：多家同報。新新聞本來就沒有查核（查核庫只收網傳謠言），
-    # ≥3 家獨立媒體同報 = 交叉印證：abstain 上限 55→70，仍是暫時分數、不視為可信。
-    # key 用標題＋內文頭（只用標題會漏掉換句話說的同報，實例：中央社寫「杜拜航空機長遇襲」，
-    # 標題與三立原標零重疊，要靠內文的「杜拜航空」才連得起來）。
-    # 內文放前面：_web_query_core 會按「|」切（標題本有站台後綴），放後面會被切掉。
     _corr_outlets = _web_corr_outlets(web_results, f"{content[:80]}。{_query_src}", host)
-    _corr_n = len(_corr_outlets)
-    if ai_cs is not None:
-        try:
-            cs = float(ai_cs)
-            # 2026-10-02：證據本身是匿名轉傳／傳言時，不得按 full_body_evidence 採信。
-            _rumor_ev = _is_rumor_only_evidence(deep, sources)
-            if _rumor_ev and not ai_abstain:
-                ai_abstain = True
-                cs = min(cs, 45.0)
-                print(f"[judge] 證據為傳言／匿名轉傳，不採信為屬實背書 → 降為 abstain (cs<={cs:.0f})", flush=True)
-            fc_hit = any((s.get('status') in ('hit', 'ok', 'inaccurate', 'partial'))
-                         for s in (sources or []))
-            # 2026-10-02 修正：abstain 時也納入融合。
-            # 舊邏輯 `and not ai_abstain` 完全丟棄 abstain 分數，導致只有
-            # SBERT 情緒（15.0）+ 相似度（13.5）兩個訊號在講話，
-            # 分母卻仍含 domain 25 + fact_check 15，算出 58-68 的假高分。
-            # 實測：以假亂真的颱風新聞拿 68.2，真實颱風新聞拿 67.4 — 零鑑別力。
-            #
-            # fusion_weight 方向修正：舊邏輯查核命中給 0.10、查不到給 0.60，
-            # 等於「越沒證據越聽 AI 的」——但此時 AI 手上也沒有證據，
-            # 只是照內文語氣猜。方向應為：證據越弱，AI 話語權越低，
-            # 並在接近零證據時施加額外的上限錨定（no_evidence ≠ 真新聞）。
-            if ai_abstain:
-                # 證據不足：AI 分數已夾在 45-65，且會與情緒／相似度同向偏高，
-                # 給低話語權並壓低上限，避免「查不到」被讀成「不是假的」。
-                fusion_weight = 0.20
-                final = final * (1 - fusion_weight) + cs * fusion_weight
-                _abstain_cap = 55.0
-                _ev_label = str((deep or {}).get("evidence_state") or "unknown")
-                if _corr_n >= 3 and not fc_hit:
-                    _abstain_cap = 70.0  # 2026-10-05：多家同報交叉印證，放寬但仍是暫時分數
-                    _ev_label += f"（{_corr_n}家媒體同報交叉印證）"
-                if final > _abstain_cap:
-                    clamped = True
-                    clamp_reason = (clamp_reason + "；" if clamp_reason else "") + (
-                        f"查核證據不足（{_ev_label}），分數僅為暫時值，"
-                        f"施加上限錨定（最高 {_abstain_cap:.0f}，不視為可信）")
-                    final = _abstain_cap
-            else:
-                fusion_weight = 0.55 if fc_hit else 0.25
-                final = final * (1 - fusion_weight) + cs * fusion_weight
-            post_fusion_score = final
-        except (TypeError, ValueError):
-            pass
-    # 階段三：三級動態信心度衰減錨定 (Stage 3 Dynamic Confidence Decay Clamp)
-    # 2026-10-01：模型判 unrelated_evidence 時跳過錨定。模型看的是查核機構回覆原文，
-    # 比 SBERT 分數可靠——實測 Cofacts 對「黃安國慶表態」召回一篇「一頁式廣告詐騙」，
-    # matched_text 純網址卻算 sim 0.912，若照錨定真新聞直接鎖死 25 分。
-    _ev_unrelated = _evidence_is_unrelated(deep)
+    orth = score_orthogonal(
+        title=title,
+        url=url,
+        content=content,
+        target_url=target_url,
+        publish_date=publish_date,
+        sentiment_val=s_val,
+        title_body_sim=title_body_sim,
+        sources=sources,
+        web_results=web_results,
+        corr_outlets=_corr_outlets,
+        deep=deep,
+        whitelist_domains=TAIWAN_MAINSTREAM_DOMAINS or None,
+        factcheck_domains=FACT_CHECK_DOMAINS or None,
+        ugc_domains=UGC_DOMAINS or None,
+        blocklist_domains=DYNAMIC_BLOCKLIST_DOMAINS or None,
+    )
+
+    # 若 D1 判定為 unrelated 或軟命中未獲採納，清理 sources 的展示狀態以免誤導前端使用者
+    d1_status = orth["dimensions"]["evidence_verdict"]["status_label"]
     for _s in (sources or []):
-        _st = _s.get('status')
-        # 2026-09-24：缺相似度一律視為 0（未知≠有信心；舊 mygopen/google 結果無此欄，曾被 or 1.0 誤判 100% 硬錨定）
-        sim_score = float(_s.get('similarity_score') or 0.0)
-        if _st in ('inaccurate', 'false', 'misleading', 'fake'):
-            if sim_score >= 0.85:
-                if final > 25.0:
-                    clamped = True
-                    clamp_reason = f"查核機構 ({_s.get('source', '查核庫')}) 高度信心判定不實 (相似度 {int(sim_score*100)}%)，觸發安全上限錨定 (最高 25.0)"
-                final = min(final, 25.0)
-                break
-            elif sim_score >= 0.72:
-                if final > 50.0:
-                    clamped = True
-                    clamp_reason = f"查核機構 ({_s.get('source', '查核庫')}) 中度相關爭議 (相似度 {int(sim_score*100)}%)，觸發軟上限錨定 (最高 50.0)"
-                final = min(final, 50.0)
-                break
-        elif _st == 'partial':
-            # 2026-10-14(B1)：partial clamp 也要求 sim>=0.72。舊版無條件 clamp 到
-            # 55，日文真新聞被 jfc partial 弱命中（sim<0.72）壓進待查證帶再被二值化
-            # 算成 FAKE；inaccurate 本來就有 0.72/0.85 門控，partial 補齊一致。
-            if sim_score >= 0.72 and final > 55.0:
-                clamped = True
-                clamp_reason = f"查核機構 ({_s.get('source', '查核庫')}) 判定部分不實，觸發上限錨定 (最高 55.0)"
-                final = min(final, 55.0)
-    # 2026-10-16：釣魚標題上限錨定。標題黨＋查無查核時，主流 domain 滿分＋中性
-    # 情緒滿分＋標題內文高相似會疊出 75＋「高度可信」；壓到 60（最多「大致可信」）。
-    # ponytail: 只壓上限不判假，誤傷成本有限；要分級就把 _is_clickbait 換成分數。
-    # 訊號二路：關鍵詞（快、會漏）＋ LLM 標題內文比對（慢、抓斷章取義）。
-    _llm_bait = isinstance(deep, dict) and bool(deep.get("title_bait"))
-    _llm_bait_reason = str((deep or {}).get("title_bait_reason") or "")
-    if (has_clickbait or _llm_bait) and final > 60.0:
-        clamped = True
-        _bait_why = f"（AI判定：{_llm_bait_reason}）" if _llm_bait and _llm_bait_reason else ""
-        clamp_reason = (clamp_reason + "；" if clamp_reason else "") + \
-            f"標題疑似釣魚式標題{_bait_why}，已觸發上限錨定 (最高 60.0)"
-        final = min(final, 60.0)
-    # 5 級評級（PolitiFact-style 序數標籤）- adjusted for higher precision
-    if final >= 75:
-        rating = "高度可信"
-    elif final >= 60:
-        rating = "大致可信"
-    elif final >= 40:
-        rating = "待查證"
-    elif final >= 20:
-        rating = "疑似不實"
-    else:
-        rating = "高度可疑"
-    # 評分依據說明（前端展示「為什麼給這個等級」）
-    fc_statuses = [s.get('status') for s in (sources or [])]
-    if _ev_unrelated:
-        basis = "命中的查核與本主張無關，已忽略該錨定（暫時分數，非查核結論）"
-    elif any(st in ('inaccurate', 'false', 'misleading', 'fake') for st in fc_statuses):
-        basis = "查核機構判定不實，已錨定低分"
-    elif any(st == 'partial' for st in fc_statuses):
-        basis = "查核機構判定部分不實，已錨定上限"
-    elif any(st in ('hit', 'ok', 'accurate', 'true') for st in fc_statuses):
-        basis = "查核機構判定屬實，規則分主導"
-    elif ai_abstain and deep:
-        basis = ("AI 模型判定證據不足，本次為暫時分數（非查核結論）："
-                 f"{(deep.get('evidence_state') or '未載入正文')}")
-        if _corr_n >= 3:  # 2026-10-05：讓多家同報看得見（沒被 clamp 也留痕）
-            basis += f"｜{_corr_n}家媒體同報交叉印證（{ '、'.join(_corr_outlets[:6])}）"
-        if deep.get("evidence_state_disputed"):
-            # 2026-10-01：跨次取樣對證據狀態不一致 → 不給結論（selective prediction）。
-            # 擺動本身就是「模型不確定」的訊號，比它自報的分數可靠。
-            basis = (f"AI 模型 {deep.get('samples')} 次取樣對證據狀態不一致"
-                     f"（{deep.get('evidence_state')}），判定不確定，本次為暫時分數")
-    elif deep and deep.get('credibility_score') is not None:
-        basis = f"無查核證據，由本機 AI 模型補位評分（{deep.get('samples','?')}次取樣）"
-    else:
-        basis = "無查核證據且 AI 評分失敗，僅依規則分"
+        if d1_status in ("unrelated", "none", "rumor_only_rejected") and _s.get("needs_llm_verdict"):
+            _s["llm_promoted"] = False
+            _s["status"] = "not_found"
+            _s["feedback_count"] = 0
+            _s["reasons"] = []
+            _s["matched_text"] = None
+            _s["url"] = None
+            _s.pop("alternatives", None)
+        elif _s.get("needs_llm_verdict"):
+            _s["llm_promoted"] = True
+
     timings["scoring"] = round((time.perf_counter() - _fusion_t0) * 1000, 1)
+    compat_mets = orth["metrics"]
+
     return {
-        **res,
-        "total_raw_score": total,
-        "available_weight": avail,
-        "final_score": final,
-        "rule_score": rule_score,
-        "fusion_weight": fusion_weight,
-        "post_fusion_score": post_fusion_score,
-        "clamped": clamped,
-        "clamp_reason": clamp_reason,
-        "rating_text": rating,
-        "scoring_basis": basis,
-        "is_provisional": bool(ai_abstain),
+        **compat_mets,
+        "metrics": compat_mets,
+        "dimensions": orth["dimensions"],
+        "regime": orth["regime"],
+        "regime_desc": orth["regime_desc"],
+        "total_raw_score": orth["final_score"],
+        "available_weight": 100.0,
+        "final_score": orth["final_score"],
+        "rule_score": orth["rule_score"],
+        "fusion_weight": orth["fusion_weight"],
+        "post_fusion_score": orth["post_fusion_score"],
+        "clamped": orth["clamped"],
+        "clamp_reason": orth["clamp_reason"],
+        "rating_text": orth["rating_text"],
+        "scoring_basis": orth["scoring_basis"],
+        "is_provisional": orth["is_provisional"],
         "evidence_state": (deep.get("evidence_state") or "") if isinstance(deep, dict) else "",
         "sources": sources,
-        "corroboration": {"count": _corr_n, "outlets": _corr_outlets},
+        "corroboration": {"count": len(_corr_outlets), "outlets": _corr_outlets},
         "review_links": review_links,
         "web_results": web_results,
         "deep_analysis": deep,
@@ -1779,7 +1487,7 @@ def analyze_article_data(title: str = "", url: str = "", content: str = "", publ
         raise ValueError("content required for single analysis")
     if not url:
         url = "https://unknown"
-    return _score_single(title or "N/A", url, content, [title, content],
+    return _score_single(title or "N/A", url, content, [title] if title else [],
                          publish_date=publish_date, target_url=target_url,
                          mode=mode, llm_model=llm_model)
 
@@ -2402,6 +2110,9 @@ def judge_news():
         "final_score": score["final_score"],
         "title": title,
         "url": url,
+        "regime": score.get("regime", ""),
+        "regime_desc": score.get("regime_desc", ""),
+        "dimensions": score.get("dimensions", {}),
         "metrics": {
             "sentiment": score["sentiment"],
             "domain": score["domain"],

@@ -1,0 +1,27 @@
+{
+  "frozen_date": "20261017",
+  "server_commit": "b5e9bcb82d26bbaa54cb08676064366de46ae54a",
+  "dirty_files_at_freeze": [
+    "M data/eval/metrics_500.jsonl",
+    " M data/eval/model_probe.json",
+    " M python/fake_news_server_new.py",
+    " M python/web_search_client.py",
+    " M scripts/collect_metrics_500.py",
+    " M scripts/compare_metrics_500.py",
+    " M scripts/zone_accuracy_100.py",
+    "?? data/eval/full_evaluation_report.FROZEN-20261017-b5e9bcb.json",
+    "?? data/eval/full_evaluation_report.json",
+    "?? data/eval/metrics_500.POST-FB-20261005.jsonl",
+    "?? data/eval/metrics_500.PRE-FB-20261005.jsonl",
+    "?? data/eval/zone_acc_ja_real.jsonl",
+    "?? python/eval_bait60_results.jsonl",
+    "?? python/eval_samples_20260827_baseline.jsonl",
+    "?? python/orthogonal_scorer.py",
+    "?? python/triage_cascade.py",
+    "?? scripts/eval_reconstructed_all.py",
+    "?? scripts/hardcase_probe.py",
+    "?? scripts/run_full_evaluation.py",
+    "?? scripts/test_orthogonal_scorer.py"
+  ],
+  "note": "paper凍結版：新快照（止血4刀後重打分）。舊版報告(results2.md)數字對應HEAD舊快照，paper引用以此檔為準。"
+}
