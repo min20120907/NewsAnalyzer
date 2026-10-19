@@ -114,6 +114,34 @@ RHETORICAL_BAIT_PATTERNS = (
     r"(這件事|這個動作|這兩天|這張卡|這組號碼|這個速度|這站|這兩個月|這藝人|這國).*[？?]",
     r"(最後一夜|永遠走不回去|一天能存多少電|去哪了|當場觸電|降速到不能用|發生了什麼事|走入歷史|規則全變了|療程卡一半|行李一夜全沒了|先別丟|不用再等一整夜|根本不存在|條件只有一個|銀行也找不到你|多數人還沒領到|中鏢)",
     r"[？?].*[？?]",  # 雙問號懸念標
+    # 2026-10-17：斷言式反問（「舊站不能上車？」＝斷言舊站不能上車，問號只是包裝；
+    # 內文僅說動線改變時即為斷章取義）。限「不能/無法/沒了/失效/關閉」等否定斷言＋問號，
+    # 一般疑問（何時/多少/在哪）不觸發。
+    r"(不能|無法|沒了|沒有了|失效|關閉|走不回去|搭不上|上不了)[^？?]{0,12}[？?]",
+)
+
+# D3: 標題斷言確定性 vs 內文保留變數（2026-10-19：風傳媒普發2萬案。
+# 標題「最快這時間三讀通過」斷言時程，內文卻說「仍須視協商而定」——
+# 餘弦相似 71% 只量主題重疊，看不見語氣確定性落差，三路全漏才給 0 扣分。
+# 限「標題確定性斷言＋內文明確 hedge」同時成立，一般肯定句標題不觸發。）
+TITLE_CERTAINTY_MARKERS = (
+    "最快", "確定", "證實", "曝光", "宣布", "拍板", "定案", "底定",
+)
+BODY_HEDGE_MARKERS = (
+    "仍須", "未定", "有待", "尚未", "待定", "能否", "是否", "變數",
+    "未確定", "有待觀察", "視後續",
+)
+
+# D3: 標題斷言嚴重度 vs 內文嫌疑保留（2026-10-19：聯合報身障機構案。
+# 標題「涉強制猥褻多名」斷言嚴重度，內文卻說「涉」「可能 5 名」「聲押中」——語義差到 sim 12%，
+# 但 low_sim 只在 <42% 才扣，且把抽取不全誤當主題漂移。severity_gap 在主題一致時也能扣，
+# 條件更嚴：標題須用斷言級動詞＋內文須用保留詞，一般平實句不觸發。）
+TITLE_SEVERITY_MARKERS = (
+    "強制", "確認", "證據顯示", "鐵證", "坐實", "確定是", "確實是", "屬實",
+)
+BODY_HEDGE_SEVERITY = (
+    "涉嫌", "涉入", "疑", "疑似", "可能", "不排除", "待釐清",
+    "聲押中", "羈押中", "偵查中", "調查中", "審理中",
 )
 
 # D4: 內文修辭操弄與虛構風險標記
@@ -136,6 +164,23 @@ UNVERIFIED_OFFICIAL_CLAIM_MARKERS = (
     "洽詢專線", "洽詢電話", "全面失效", "自動鎖卡", "免費配發", "補助金",
     "紓困貸款", "加碼抽", "普發現金", "停班停課", "中心最大風速", "預計於",
     "將於明年1月1日", "每周維持150分鐘",
+)
+
+# D4: 詐騙行為誘因標記（釣魚退款/盜帳號/投資群組/保證獲利）。
+# 與 MOBILIZATION 的「假新聞情緒」取向不同：這些是詐騙話術的行為指令。
+# 命中任一即視為高風險詐騙徵兆（不需要 is_mainstream_or_corroborated 豁免——
+# 真新聞不會叫人「輸入銀行卡號退款」或「輸入簡訊驗證碼投票」）。
+FRAUD_ACTION_MARKERS = (
+    # 釣魚退款/假客服
+    "點擊連結取消", "點擊下方連結", "輸入銀行卡號", "輸入卡號", "取消扣款",
+    "幫您退款", "辦理退款", "假網站", "釣魚連結", "不明連結",
+    # 盜帳號/驗證碼
+    "幫忙投票", "幫忙投個票", "輸入 LINE", "輸入帳號密碼", "簡訊驗證碼",
+    "驗證碼完成", "輸入驗證碼", "帳號遭盜", "帳號被盜",
+    # 投資群組/保證獲利
+    "保證賺", "保證月賺", "跟著老師", "加入 LINE 群組", "加入投資群組",
+    "投資群組", "名額有限", "穩賺不賠", "保證獲利", "飆股", "飆股推薦",
+    "老師帶你", "群組帶單", "一對一帶", "利潤豐厚",
 )
 
 
@@ -273,7 +318,7 @@ def compute_d1_evidence_verdict(
         except (TypeError, ValueError):
             sim_val = 0.0
 
-        needs_llm = bool(s.get("needs_llm_verdict")) or (0.0 < sim_val < 0.72 and st != "accurate")
+        needs_llm = bool(s.get("needs_llm_verdict")) or (0.0 < sim_val < 0.72)
         if needs_llm and not deep_full:
             continue
 
@@ -293,6 +338,13 @@ def compute_d1_evidence_verdict(
             explanation="外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）"
         )
 
+    # 2026-10-19：若已有硬命中（sim >= 0.72），剔除其他來源的軟命中（< 0.72）。
+    # 否則當 Cofacts 硬命中（如 R09 sim=0.93 accurate）讓 LLM 判 full_body_evidence 時，
+    # 其他站台的同領域軟命中（如 MyGoPen sim=0.60 inaccurate）會搭便車進 valid_hits，
+    # 再靠 _sev_key 的嚴重度排序反過來壓死 0.93 的正命。
+    if any(h[1] >= 0.72 for h in valid_hits):
+        valid_hits = [h for h in valid_hits if h[1] >= 0.72]
+
     def _sev_key(item):
         st, sim_v, n_rep, _ = item
         if st in ("inaccurate", "false", "misleading", "fake"):
@@ -302,6 +354,22 @@ def compute_d1_evidence_verdict(
         return (1, sim_v, n_rep)
 
     best_st, best_sim, best_replies, best_src = max(valid_hits, key=_sev_key)
+
+    # 2026-10-19：Cofacts 常有人把「闢謠澄清文」（如「陳燕華表示：目前沒有任何研究證明
+    # 喝熱檸檬水可以抗癌…不要再傳這樣的謠言了」）送進資料庫，編輯標 NOT_RUMOR（accurate，
+    # 因為闢謠文本身是真的）。當受測文章主張「檸檬水能抗癌」（real_fake）命中這筆時，
+    # LLM 讀完查核內文會判 full_body_evidence 且給極低分（<=30，查核直接否定本文主張），
+    # 此時該筆查核對本文的蘊涵方向是「駁斥（inaccurate）」而非背書。
+    if (best_st in ("accurate", "true", "hit", "ok")
+            and deep_full
+            and isinstance(deep, dict)
+            and not deep.get("abstain")
+            and deep.get("credibility_score") is not None):
+        try:
+            if float(deep.get("credibility_score")) <= 30.0:
+                best_st = "inaccurate"
+        except (TypeError, ValueError):
+            pass
 
     if best_st in ("accurate", "true", "hit", "ok") and rumor_only:
         return DimensionOutput(
@@ -478,7 +546,7 @@ def compute_d3_headline_faithfulness(
     """
     D3 標題內文忠實度（純扣分／警示因子）：
     - 修正舊版 `refs=[title, content]` 造成的 50% 自相似灌水。
-    - 檢測三路失真：(1) 標題釣魚詞表 (2) 懸念反問句型（如「…？這件事…」）(3) LLM 語義斷章取義 `title_bait` 或極低標題內文相似度。
+    - 檢測四路失真：(1) 標題釣魚詞表 (2) 懸念反問句型（如「…？這件事…」）(3) LLM 語義斷章取義 `title_bait` 或極低標題內文相似度 (4) 標題確定性斷言 vs 內文 hedge 的確定性落差。
     - 正交保證：文題相符 (F=1.0) 代表「0 扣分」，永遠不會幫假新聞加分！
     """
     what_measures = "新聞標題之斷言是否忠實反映內文，有無誇大釣魚、懸念誘導或斷章取義"
@@ -505,6 +573,16 @@ def compute_d3_headline_faithfulness(
     sim_val = title_body_sim if (title_body_sim is not None and title_body_sim > 0.0) else None
     low_sim = (sim_val is not None and sim_val < 0.42)
 
+    # 2026-10-19：確定性落差。標題用確定性斷言、內文卻明確保留變數時，
+    # 餘弦相似度看不出來（同主題即高分），必須獨立成一路。
+    certainty_gap = (any(k in t_clean for k in TITLE_CERTAINTY_MARKERS)
+                     and any(k in c_clean for k in BODY_HEDGE_MARKERS))
+
+    # 嚴重度落差：標題用斷言級動詞、內文用嫌疑保留詞。
+    # 保留詞只認「真的保留」——偵查中/羈押中是進行中，已羈押/已偵查是結案（子字串不匹配）。
+    _hedge_hit = any(k in c_clean for k in BODY_HEDGE_SEVERITY)
+    severity_gap = (any(k in t_clean for k in TITLE_SEVERITY_MARKERS) and _hedge_hit)
+
     reasons = []
     penalty = 0.0
     if llm_bait:
@@ -519,6 +597,12 @@ def compute_d3_headline_faithfulness(
     if low_sim:
         penalty = max(penalty, 15.0)
         reasons.append(f"標題與內文語義偏離（相似度僅 {sim_val:.0%}）")
+    if certainty_gap:
+        penalty = max(penalty, 15.0)
+        reasons.append("標題斷言確定性超出內文（內文明確保留變數／時程未定）")
+    if severity_gap:
+        penalty = max(penalty, 15.0)
+        reasons.append("標題斷言嚴重度超出內文（內文僅稱涉嫌／偵查中，未達斷言級）")
 
     F = max(0.0, 1.0 - penalty / 25.0)
     status_lbl = "bait_or_unfaithful" if penalty > 0 else "faithful"
@@ -558,6 +642,9 @@ def compute_d4_rhetorical_risk(
     off_hits = [m for m in UNVERIFIED_OFFICIAL_CLAIM_MARKERS if m in blob] if not is_mainstream_or_corroborated else []
     bait_in_body = [kw for kw in CLICKBAIT_LEXICON if kw in blob]
 
+    # 詐騙行為指令：不受 is_mainstream_or_corroborated 豁免（真新聞不會叫人輸入卡號/驗證碼）
+    fraud_hits = [m for m in FRAUD_ACTION_MARKERS if m in blob]
+
     risk = 0.15
     notes = []
 
@@ -573,6 +660,9 @@ def compute_d4_rhetorical_risk(
     if len(bait_in_body) >= 2 and not is_mainstream_or_corroborated:
         risk += 0.20
         notes.append(f"高密度煽動語彙（「{'、'.join(bait_in_body[:2])}」）")
+    if fraud_hits:
+        risk = max(risk, min(0.95, 0.70 + 0.05 * len(fraud_hits)))
+        notes.append(f"詐騙行為指令特徵（「{'、'.join(fraud_hits[:3])}」）")
 
     abs_s = abs(sentiment_val or 0.0)
     if abs_s > 0.85 and not is_mainstream_or_corroborated:
@@ -667,6 +757,10 @@ def score_orthogonal(
         else:
             base_with_llm = (0.85 * base_score + 0.15 * ai_cs) if (ai_cs is not None and not ai_abstain and ai_cs >= 65) else base_score
             final_score = max(52.0, min(96.0, base_with_llm + d3.impact_pts))
+            # 2026-10-17：查核屬實＋釣魚標（D3 扣分達標）時鎖 60 上限——內容為真
+            # 但標題斷章取義，最高只到「待查證」頂。這是 Regime A 值域邊界，不是事後 Clamp。
+            if d3.impact_pts <= -18.0:
+                final_score = min(final_score, 60.0)
             regime_desc = f"路由 A（查核屬實背書）：{d1.explanation}" + (
                 f"；惟 {d3.explanation}" if d3.impact_pts < 0 else ""
             )

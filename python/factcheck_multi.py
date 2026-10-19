@@ -60,14 +60,41 @@ def _ensure_db():
     return con
 
 
+# 2026-10-18：快取 TTL。舊碼有 ts 欄位但讀取時完全不管 → 快取永不過期。
+# 實測 mcache 累積 9179 筆 not_found（最舊 52 天），意思是「查不到」一旦寫入就永久
+# 生效：來源修好、召回改好、站方補了查核，使用者還是看到同一個 not_found。
+# 這就是「明明查核有、卻找不到」的第二個獨立成因（跟召回無關）。
+# 正/負結果分開 TTL：判定（inaccurate/accurate…）幾乎不變，可長存；
+# 空結果是「這次沒撈到」，必須會過期才會重試。
+_CACHE_NEG_STATUS = {"not_found", "unrelated", "error", "disabled", None, ""}
+
+
+def _cache_ttl(status) -> float:
+    """回傳該筆 payload 的快取壽命（秒）。<=0 表示不快取（一律視為過期）。"""
+    if os.environ.get("FC_CACHE_DISABLE", "") == "1":
+        return 0.0
+    if status in _CACHE_NEG_STATUS:
+        return float(os.environ.get("FC_CACHE_TTL_NEG", "21600"))   # 6h
+    return float(os.environ.get("FC_CACHE_TTL", "604800"))          # 7d
+
+
 def _mcache_get(source, key):
     try:
         con = _ensure_db()
-        row = con.execute("SELECT payload FROM mcache WHERE key=? AND source=?",
+        row = con.execute("SELECT payload, ts FROM mcache WHERE key=? AND source=?",
                           (key, source)).fetchone()
         con.close()
         if row:
-            return json.loads(row[0])
+            try:
+                d = json.loads(row[0])
+            except Exception:
+                return None
+            if not isinstance(d, dict):
+                return None
+            ttl = _cache_ttl(d.get("status"))
+            if ttl <= 0 or (time.time() - float(row[1] or 0.0)) > ttl:
+                return None
+            return d
     except Exception:
         pass
     return None
@@ -302,14 +329,44 @@ def _jieba_keywords(snippet: str, limit: int = 4) -> str:
         return ""
 
 
+def _title_gate_and_sim(query_text: str, title: str,
+                        threshold: float = 0.50):
+    """標題型中文查核站（MyGoPen / HKBU / 蘭姆酒吐司）共用門控＋SBERT。
+
+    2026-10-19 修：原本只看 _sbert_sim(snippet[:120], title) >= 0.50，未過
+    實體門控、關鍵詞交集門控與數字指紋門控 → 同領域不同事件的舊查核（sim 0.51~0.64）
+    長驅直入：
+      · R09（疾管署估8月中新冠高峰單週破5萬）撞 MyGoPen「網傳新冠又來了？這5種症狀要當心？」
+        sim 0.604 → 把 Cofacts 0.926 accurate 硬命中壓掉，真新聞鎖 21.1 分
+      · B14（公路局機車零違規抽獎）撞 MyGoPen「機車未打方向燈罰1200」sim 0.588
+      · B19（366萬電話詐騙）撞 MyGoPen「緬北騙局手機號碼植入病毒」sim 0.580
+    這裡對齊 cofacts_local 的三層門控（標題常不帶數字，故數字閘門用 softd：
+    雙方都有數字時才要求交集），並取全池最高分而非首筆通過者。
+    """
+    from cofacts_local import (_sbert_sim, entity_gatekeeper,
+                               _keyword_overlap_gate, _numeric_gate)
+    q = (query_text or "")[:300]
+    t = (title or "").strip()
+    if not q or not t:
+        return None
+    if not (entity_gatekeeper(q, t)
+            and _keyword_overlap_gate(q, t)
+            and _numeric_gate(q, t, mode="softd")):
+        return None
+    _s = _sbert_sim(q, t) or 0.0
+    if _s < threshold:
+        return None
+    return round(float(_s), 4)
+
+
 def get_mygopen(text: str, use_cache: bool = True,
                 timeout_api: int = 15) -> dict:
     if not text or len(text.strip()) < 10:
         return _empty("mygopen")
     # 取前兩句關鍵字做搜尋（避免整段太長抓不到）
     snippet = text[:120]
-    # key 前綴 m3：2026-09-24 起回傳 similarity_score（舊 m2: 快取無此欄，會讓錨定誤判 100%）
-    key = hashlib.sha1(("m3:" + snippet).encode("utf-8")).hexdigest()
+    # key 前綴 m4：2026-10-19 補齊實體＋關鍵詞交集＋softd 數字門控（舊 m3: 含同領域假命中）
+    key = hashlib.sha1(("m4:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("mygopen", key)
         if c:
@@ -349,19 +406,14 @@ def get_mygopen(text: str, use_cache: bool = True,
         res = _empty("mygopen")
         _mcache_put("mygopen", key, res)
         return res
-    # 相似度門控（2026-09 反向驗證抓到誤判：真實抽獎活動撞上「交通違規罰鍰詐騙簡訊」，
-    # 只因共享 交通/違規 關鍵字就被掛 inaccurate）：逐條驗證，取首條通過者。
-    # 實測同謠言家族 sim≈0.68+、無關主題≈0.33，閾值取 0.50。
     top_url, top_title, win_sim = None, "", None
     try:
-        from cofacts_local import _sbert_sim
         for u, t in zip(links, titles):
-            _s = _sbert_sim(snippet, t) or 0.0
-            if _s >= 0.50:
-                top_url, top_title, win_sim = u, t, round(float(_s), 4)
-                break
+            _s = _title_gate_and_sim(text, t, threshold=0.50)
+            if _s is not None and (win_sim is None or _s > win_sim):
+                top_url, top_title, win_sim = u, t, _s
     except Exception:
-        top_url, top_title = links[0], titles[0] if titles else ""
+        top_url, top_title = None, ""
     if not top_url:
         res = _empty("mygopen")
         _mcache_put("mygopen", key, res)
@@ -445,12 +497,25 @@ def _sbert_gate(snippet: str, candidates, threshold: float = 0.50):
     return None
 
 
+def _zh_title_gate(text: str, candidates, threshold: float = 0.50):
+    """中文標題型查核（HKBU / 蘭姆酒吐司）：走三層門控＋SBERT，取全池最高分。"""
+    best = None
+    for cid, t, u in candidates:
+        try:
+            _s = _title_gate_and_sim(text, t, threshold=threshold)
+        except Exception:
+            _s = None
+        if _s is not None and (best is None or _s > best[3]):
+            best = (cid, t, u, _s)
+    return best
+
+
 def get_hkbu(text: str, use_cache: bool = True,
              timeout_api: int = 15) -> dict:
     if not text or len(text.strip()) < 10:
         return _empty("hkbu")
     snippet = text[:120]
-    key = hashlib.sha1(("hkbu:" + snippet).encode("utf-8")).hexdigest()
+    key = hashlib.sha1(("hkbu2:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("hkbu", key)
         if c:
@@ -467,7 +532,7 @@ def get_hkbu(text: str, use_cache: bool = True,
         res = _empty("hkbu")
         _mcache_put("hkbu", key, res)
         return res
-    win = _sbert_gate(snippet, cands)
+    win = _zh_title_gate(text, cands)
     if not win:
         res = _empty("hkbu")
         _mcache_put("hkbu", key, res)
@@ -488,7 +553,7 @@ def get_rumtoast(text: str, use_cache: bool = True,
     if not text or len(text.strip()) < 10:
         return _empty("rumtoast")
     snippet = text[:120]
-    key = hashlib.sha1(("rt:" + snippet).encode("utf-8")).hexdigest()
+    key = hashlib.sha1(("rt2:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("rumtoast", key)
         if c:
@@ -505,7 +570,7 @@ def get_rumtoast(text: str, use_cache: bool = True,
         res = _empty("rumtoast")
         _mcache_put("rumtoast", key, res)
         return res
-    win = _sbert_gate(snippet, cands)
+    win = _zh_title_gate(text, cands)
     if not win:
         res = _empty("rumtoast")
         _mcache_put("rumtoast", key, res)
@@ -590,9 +655,15 @@ def get_infact(text: str, use_cache: bool = True,
                timeout_api: int = 15) -> dict:
     if not text or len(text.strip()) < 10:
         return _empty("infact")
+    # 2026-10-18：日文站只吃日文。日文 FC 站台與台/中新聞毫無共同事件，
+    # 靠多語言 SBERT 的跨語言殘餘相似度（≥0.50）就能掛上 inaccurate
+    # （實測 R09／R17／B09／B17 都被日文站誤報 refutes）。語言閘門是零成本正解，
+    # 與 politifact 的 en 閘門同形狀。
+    if _detect_lang(text) != "ja":
+        return _empty("infact")
     snippet = text[:120]
-    # infact2: 2026-10-08 映射收緊（問句/否定形不再判 accurate），舊前綴快取作廢
-    key = hashlib.sha1(("infact2:" + snippet).encode("utf-8")).hexdigest()
+    # infact3: 2026-10-18 加日文語言閘門（非日文輸入一律放空），舊前綴快取作廢
+    key = hashlib.sha1(("infact3:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("infact", key)
         if c:
@@ -630,9 +701,14 @@ def get_jfc(text: str, use_cache: bool = True,
             timeout_api: int = 15) -> dict:
     if not text or len(text.strip()) < 10:
         return _empty("jfc")
+    # 2026-10-18：日文站只吃日文（同 infact，見該處說明）。jfc 的 RSS 是全站最新
+    # 15 篇、完全沒有關鍵詞篩選，任何語言的輸入都只能靠 SBERT 門控擋——
+    # 跨語言的殘餘相似度不足以當閘門，語言判準才是。
+    if _detect_lang(text) != "ja":
+        return _empty("jfc")
     snippet = text[:120]
-    # jfc2: 同上（accurate 觸發收緊），舊前綴快取作廢
-    key = hashlib.sha1(("jfc2:" + snippet).encode("utf-8")).hexdigest()
+    # jfc3: 2026-10-18 加日文語言閘門（非日文輸入一律放空），舊前綴快取作廢
+    key = hashlib.sha1(("jfc3:" + snippet).encode("utf-8")).hexdigest()
     if use_cache:
         c = _mcache_get("jfc", key)
         if c:

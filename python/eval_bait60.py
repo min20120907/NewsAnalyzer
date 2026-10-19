@@ -15,6 +15,8 @@ OUT = os.path.join(BASE, "eval_bait60_results.jsonl")
 
 
 def correct(group, final):
+    if final is None or final < 0:
+        return False
     if group == "REAL":
         return final >= 60.0
     if group == "BAIT":
