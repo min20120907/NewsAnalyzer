@@ -1830,6 +1830,15 @@ def _extract_from_url(url: str, skip_newspaper: bool = False) -> Dict:
             downloaded = trafilatura.fetch_url(url)
             if downloaded:
                 text = trafilatura.extract(downloaded, include_comments=False, include_tables=True)
+                # 標籤雲樣板頁（如 MyGoPen 的 Blogger 樣板）：預設模式會把整片
+                # 「中文詞,數字,」標籤雲當成正文（實測 1033 組），改用 precision
+                # 重新抽取（實測 1033→3 組、正文 1197 字元、標題內文相似度 0.33→0.83）。
+                if text and len(re.findall(r"[^,\s]{1,12},\d{1,4}", text)) > 100:
+                    _text_prec = trafilatura.extract(
+                        downloaded, include_comments=False, include_tables=True, favor_precision=True
+                    )
+                    if _text_prec and len(_text_prec.strip()) >= 30:
+                        text = _text_prec
                 if text and len(text.strip()) >= 30:
                     # Extract metadata (title, date) via trafilatura's metadata extractor
                     title = ""
