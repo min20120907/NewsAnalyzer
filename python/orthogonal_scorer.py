@@ -105,7 +105,7 @@ CLICKBAIT_LEXICON = (
     "傻眼", "敗類", "割韭菜", "驚傳", "瘋傳", "洗版", "嚇呆", "驚呆", "全網",
     "嚇傻", "傻了", "震驚", "踢爆", "細思極恐", "不轉不是", "沉默了", "嚇壞",
     "慘了", "出事了", "出大事", "天塌了", "哭斷腸", "氣炸", "救命", "心碎", "淚崩",
-    "崩潰", "天啊",
+    "崩潰", "天啊", "超狂", "全看傻", "網看傻", "真相曝光", "內幕曝光", "下場曝光", "原因曝光",
 )
 
 # D3: 懸念式／反問式釣魚標題句型（精準鎖定「真內文＋誇大懸念標」如 B01~B20，不誤傷一般政治/分析問句）
@@ -118,6 +118,13 @@ RHETORICAL_BAIT_PATTERNS = (
     # 內文僅說動線改變時即為斷章取義）。限「不能/無法/沒了/失效/關閉」等否定斷言＋問號，
     # 一般疑問（何時/多少/在哪）不觸發。
     r"(不能|無法|沒了|沒有了|失效|關閉|走不回去|搭不上|上不了)[^？?]{0,12}[？?]",
+    # 2026-10-19：資訊缺口與誇張驚嘆釣魚（台媒即時新聞典型套路）
+    # (1) 遮蔽關鍵結果引導點擊：醫揭真相/醫揭元凶/曝最壞情形/內幕曝光/答案曝光/真實身分
+    r"(醫|名醫|專家|官方|檢警|警|網|本人|名嘴|律師)(揭|曝|揭密|揭開|說出|吐露)(真相|元凶|元兇|內幕|最壞|下場|關鍵|秘密|秘辛)",
+    r"(揭|曝|曝光)(真相|元凶|元兇|內幕|最壞|下場|關鍵|秘密|秘辛|主因)",
+    r"(背後藏|藏大顆|大顆洋蔥|全場鼻酸|網看傻|全看傻|惹淚|出奇招|驚人真相)",
+    # (2) 驚嘆誇張前後反差句型：...！...曝：/ ...！...揭：
+    r"[！!].*(曝：|揭：|揭密|揭開|竟然|真實身分|真實身份)",
 )
 
 # D3: 標題斷言確定性 vs 內文保留變數（2026-10-19：風傳媒普發2萬案。
@@ -455,16 +462,24 @@ def compute_d2_source_corroboration(
 
     if n_corr == 0 and web_results:
         seen_o = set()
+        self_root = host.split(".")[0] if "." in host else host
         for r in web_results:
             rt = (r.get("title") or "")
             ru = (r.get("url") or "")
             rh = urlparse(ru).netloc.lower().replace("www.", "")
+            if rh in ugc or any(u in rh for u in ("facebook", "fb.com", "instagram", "threads.net", "youtube", "tiktok", "ptt.cc", "dcard")):
+                continue
             if rh in ("news.google.com", "google.com") and " - " in rt:
                 outlet_lbl = rt.split(" - ")[-1].strip().lower()
             else:
                 outlet_lbl = rh
-            if outlet_lbl and outlet_lbl != host and outlet_lbl not in seen_o:
-                seen_o.add(outlet_lbl)
+            if not outlet_lbl or outlet_lbl in seen_o:
+                continue
+            if any(u in outlet_lbl for u in ("facebook", "fb", "threads", "ptt", "dcard", "instagram", "youtube", "tiktok", "twitter", "x.com")):
+                continue
+            if outlet_lbl == host or (len(self_root) >= 3 and self_root in outlet_lbl):
+                continue
+            seen_o.add(outlet_lbl)
         outlets = list(seen_o)
         n_corr = len(outlets)
 
@@ -475,8 +490,13 @@ def compute_d2_source_corroboration(
         c_dom = 0.90
         dom_label = f"官方或查核機構網域 ({main_dom})"
     elif is_mainstream:
-        c_dom = 0.78
-        dom_label = f"具名主流媒體/白名單 ({main_dom})"
+        is_wire_or_public = main_dom in ("cna.com.tw", "pts.org.tw", "news.pts.org.tw", "rti.org.tw", "bbc.com", "reuters.com", "apnews.com")
+        if is_wire_or_public or n_corr >= 1:
+            c_dom = 0.78
+            dom_label = f"具名主流媒體/白名單 ({main_dom})"
+        else:
+            c_dom = 0.58
+            dom_label = f"具名商業主流/單一來源 ({main_dom})"
     elif is_ugc:
         c_dom = 0.25
         dom_label = f"社群轉傳平台 ({main_dom})，無原生機構背書"
@@ -742,25 +762,35 @@ def score_orthogonal(
     ai_cs = float(deep["credibility_score"]) if (isinstance(deep, dict) and deep.get("credibility_score") is not None) else None
     ai_abstain = bool(deep.get("abstain")) if isinstance(deep, dict) else True
 
+    fusion_weight = 0.0
     if d1.status_label in ("refutes", "partially_refutes", "supports"):
         # Regime A：已核實查核證據主導（Verified Evidence Regime）
         regime = "VERIFIED_EVIDENCE"
         base_score = d1.impact_pts
+        rule_score = base_score
         if d1.status_label == "refutes":
             final_score = base_score
             if ai_cs is not None and not ai_abstain and ai_cs <= 35:
                 final_score = 0.85 * base_score + 0.15 * min(25.0, ai_cs)
+                fusion_weight = 0.15
             regime_desc = f"路由 A（查核證據主導）：{d1.explanation}"
         elif d1.status_label == "partially_refutes":
             final_score = max(40.0, min(55.0, base_score + 0.3 * d3.impact_pts))
+            rule_score = final_score
             regime_desc = f"路由 A（查核部分不實）：{d1.explanation}"
         else:
-            base_with_llm = (0.85 * base_score + 0.15 * ai_cs) if (ai_cs is not None and not ai_abstain and ai_cs >= 65) else base_score
+            if ai_cs is not None and not ai_abstain and ai_cs >= 65:
+                base_with_llm = 0.85 * base_score + 0.15 * ai_cs
+                fusion_weight = 0.15
+            else:
+                base_with_llm = base_score
             final_score = max(52.0, min(96.0, base_with_llm + d3.impact_pts))
+            rule_score = max(52.0, min(96.0, base_score + d3.impact_pts))
             # 2026-10-17：查核屬實＋釣魚標（D3 扣分達標）時鎖 60 上限——內容為真
             # 但標題斷章取義，最高只到「待查證」頂。這是 Regime A 值域邊界，不是事後 Clamp。
             if d3.impact_pts <= -18.0:
                 final_score = min(final_score, 60.0)
+                rule_score = min(rule_score, 60.0)
             regime_desc = f"路由 A（查核屬實背書）：{d1.explanation}" + (
                 f"；惟 {d3.explanation}" if d3.impact_pts < 0 else ""
             )
@@ -770,14 +800,18 @@ def score_orthogonal(
         # Regime B：開放世界跨源佐證新聞（Corroborated Open-World Regime）
         regime = "CORROBORATED_REPORT"
         base_score = d2.impact_pts  # 62 ~ 86 分
+        rhet_adj = -8.0 * max(0.0, d4.value - 0.25)
+        rule_score = base_score + d3.impact_pts + rhet_adj
         if ai_cs is not None and not ai_abstain and ai_cs >= 60:
             base_score = 0.70 * base_score + 0.30 * ai_cs
-        rhet_adj = -8.0 * max(0.0, d4.value - 0.25)
+            fusion_weight = 0.30
         final_score = base_score + d3.impact_pts + rhet_adj
         if d3.impact_pts <= -18.0:
             final_score = min(59.0, max(45.0, final_score))
+            rule_score = min(59.0, max(45.0, rule_score))
         else:
             final_score = max(62.0, min(92.0, final_score))
+            rule_score = max(62.0, min(92.0, rule_score))
         regime_desc = f"路由 B（主流來源／跨源同報佐證）：{d2.explanation}" + (
             f"；{d3.explanation}" if d3.impact_pts < 0 else ""
         )
@@ -790,6 +824,7 @@ def score_orthogonal(
         if d2.status_label == "blocked":
             base_unverified -= 12.0
         final_score = max(10.0, min(58.0, base_unverified + 0.5 * d3.impact_pts))
+        rule_score = final_score
         regime_desc = f"路由 C（無外部查核且無跨源同報，認識論上限 58 分）：{d4.explanation}"
         is_provisional = True
 
@@ -854,9 +889,9 @@ def score_orthogonal(
         "scoring_basis": regime_desc,
         "dimensions": dimensions_dict,
         "metrics": compat_metrics,
-        "rule_score": final_score,
+        "rule_score": round(max(0.0, min(100.0, rule_score)), 2),
         "post_fusion_score": final_score,
-        "fusion_weight": 0.15 if regime == "VERIFIED_EVIDENCE" else (0.30 if regime == "CORROBORATED_REPORT" else 0.0),
+        "fusion_weight": fusion_weight,
         "clamped": False,
         "clamp_reason": "",
         "is_provisional": is_provisional,

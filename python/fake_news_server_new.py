@@ -39,6 +39,7 @@ The returned list contains the same dictionaries as legacy `analyze_article_data
 """
 
 import os, re, html, json, math, traceback, time, csv, io
+import concurrent.futures as _cf
 from typing import List, Dict, Union, Optional
 from datetime import datetime, timedelta
 from urllib.parse import urlparse, unquote_plus, quote_plus
@@ -486,12 +487,22 @@ def _web_corr_outlets(web_results: list, query: str, self_host: str = "") -> lis
         if keys is not None and not any(k in t for k in keys):
             continue
         h = urlparse(r.get("url") or "").netloc.lower().replace("www.", "")
+        # 排除社群轉貼（UGC）、內容農場，不可當作獨立新聞媒體同報佐證
+        if h in UGC_DOMAINS or any(u in h for u in ("facebook", "fb.com", "instagram", "threads.net", "youtube", "tiktok", "ptt.cc", "dcard")):
+            continue
         if h in ("news.google.com", "google.com"):
             suf = (r.get("title") or "").split(" - ")[-1].strip().lower()
             outlet = suf if suf else h
         else:
             outlet = h
-        if not outlet or outlet == (self_host or "").lower() or outlet in seen:
+        if not outlet or outlet in seen:
+            continue
+        # 排除社群轉貼（UGC），不能當獨立新聞媒體同報佐證
+        if any(u in outlet for u in ("facebook", "fb", "threads", "ptt", "dcard", "instagram", "youtube", "tiktok", "twitter", "x.com")):
+            continue
+        self_clean = (self_host or "").lower().replace("www.", "")
+        self_root = self_clean.split(".")[0] if "." in self_clean else self_clean
+        if outlet == self_clean or (len(self_root) >= 3 and self_root in outlet):
             continue
         seen.add(outlet)
         outs.append(outlet)
@@ -625,25 +636,24 @@ def _web_search_multi(queries: list, max_results: int = 6, ref_title: str = "") 
     # 但在 f1/f3 反而變差——單一查詢有時整組失準。兩種都查、輪流進榜，
     # 壞的那組只是少幾筆，不會把好的擠掉。
     seen, per_query = set(), []
-    for q in queries or []:
-        if not q or len(q) < 4:
-            continue
-        try:
-            # 2026-10-05：單查詢只取 3（合併後本來就截 6＋sim 過濾，取 6 只是
-            # 逼 search() 在 RSS 不足 6 時去開瀏覽器——實測單次 6.6s，2 筆來自瀏覽器）。
-            # 真缺貨時（<3）瀏覽器照樣補，稀缺覆蓋不變。
-            res = _wsc.search(q, max_results=min(max_results, 3)) or []
-        except Exception as _e:
-            print(f"[judge] web search failed: {_e}")
-            continue
-        fresh = []
-        for r in res:
-            u = r.get("url")
-            if u in seen:
-                continue
-            seen.add(u)
-            fresh.append(r)
-        per_query.append(fresh)
+    _valid = [q for q in (queries or []) if q and len(q) >= 4]
+    if _valid:
+        with _cf.ThreadPoolExecutor(max_workers=len(_valid)) as _ex:
+            _futs = [_ex.submit(_wsc.search, q, min(max_results, 3)) for q in _valid]
+            for _f in _futs:
+                try:
+                    res = _f.result() or []
+                except Exception as _e:
+                    print(f"[judge] web search failed: {_e}")
+                    res = []
+                fresh = []
+                for r in res:
+                    u = r.get("url")
+                    if u in seen:
+                        continue
+                    seen.add(u)
+                    fresh.append(r)
+                per_query.append(fresh)
     merged = [r for group in zip_longest(*per_query) for r in group if r is not None]
     # 2026-09-24：SBERT 語意過濾（RSS 噪音如金世義 Newtalk sim≈0.29，
     # 同事件正常 0.68~0.93；門檻 0.45，過濾後不足 2 筆則保留 sim 最高的 2 筆）。
@@ -761,89 +771,31 @@ def qwen_queue_eta() -> float:
         pass
     return 0.0
 
-_DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只能使用下方實際提供的材料判斷，不得使用內建知識補當前事實或人物職稱。
+_DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只能使用下方實際提供的材料判斷，不得腦補事實。
 
-輸出規則：只輸出一個 JSON 物件，不要任何其他文字：
-{{"claim":"把本次要查核的主張濃縮成一句話","evidence_state":"full_body_evidence | search_hit_body_missing | no_evidence | unrelated_evidence","evidence_used":["實際引用的來源名稱"],"key_points":["2 到 4 條具體質疑或確認點，每條須指明來源或內文依據"],"viewpoints":"正反雙方立場摘要，須指明各方依據，不得只寫單方","credibility_score":0到100的整數,"analysis":"2 到 4 句完整結論，必須點名來源、指出關鍵事實、給出明確可信或可疑理由","abstain":true 或 false,"title_bait":true 或 false,"title_bait_reason":"一句話，只在 title_bait 為 true 時必填"}}
+只輸出一個 JSON 物件，所有文字一律使用繁體中文，精簡扼要：
+{{"claim":"本次主張濃縮(25字內)","evidence_state":"full_body_evidence | search_hit_body_missing | no_evidence | unrelated_evidence","evidence_used":["引用的來源名稱"],"key_points":["2條重點(每條30字內，須指明依據)"],"viewpoints":"正反立場或客觀事實(50字內)","credibility_score":0到100整數,"analysis":"結論(60字內，必須點名來源、關鍵事實與明確理由)","abstain":true或false,"title_bait":true或false,"title_bait_reason":"一句話(title_bait為true時必填)"}}
 
-【語言】所有欄位一律使用繁體中文完整句子，嚴禁出現英文單字或中英夾雜（外來專有名詞也譯為中文）。
-【時間】今天日期：{today}。人物職稱、時事現況一律以下方實際提供的材料為準，嚴禁憑內建知識斷言。
-
-【第一步：先判斷證據狀態 evidence_state】
-- full_body_evidence：至少一個查核來源的判定文字或回覆原文已載入，且與本主張同一事件、同一對象、同一時間。
-- search_hit_body_missing：搜尋結果或查核條目看起來相關，但查核正文／回覆原文沒有載入。
-- no_evidence：沒有任何查核來源命中。
-- unrelated_evidence：命中的查核是別的事件、對象或時間。
-  常見誤判（實測兩則正當財經新聞被鎖死 21～27 分，必須主動排除）：
-  a) 查核原文是「防詐宣導／詐騙集團手法說明／檢舉獎金」這類宣導文，
-     而本主張只是提到同領域的一般事物（如「ETF 報酬翻倍」命中投資詐騙宣導）。
-     宣導文在查核「騙徒怎麼騙」，不是在查核「這檔 ETF 報酬多少」→ 無關。
-  b) 查核原文是別人的 App 介面截圖／ATM 明細／UI OCR，跟本主張無關。
-  c) 只是同一產業或同一類詞（ETF、報酬、投資、癌症），但事件、對象、時間都不對應。
-  判無關看的是「是否在查核這一件特定的事」，不是「是否同一領域」。
-
-【第二步：依 evidence_state 決定 abstain 與分數】
-- search_hit_body_missing、no_evidence、unrelated_evidence：abstain 必須為 true。credibility_score 不得填固定值，
-  必須依「內文自身」的可信訊號在 45 到 65 之間自選：見下方【證據不足時的內文自評】。
-  analysis 必須寫清楚缺什麼、目前不能確定什麼、要補哪一份原文才可判定。
-- full_body_evidence：abstain 為 false，依下方證據強度落點評分。
-
-【證據不足時的內文自評】（只在 abstain 分支使用）
-外部查核查無不代表內容本身有問題，所以分數要反映「只看內文能看出什麼」，不得一律填 60。
-以下每一項在內文出現就往低分走，全部沒有才往高分走（45 = 明顯問題，65 = 內文無可挑剔）：
-
-往低分（45–54）的訊號：
-- 內文本身自相矛盾，或同一段內數字打架。
-- 訴諸權威卻查不到那個權威：「某權威人士表示／研究顯示／官方證實」但內文沒有具名機構或出處。
-- 要求讀者立刻動作的急迫語氣：轉發、擴散、趕快、錯過就來不及、救人。
-- 對立情緒或危機渲染：不實在啦、狠手、完蛋、崩潰、震撼、傻眼。
-- 誇大或絕對化數字：百年級、史上、全部、所有、一定、從來沒有。
-- 呼籲停止既有專業處置（停藥、停醫囑、停檢查）而沒有權威反證。
-- 目標明確要觸發轉發的群眾動員語句。
-
-往高分（55–65）的訊號：
-- 內文只陳述可查證的具體事實（機構、日期、金額、法條、職稱），不夾帶呼籲。
-- 有具名可查的出處（某某單位發布、某公司法說會、公告編號）。
-- 語氣平實、沒有急迫性、沒有情緒詞。
-- 論述有節制，會寫「可能」「估計」「截至某時」這類限定。
-
-⚠ 三件最容易出錯的事：
-- 「查不到外部查核」是證據不足，不是內容可疑。分數高低要看內文自身的問題，不要因為查無就給 45。
-- 「查到了但說 NOT_RUMOR／這則確實存在」不等於內容屬實；那是弱標籤，撐不起 60 以上。
-- 🆕 2026-10-02 修正（配合計分層的 evidence-insufficient 上限錨定）：
-  當 evidence_state 屬於查不到證據的情形時，內文若宣稱了「可被即時獨立驗證的公共事實」
-  （具體機構今天宣布了什麼、具體數字、具體日期、具體人事命令、具體停班停課或警語），
-  卻沒有任何可查證出處，屬於可疑訊號，請往 45-50 走，不要給 60 以上。
-  理由：真實的公共機構公告會留下大量可追溯紀錄（新聞稿、公告編號、直播），
-  「查不到」本身就是反證。相對地，若內文只是觀點評論、產業趨勢、个人經驗或
-  查核機構本來就不會收錄的內容（小道消息、匿名爆料），查不到屬正常，維持 55-65。
-
-【評分尺度（僅 full_body_evidence 時使用，依你實際讀到的證據落點）】
-- 90 以上：查核機構明確判定屬實，且內文與主張逐項對得上。
-- 75 到 89：查核機構判定大致屬實，或有具名官方／研究來源直接支持主張關鍵部分。
-- 60 到 74：有可追溯來源支持主要說法，但關鍵細節缺證或僅部分對應。
-- 40 到 59：查核判定部分不實，或來源只支持部分主張，或證據之間互相衝突。
-- 20 到 39：查核機構明確判定不實且與本主張直接對應。
-- 20 以下：查核機構判定不實，且內文明示關鍵事實為虛構。
-
-【禁止事項】
-- 不得只寫「無相關佐證」「無法確認」「僅依摘要判斷」「建議查閱完整原文」這類空話；每條結論都要指名來源或內文依據。
-- 不得因為「查不到」就給低分；查不到只能以 abstain 為 true 表現。
-- 內文若只有網址、幾個字或無實質陳述，不得據此給高分；此時應視為證據不足並 abstain。
-
-【標題檢查】另外比對「新聞標題」與「新聞內文」：標題是否誇大、斷章取義或片面解讀內文
-（例如內文說「建議提早出門」，標題寫成「一定搭不上車」；內文說動線改變，標題寫成「舊站不能上車」）。
-內文能支撐標題的每個斷言才算相符；標題有內文找不到依據的斷言，或把條件、範圍拿掉，就判 title_bait 為 true，
-並在 title_bait_reason 用一句話指出哪個斷言內文沒說。沒有內文時判 false。
-標題用詞聳動、但每個斷言都有內文依據，不算 title_bait。
-注意：疑問句、驚嘆句只是包裝，裡面的斷言同樣要核對（例如「舊站不能上車？」就是在斷言舊站不能上車，
-不能因為是問號就放過；內文說「要走棧橋繞路」不等於「不能上車」）。
+【規則】
+1. 今天：{today}。
+2. 證據狀態 (evidence_state)：
+   - full_body_evidence: 查核原文已載入，且與本主張同事件、同對象、同時間。
+   - search_hit_body_missing: 搜尋/查核看似相關，但正文未載入。
+   - no_evidence: 無查核來源命中。
+   - unrelated_evidence: 命中的查核非本事件（如防詐宣導、不相干截圖、同產業但不同事件）。
+3. 判定與分數：
+   - 非 full_body_evidence：abstain=true。依內文自評 45~65（煽動/矛盾/無來源之公共公告走 45~50；平實具名走 55~65；查無不得逕給極端低分）。
+   - full_body_evidence：abstain=false。明確屬實 85~95、大致屬實 70~84、部分不實或衝突 40~69、明確不實 10~35。
+4. 標題檢查 (title_bait)：只要符合任一即判 true 並填寫 reason（平實客觀才判 false）：
+   (a) 點擊誘餌/刻意遮蔽關鍵結果（如「醫揭真相」「原因曝光」「真實身分」「做了這件事」等懸念遮蔽）
+   (b) 聳動驚嘆或誇張衝突（如「起火變50人吵架」「全場鼻酸」「大顆洋蔥」「崩潰」等情緒操弄）
+   (c) 斷章取義或標題斷言超出內文範圍
 
 新聞標題：{title}
 新聞內文：
 {body}
 
-事實查核結果（含查核機構回覆原文）：
+事實查核結果（含查核回覆原文）：
 {fc_block}
 
 網路搜尋結果摘要：
@@ -852,27 +804,20 @@ _DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只
 
 def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
                               content: str = "", facts: "Optional[list]" = None) -> str:
-    # 2026-10-02：web 摘要原本只給 title + 120 字 snippet，LLM 永遠看不到證據正文，
-    # 於是「查得到」和「查不到」在模型眼中長得一模一樣 —— 唯一差別是引用條數，
-    # 於是輸出退化成「有幾筆結果就給幾分」，完全沒有鑑別力。
-    # 實測（同一模型、同一則假新聞）：只給 title/snippet 時 evidence_state 幾乎都是
-    # unrelated_evidence；把同一批結果的真實內文一併餵入後，模型才抓得到數字矛盾。
-    # 現在改為：優先用 body（正文），長度上限提到 400 字，足以涵蓋關鍵段落。
     lines = []
-    for i, r in enumerate(web_results[:5], 1):
+    for i, r in enumerate(web_results[:4], 1):
         t = (r.get("title") or "").strip()
         body_text = (r.get("body") or "").strip()
         snippet = (r.get("snippet") or "").strip()
         s = body_text or snippet
-        status = "來源正文已載入" if body_text else ("搜尋摘要" if snippet else "僅標題，正文未載入")
-        if len(s) > 220:
-            s = s[:220] + "…"
+        status = "正文" if body_text else ("摘要" if snippet else "標題")
+        if len(s) > 160:
+            s = s[:160] + "…"
         if not (t or s):
             continue
         lines.append(f"{i}. [{status}] {t}\n   {s}" if s else f"{i}. [{status}] {t}")
     web_summary = "\n".join(lines) or "（無網路搜尋結果）"
-    # 查核源摘要：把機構回覆原文（reasons）一起給模型，否則它只能讀到 status 標籤，
-    # 輸出就退化成「把 status 翻譯成分數」，這是分數沒有鑑別力與敘述模糊的根因。
+
     fc_lines = []
     label_map = {"cofacts": "Cofacts", "google": "Google查核", "mygopen": "MyGoPen",
                  "rumtoast": "蘭姆酒吐司", "hkbu": "HKBU查核",
@@ -884,48 +829,29 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
         url = s.get("url") or ""
         reasons = s.get("reasons") or []
         reply = ""
-        for item in reasons[:3]:
+        for item in reasons[:2]:
             txt = (item.get("text") or "").strip()
             if txt:
-                reply += f"　[{item.get('type', '回覆')}] {txt[:400]}\n"
+                reply += f"　[{item.get('type', '回覆')}] {txt[:200]}\n"
         head = f"  - {nm}: {st}"
         if url:
             head += f"（{url}）"
         if s.get("soft_hit_status"):
-            # 2026-10-01：軟命中（sim 0.45～0.72）。相似度不足以判定同一事件，
-            # 必須由你讀下方回覆原文判斷是否真的在查核本主張。
-            head += (f"［軟命中：檢索相似度 {float(s.get('soft_hit_sim') or 0):.2f}，"
-                     f"低於硬門檻；該源標籤為 {s.get('soft_hit_status')}，"
-                     f"請自行判斷是否同一事件——若是則 evidence_state 為 "
-                     f"full_body_evidence，若否則 unrelated_evidence］")
+            head += f"［軟命中 sim={float(s.get('soft_hit_sim') or 0):.2f}，標籤 {s.get('soft_hit_status')}］"
         fc_lines.append(head)
         if s.get("alternatives"):
-            # 2026-10-01：交叉確認。Top-1 只是同池相似度最高那筆，同家族謠言的其他
-            # 角度查核在這裡（檸檬水的主命中是「空腹吃水果勝癌症」，真正的🍋查核排第五）。
-            # 讓它一起判相關性——若其中任一筆在查核本主張，仍算 full_body_evidence。
-            fc_lines.append("    同池其他候選（僅供交叉確認，相似度較低）：")
-            for alt in s["alternatives"]:
-                fc_lines.append(
-                    f"      · {alt.get('status')} sim={alt.get('similarity_score')}"
-                    f"（{alt.get('url') or '無連結'}）")
-                mt = (alt.get("matched_text") or "").strip().replace("\n", " ")
-                if mt:
-                    fc_lines.append(f"        內容：{mt[:260]}")
-                for item in (alt.get("reasons") or [])[:2]:
+            for alt in s["alternatives"][:2]:
+                fc_lines.append(f"    · 候選 {alt.get('status')} sim={alt.get('similarity_score')}（{alt.get('url') or ''}）")
+                for item in (alt.get("reasons") or [])[:1]:
                     txt = (item.get("text") or "").strip()
                     if txt:
-                        fc_lines.append(f"        [{item.get('type', '回覆')}] {txt[:300]}")
+                        fc_lines.append(f"      [{item.get('type', '回覆')}] {txt[:160]}")
         if reply:
-            fc_lines.append("    查核回覆原文：\n" + reply.rstrip())
-        elif st in ("inaccurate", "partial", "accurate"):
-            fc_lines.append("    查核回覆原文：未載入（只有狀態標籤，無正文）")
+            fc_lines.append("    回覆原文：\n" + reply.rstrip())
     fc_summary = "\n".join(fc_lines) or "（無查核源）"
-    body = (content or "").strip()
-    if not body:
-        body = "（本次未提供內文）"
-    # 內文上限：避免撐爆單槽 :8088 的 prompt 預算（約 10.6s/筆的延遲不能再往上）
-    if len(body) > 1800:
-        body = body[:1800] + "…"
+    body = (content or "").strip() or "（未提供內文）"
+    if len(body) > 1000:
+        body = body[:1000] + "…"
     from datetime import date as _date
     return _DEEP_PROMPT_TMPL.format(title=title or "（無標題）",
                                     body=body,
@@ -1025,7 +951,7 @@ def deep_analyze(title: str, web_results: list, sources: list,
         "messages": [
             {"role": "system",
              "content": "你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字）。"
-                        "務必使用繁體中文撰寫所有欄位值。直接輸出 JSON，不要推理過程、不要英文。"},
+                        "務必使用繁體中文撰寫所有欄位值。各欄位結論與重點務必精簡扼要（60字內），直接輸出 JSON，不要推理過程、不要英文。"},
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.2,
@@ -1036,9 +962,8 @@ def deep_analyze(title: str, web_results: list, sources: list,
         "seed": 0,
         "top_p": 0.9,
         "top_k": 20,
-        # 900 對 reasoning 型模型不夠：實測 nemotron-ultra 把 3233 token 全花在
-        # 英文推理上，finish_reason=length，JSON 產出為 0。2000 是實測安全值。
-        "max_tokens": 2000,
+        # 600 token 足以容納結構化 JSON 輸出（約 300 繁中字元），避免長輸出拖垮延遲
+        "max_tokens": 600,
         "stream": False,
         "response_format": {"type": "json_object"},
         "chat_template_kwargs": {"enable_thinking": False},

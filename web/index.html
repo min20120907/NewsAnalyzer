@@ -909,19 +909,33 @@ function renderResult(data) {
 
     // Step 2: AI 動態融合
     if (aiCs !== null) {
-      const ruleWeightPct = ((1 - fusionW) * 100).toFixed(0);
-      const aiWeightPct = (fusionW * 100).toFixed(0);
-      html += `
-        <div class="pipeline-card">
-          <div class="pipeline-step-title">
-            <span>階段 2：本地 AI 模型 (${(data.deep_analysis && data.deep_analysis.model) || 'local-llm'}) 動態加權融合</span>
-            <span class="pipeline-badge badge-normal">AI 權重: ${aiWeightPct}% ｜ 規則權重: ${ruleWeightPct}%</span>
+      if (fusionW > 0) {
+        const ruleWeightPct = ((1 - fusionW) * 100).toFixed(0);
+        const aiWeightPct = (fusionW * 100).toFixed(0);
+        html += `
+          <div class="pipeline-card">
+            <div class="pipeline-step-title">
+              <span>階段 2：本地 AI 模型 (${(data.deep_analysis && data.deep_analysis.model) || 'local-llm'}) 動態加權融合</span>
+              <span class="pipeline-badge badge-normal">AI 權重: ${aiWeightPct}% ｜ 規則權重: ${ruleWeightPct}%</span>
+            </div>
+            <div class="pipeline-formula">
+              🧠 融合分數 = (規則分 ${ruleScore} × ${(1 - fusionW).toFixed(2)}) + (AI評分 ${aiCs} × ${fusionW.toFixed(2)}) = <b>${postFusion} 分</b>
+            </div>
           </div>
-          <div class="pipeline-formula">
-            🧠 融合分數 = (規則分 ${ruleScore} × ${1 - fusionW}) + (AI評分 ${aiCs} × ${fusionW}) = <b>${postFusion} 分</b>
+        `;
+      } else {
+        html += `
+          <div class="pipeline-card">
+            <div class="pipeline-step-title">
+              <span>階段 2：本地 AI 模型 (${(data.deep_analysis && data.deep_analysis.model) || 'local-llm'}) 參考與保留</span>
+              <span class="pipeline-badge badge-normal">純規則主導 (AI未融合)</span>
+            </div>
+            <div class="pipeline-formula">
+              🧠 AI 自評 ${aiCs} 分（${data.deep_analysis && data.deep_analysis.abstain ? 'AI因證據正文不足宣告保留' : '無觸發融合門檻'}），基準維持規則分 <b>${postFusion} 分</b>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
     }
 
     // Step 3: 安全上限錨定 / 最終判定

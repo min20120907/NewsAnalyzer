@@ -41,7 +41,7 @@ SERPAPI_API_KEY = os.environ.get("SERPAPI_API_KEY", "")
 SERPAPI_ENDPOINT = "https://serpapi.com/search"
 DEFAULT_BASE = os.environ.get("WEB_SEARCH_BASE", "http://127.0.0.1:3030")
 DEFAULT_ENGINE = os.environ.get("WEB_SEARCH_ENGINE", "bing")
-DEFAULT_TIMEOUT = 20
+DEFAULT_TIMEOUT = 4
 MAX_RESULTS = 8
 
 # 瀏覽器搜尋節流鎖（模組級全域，避免併發觸發 Google bot 偵測）
