@@ -774,7 +774,7 @@ def qwen_queue_eta() -> float:
 _DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只能使用下方實際提供的材料判斷，不得腦補事實。
 
 只輸出一個 JSON 物件，所有文字一律使用繁體中文，精簡扼要：
-{{"claim":"本次主張濃縮(25字內)","evidence_state":"full_body_evidence | search_hit_body_missing | no_evidence | unrelated_evidence","evidence_used":["引用的來源名稱"],"key_points":["2條重點(每條30字內，須指明依據)"],"viewpoints":"正反立場或客觀事實(50字內)","credibility_score":0到100整數,"analysis":"結論(60字內，必須點名來源、關鍵事實與明確理由)","abstain":true或false,"title_bait":true或false,"title_bait_reason":"一句話(title_bait為true時必填)"}}
+{{"claim":"本次主張濃縮(25字內)","neutral_title":"還原之客觀真實標題(20字內，去除釣魚懸念)","evidence_state":"full_body_evidence | search_hit_body_missing | no_evidence | unrelated_evidence","evidence_used":["引用的來源名稱"],"key_points":["2條重點(每條30字內，須指明依據)"],"viewpoints":"正反立場或客觀事實(50字內)","credibility_score":0到100整數,"analysis":"結論(60字內，必須點名來源、關鍵事實與明確理由)","abstain":true或false,"title_bait":true或false,"title_bait_reason":"一句話(title_bait為true時必填)"}}
 
 【規則】
 1. 今天：{today}。
@@ -1032,6 +1032,7 @@ def deep_analyze(title: str, web_results: list, sources: list,
             # 新欄位預設 false，舊模型沒輸出也不影響。
             "title_bait": bool(parsed.get("title_bait")) if isinstance(parsed.get("title_bait"), bool) else False,
             "title_bait_reason": str(parsed.get("title_bait_reason") or "")[:200],
+            "neutral_title": str(parsed.get("neutral_title") or parsed.get("claim") or "")[:120],
             # 2026-10-04：原本硬寫 QWEN_MODEL，導致選雲端模型時前端仍顯示 qwen3.8-27b。
             "model": model_name,
         }
