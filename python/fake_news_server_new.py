@@ -1144,6 +1144,7 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
         # 2026-10-16：多樣本任一判 bait 就採信（recall 導向）；理由取 best 的。
         "title_bait": any(bool(r.get("title_bait")) for r in valid),
         "title_bait_reason": str(best.get("title_bait_reason") or "")[:200],
+        "neutral_title": str(best.get("neutral_title") or best.get("claim") or "")[:120],
         "model": best.get("model", OLLAMA_MODEL),
         "samples": len(valid),
         "score_std": round(std, 1),
