@@ -436,6 +436,7 @@ def compute_d2_source_corroboration(
     factcheck_domains: Optional[set] = None,
     ugc_domains: Optional[set] = None,
     blocklist_domains: Optional[set] = None,
+    social_blocklist: Optional[set] = None,
     deep: Optional[Dict] = None,
 ) -> DimensionOutput:
     """
@@ -456,6 +457,19 @@ def compute_d2_source_corroboration(
     is_mainstream = (main_dom in wl or host in wl or is_gov_edu or is_factcheck)
     is_blocked = (main_dom in blk or host in blk) or ("rumor-farm" in main_dom or "farm" in main_dom)
     is_ugc = (main_dom in ugc or host in ugc) and not is_mainstream
+
+    # 檢查社群帳號黑名單 (social_blocklist)
+    social_blocked_match = ""
+    if social_blocklist:
+        combined_text = f"{url or ''} {target_url or ''} {title or ''}".lower()
+        for s_item in social_blocklist:
+            s_item_clean = s_item.strip().lower()
+            if not s_item_clean or s_item_clean.startswith("#"):
+                continue
+            if s_item_clean in combined_text:
+                is_blocked = True
+                social_blocked_match = s_item_clean
+                break
 
     outlets = list(corr_outlets or [])
     n_corr = len(outlets)
@@ -485,7 +499,10 @@ def compute_d2_source_corroboration(
 
     if is_blocked:
         c_dom = 0.0
-        dom_label = f"高風險內容農場/黑名單網域 ({main_dom or 'unknown'})"
+        if social_blocked_match:
+            dom_label = f"高風險造謠／機器人帳號黑名單 ({social_blocked_match})"
+        else:
+            dom_label = f"高風險內容農場/黑名單網域 ({main_dom or 'unknown'})"
     elif is_factcheck or is_gov_edu:
         c_dom = 0.90
         dom_label = f"官方或查核機構網域 ({main_dom})"
@@ -739,6 +756,7 @@ def score_orthogonal(
     factcheck_domains: Optional[set] = None,
     ugc_domains: Optional[set] = None,
     blocklist_domains: Optional[set] = None,
+    social_blocklist: Optional[set] = None,
 ) -> Dict:
     """
     執行四維度正交評估與三態決策路由。
@@ -748,7 +766,8 @@ def score_orthogonal(
         title=title, url=url, content=content, target_url=target_url,
         publish_date=publish_date, corr_outlets=corr_outlets, web_results=web_results,
         whitelist_domains=whitelist_domains, factcheck_domains=factcheck_domains,
-        ugc_domains=ugc_domains, blocklist_domains=blocklist_domains, deep=deep,
+        ugc_domains=ugc_domains, blocklist_domains=blocklist_domains,
+        social_blocklist=social_blocklist, deep=deep,
     )
     d3 = compute_d3_headline_faithfulness(
         title=title, content=content, title_body_sim=title_body_sim, deep=deep,

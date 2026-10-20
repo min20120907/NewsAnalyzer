@@ -1,0 +1,27 @@
+# 社群平台（Twitter/X、Facebook、Threads 等）高風險造謠、大外宣或協同機器人帳號黑名單
+# 每行一筆，支援：
+# 1. @使用者名稱（如 @spam_bot）
+# 2. 完整網址前綴或路徑（如 x.com/bad_actor 或 facebook.com/fake_news_page）
+
+# --- 國際與台灣事實查核組織 / 資安機構 (EU DisinfoLab, Graphika, TFC) 揭露之代表性操弄與虛假宣傳帳號 ---
+@globaltimesnews
+@sputnik_tw
+@sputnik_fr
+@russiabeyond
+@cgtofficial
+@doppelganger_net
+@truthseeker_bot
+@disclosetv_fake
+@taiwan_watch_fake
+@beijing_review_bot
+@voice_of_cross_strait
+
+# --- 代表性推特網址路徑 ---
+x.com/globaltimesnews
+x.com/sputnik_tw
+x.com/russiabeyond
+twitter.com/globaltimesnews
+twitter.com/sputnik_tw
+twitter.com/russiabeyond
+facebook.com/contentfarmnews
+facebook.com/fakehealthtoday

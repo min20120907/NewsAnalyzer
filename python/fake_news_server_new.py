@@ -325,9 +325,9 @@ def _read_domain_file(fname: str) -> set:
 def load_domain_lists() -> bool:
     """mtime 變動才重載；回傳 True 表示本次有重載。"""
     global TAIWAN_MAINSTREAM_DOMAINS, UGC_DOMAINS, FACT_CHECK_DOMAINS
-    global DYNAMIC_BLOCKLIST_DOMAINS, _DOMAIN_MTIMES
+    global DYNAMIC_BLOCKLIST_DOMAINS, DYNAMIC_SOCIAL_BLOCKLIST, _DOMAIN_MTIMES
     files = ["whitelist.txt", "ugc.txt", "ugc.remote.txt", "factcheck.txt",
-             "blocklist.local.txt", "blocklist.remote.txt"]
+             "blocklist.local.txt", "blocklist.remote.txt", "social_blocklist.txt"]
     mt = {}
     for fn in files:
         try:
@@ -342,6 +342,7 @@ def load_domain_lists() -> bool:
     blk = ((_read_domain_file("blocklist.local.txt")
             | _read_domain_file("blocklist.remote.txt"))
            - wl - fc)  # 本地白名單永遠勝出
+    social_blk = _read_domain_file("social_blocklist.txt")
     if wl:
         TAIWAN_MAINSTREAM_DOMAINS = wl
     if ugc:
@@ -349,9 +350,10 @@ def load_domain_lists() -> bool:
     if fc:
         FACT_CHECK_DOMAINS = fc
     DYNAMIC_BLOCKLIST_DOMAINS = blk
+    DYNAMIC_SOCIAL_BLOCKLIST = social_blk
     _DOMAIN_MTIMES = mt
     print(f"[Domains] whitelist={len(wl)} ugc={len(ugc)} "
-          f"factcheck={len(fc)} blocklist={len(blk)}", flush=True)
+          f"factcheck={len(fc)} blocklist={len(blk)} social_blocklist={len(social_blk)}", flush=True)
     return True
 
 
@@ -359,6 +361,7 @@ TAIWAN_MAINSTREAM_DOMAINS: set = set()
 UGC_DOMAINS: set = set()
 FACT_CHECK_DOMAINS: set = set()
 DYNAMIC_BLOCKLIST_DOMAINS: set = set()
+DYNAMIC_SOCIAL_BLOCKLIST: set = set()
 load_domain_lists()
 
 _article_cache: Dict[str, Optional[Article]] = {}
@@ -1336,6 +1339,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
         factcheck_domains=FACT_CHECK_DOMAINS or None,
         ugc_domains=UGC_DOMAINS or None,
         blocklist_domains=DYNAMIC_BLOCKLIST_DOMAINS or None,
+        social_blocklist=DYNAMIC_SOCIAL_BLOCKLIST or None,
     )
 
     # 若 D1 判定為 unrelated 或軟命中未獲採納，清理 sources 的展示狀態以免誤導前端使用者
@@ -1787,11 +1791,64 @@ def _extract_youtube(url: str) -> Optional[Dict]:
     return None
 
 
+def _extract_twitter(url: str) -> Optional[Dict]:
+    """擷取 X (Twitter) 推文內容與作者發布時間。
+    使用 FixTweet (FxTwitter) 免登入 API，若失敗則回傳 None（由下游 Playwright 接手）。
+    """
+    import re, requests
+    from datetime import datetime
+    try:
+        m = re.search(r"(?:twitter\.com|x\.com)/([a-zA-Z0-9_]+)/status/(\d+)", url)
+        if not m:
+            return None
+        screen_name, status_id = m.group(1), m.group(2)
+        api_url = f"https://api.fxtwitter.com/{screen_name}/status/{status_id}"
+        resp = requests.get(api_url, headers={"User-Agent": "NewsAnalyzerBot/1.0"}, timeout=8)
+        if resp.status_code == 200:
+            data = resp.json()
+            tweet = data.get("tweet") or {}
+            text = (tweet.get("text") or "").strip()
+            if not text:
+                return None
+            author = tweet.get("author") or {}
+            author_name = author.get("name") or screen_name
+            author_handle = author.get("screen_name") or screen_name
+
+            pub_date = None
+            if tweet.get("created_timestamp"):
+                pub_date = datetime.fromtimestamp(tweet["created_timestamp"]).isoformat()
+            elif tweet.get("created_at"):
+                pub_date = tweet["created_at"]
+
+            title = f"@{author_handle} ({author_name}) 在 X 的貼文"
+            parts = [f"【X (Twitter) 發文者】：@{author_handle} ({author_name})"]
+            if tweet.get("views"):
+                parts.append(f"【推文互動數據】：{tweet['views']:,} 次觀看 ｜ 轉推：{tweet.get('retweets', 0)} ｜ 喜歡：{tweet.get('likes', 0)}")
+            parts.append(f"【推文內文】：\n{text}")
+
+            quote = tweet.get("quote")
+            if quote and quote.get("text"):
+                q_author = (quote.get("author") or {}).get("screen_name") or "unknown"
+                parts.append(f"【引用的推文 (@{q_author})】：\n{quote.get('text')}")
+
+            content = "\n\n".join(parts)
+            print(f"[Twitter/X Extract] 成功擷取推文: @{author_handle}, 長度={len(content)}")
+            return {
+                "title": title,
+                "content": content[:4000],
+                "source": url,
+                "publish_date": pub_date,
+            }
+    except Exception as e:
+        print(f"[Twitter/X Extract] failed: {e}")
+    return None
+
+
 def _extract_from_url(url: str, skip_newspaper: bool = False) -> Dict:
     """Multi-strategy URL content extractor.
 
     Fallback chain:
-    0. YouTube / Facebook 特殊處理
+    0. YouTube / Twitter / Facebook 特殊處理
     1. trafilatura (fast, clean text)
     2. newspaper3k (legacy, still works for some sites)
     3. Playwright (JS-rendered pages, paywalls with accessible content)
@@ -1808,6 +1865,12 @@ def _extract_from_url(url: str, skip_newspaper: bool = False) -> Dict:
         yt_result = _extract_youtube(url)
         if yt_result and yt_result.get("content"):
             return yt_result
+
+    # --- Strategy X: Twitter / X post extraction via FixTweet API ---
+    if any(domain in url.lower() for domain in ("twitter.com", "x.com")):
+        tw_result = _extract_twitter(url)
+        if tw_result and tw_result.get("content"):
+            return tw_result
 
     # --- Strategy 0: Facebook specific with session management ---
     if "facebook.com" in url.lower():
