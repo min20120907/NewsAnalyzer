@@ -1709,7 +1709,12 @@ def _extract_youtube(url: str) -> Optional[Dict]:
     try:
         import subprocess, json, urllib.request, shutil, sys
         ytdlp_bin = shutil.which("yt-dlp") or os.path.join(os.path.dirname(sys.executable), "yt-dlp") or "yt-dlp"
-        cmd = [ytdlp_bin, "--dump-json", "--no-warnings", "--skip-download", url]
+        cmd = [
+            ytdlp_bin, "--dump-json", "--no-warnings", "--skip-download",
+            "--extractor-args", "youtube:max_comments=8",
+            "--write-comments",
+            url
+        ]
         p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=12, text=True)
         if p.returncode == 0 and p.stdout:
             data = json.loads(p.stdout)
@@ -1730,6 +1735,18 @@ def _extract_youtube(url: str) -> Optional[Dict]:
                 except Exception as oe:
                     print(f"[YouTube OCR] thumbnail failed: {oe}")
 
+            # 抽查熱門留言：偵測是否有觀眾質疑造謠/詐騙
+            comments = data.get("comments") or []
+            comment_texts = []
+            flagged_comments = []
+            RUMOR_KEYWORDS = ("假的", "造謠", "騙人", "詐騙", "闢謠", "剪接", "合成", "AI", "假新聞", "移花接木", "騙點擊", "不要信", "假消息")
+            for c in comments[:8]:
+                ctxt = (c.get("text") or "").strip().replace("\n", " ")
+                if ctxt:
+                    comment_texts.append(ctxt[:120])
+                    if any(w in ctxt for w in RUMOR_KEYWORDS):
+                        flagged_comments.append(ctxt[:100])
+
             parts = []
             if uploader:
                 parts.append(f"【頻道發布者】：{uploader}")
@@ -1737,6 +1754,10 @@ def _extract_youtube(url: str) -> Optional[Dict]:
                 parts.append(f"【影片封面縮圖字卡】：{thumb_ocr_text}")
             if desc:
                 parts.append(f"【影片簡介／說明內容】：\n{desc[:1500]}")
+            if comment_texts:
+                parts.append("【YouTube 熱門觀眾留言】：\n" + "\n".join(f"· {t}" for t in comment_texts[:5]))
+            if flagged_comments:
+                parts.append(f"⚠️【觀眾留言質疑警示】偵測到質疑虛假/闢謠反饋（共 {len(flagged_comments)} 則）：\n" + "\n".join(f"· {t}" for t in flagged_comments[:3]))
 
             content = "\n\n".join(parts) or desc or title
             print(f"[YouTube Extract] 成功解析: title='{title[:30]}...', thumb_ocr='{thumb_ocr_text[:30]}...'")
