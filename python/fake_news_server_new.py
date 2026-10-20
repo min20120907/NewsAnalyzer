@@ -1704,10 +1704,57 @@ def _extract_facebook_selenium(url: str) -> Dict:
                 "publish_date": pub,
             }
 
+def _extract_youtube(url: str) -> Optional[Dict]:
+    """YouTube 影片解析：免下載影片，直接提取標題 + 影片敘述/AI簡介 + 封面圖 (Thumbnail) OCR 字卡。"""
+    try:
+        import subprocess, json, urllib.request
+        cmd = ["yt-dlp", "--dump-json", "--no-warnings", "--skip-download", url]
+        p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=12, text=True)
+        if p.returncode == 0 and p.stdout:
+            data = json.loads(p.stdout)
+            title = data.get("title") or ""
+            desc = data.get("description") or ""
+            thumb_url = data.get("thumbnail") or ""
+            uploader = data.get("uploader") or ""
+
+            # 封面縮圖 OCR 提取字卡（YouTube 釣魚標題關鍵）
+            thumb_ocr_text = ""
+            if thumb_url:
+                try:
+                    from rapidocr_onnxruntime import RapidOCR
+                    raw_img = urllib.request.urlopen(urllib.request.Request(thumb_url, headers={"User-Agent": "Mozilla/5.0"}), timeout=5).read()
+                    ocr_res, _ = RapidOCR()(raw_img)
+                    if ocr_res:
+                        thumb_ocr_text = " ".join(line[1] for line in ocr_res)
+                except Exception as oe:
+                    print(f"[YouTube OCR] thumbnail failed: {oe}")
+
+            parts = []
+            if uploader:
+                parts.append(f"【頻道發布者】：{uploader}")
+            if thumb_ocr_text:
+                parts.append(f"【影片封面縮圖字卡】：{thumb_ocr_text}")
+            if desc:
+                parts.append(f"【影片簡介／說明內容】：\n{desc[:1500]}")
+
+            content = "\n\n".join(parts) or desc or title
+            print(f"[YouTube Extract] 成功解析: title='{title[:30]}...', thumb_ocr='{thumb_ocr_text[:30]}...'")
+            return {
+                "title": title,
+                "content": content[:4000],
+                "source": url,
+                "publish_date": data.get("upload_date"),
+            }
+    except Exception as e:
+        print(f"[YouTube Extract] failed: {e}")
+    return None
+
+
 def _extract_from_url(url: str, skip_newspaper: bool = False) -> Dict:
     """Multi-strategy URL content extractor.
 
     Fallback chain:
+    0. YouTube / Facebook 特殊處理
     1. trafilatura (fast, clean text)
     2. newspaper3k (legacy, still works for some sites)
     3. Playwright (JS-rendered pages, paywalls with accessible content)
@@ -1718,6 +1765,12 @@ def _extract_from_url(url: str, skip_newspaper: bool = False) -> Dict:
     """
     if not (url and url.startswith(("http://", "https://"))):
         return {"error": "無效的網址"}
+
+    # --- Strategy YT: YouTube video metadata & thumbnail OCR ---
+    if any(domain in url.lower() for domain in ("youtube.com", "youtu.be")):
+        yt_result = _extract_youtube(url)
+        if yt_result and yt_result.get("content"):
+            return yt_result
 
     # --- Strategy 0: Facebook specific with session management ---
     if "facebook.com" in url.lower():
