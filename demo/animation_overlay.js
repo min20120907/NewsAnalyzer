@@ -64,12 +64,21 @@
       const sync = () => this._syncSpotlight();
       window.addEventListener('scroll', sync, { passive: true });
       window.addEventListener('resize', sync, { passive: true });
+
+      // 持續以 requestAnimationFrame 同步聚光燈位置，徹底消除平滑捲動與排版位移造成的偏差
+      const rafLoop = () => {
+        if (this.currentFocusEl && this.spotlight.classList.contains('active')) {
+          this._syncSpotlight();
+        }
+        requestAnimationFrame(rafLoop);
+      };
+      requestAnimationFrame(rafLoop);
     }
 
     _syncSpotlight() {
       if (!this.currentFocusEl || !this.spotlight.classList.contains('active')) return;
       const rect = this.currentFocusEl.getBoundingClientRect();
-      const pad = 16;
+      const pad = 6;
       this.spotlight.style.left = `${Math.max(0, rect.left - pad)}px`;
       this.spotlight.style.top = `${Math.max(0, rect.top - pad)}px`;
       this.spotlight.style.width = `${rect.width + pad * 2}px`;

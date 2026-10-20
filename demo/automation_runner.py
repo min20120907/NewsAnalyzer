@@ -44,10 +44,11 @@ def run_scenario(page, scenario, speed=1.0, is_simulation=False, index=1, total=
     # 1. 過場動畫與前期提要 (Cinematic Briefing)
     page.evaluate(f"window.CinemaOverlay.speed = {speed};")
     page.evaluate(f"window.CinemaOverlay.shutterTransition();")
-    page.wait_for_timeout(int(300 / speed))
+    page.wait_for_timeout(int(400 / speed))
     points = scenario.get("briefing_points", [])
-    page.evaluate(f"window.CinemaOverlay.showBriefing({json.dumps('SCENARIO ' + str(index) + ' / ' + str(total))}, {json.dumps(title)}, {json.dumps(desc)}, {json.dumps(points)}, 4500);")
-    page.wait_for_timeout(int(1200 / speed))
+    briefing_duration = 3800
+    page.evaluate(f"window.CinemaOverlay.showBriefing({json.dumps('SCENARIO ' + str(index) + ' / ' + str(total))}, {json.dumps(title)}, {json.dumps(desc)}, {json.dumps(points)}, {briefing_duration});")
+    page.wait_for_timeout(int((briefing_duration + 500) / speed))
 
     # 2. 初始狀態配置
     init = scenario.get("initial", {})
@@ -57,15 +58,20 @@ def run_scenario(page, scenario, speed=1.0, is_simulation=False, index=1, total=
 
     if init.get("lang"):
         page.evaluate(f"if (typeof setLanguage === 'function') setLanguage('{init['lang']}');")
-        page.wait_for_timeout(int(300 / speed))
+        page.wait_for_timeout(int(400 / speed))
+
+    if init.get("render_result") and scenario.get("mock_result"):
+        mock_json = json.dumps(scenario.get("mock_result"))
+        page.evaluate(f"if (typeof renderResult === 'function') renderResult({mock_json});")
+        page.wait_for_timeout(int(600 / speed))
 
     # 視窗捲動回頂端並重置游標位置，確保情境起始點完全對齊
-    page.evaluate("window.scrollTo({top: 0, behavior: 'smooth'});")
+    page.evaluate("window.scrollTo({top: 0, behavior: 'instant'});")
     page.evaluate("window.CinemaOverlay.hideSpotlight();")
     page.evaluate("window.CinemaOverlay.hideTooltip();")
     page.evaluate("window.CinemaOverlay.hideExplainer();")
     page.evaluate(f"window.CinemaOverlay.updateCursorPos(window.innerWidth / 2, 180, false);")
-    page.wait_for_timeout(int(500 / speed))
+    page.wait_for_timeout(int(400 / speed))
 
     # 3. 依序執行操作步驟
     steps = scenario.get("steps", [])
@@ -109,6 +115,7 @@ def run_scenario(page, scenario, speed=1.0, is_simulation=False, index=1, total=
         elif action == "scroll_to":
             page.evaluate(f"window.CinemaOverlay.hideSpotlight();")
             page.evaluate(f"document.querySelector({json.dumps(target)})?.scrollIntoView({{behavior:'smooth', block:'center'}});")
+            page.wait_for_timeout(int(600 / speed))
             page.evaluate(f"window.CinemaOverlay.moveTo({json.dumps(target)});")
             page.wait_for_timeout(int(delay / speed))
 
