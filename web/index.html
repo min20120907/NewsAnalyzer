@@ -781,7 +781,17 @@ function translateExplanation(text, lang) {
       .replace(/主流來源／跨源同報佐證/g, '主要ソース／複数メディアの裏付けあり')
       .replace(/次取樣/g, '回サンプリング')
       .replace(/AI分/g, 'AIスコア')
-      .replace(/規則分/g, 'ルール点');
+      .replace(/規則分/g, 'ルール点')
+      .replace(/修辭安全度/g, '修辞安全性')
+      .replace(/（風險 R=/g, '（リスク R=')
+      .replace(/風險/g, 'リスク')
+      .replace(/忠實度/g, '忠実度')
+      .replace(/查無資料/g, '該当データなし')
+      .replace(/^not_found$/g, '該当なし')
+      .replace(/^none$/g, 'なし')
+      .replace(/^not_checked$/g, '未確認')
+      .replace(/^disabled$/g, '無効')
+      .replace(/^unknown$/g, '不明');
   }
   if (lang === 'en') {
     return text
@@ -802,7 +812,17 @@ function translateExplanation(text, lang) {
       .replace(/路由 B（主流來源／跨源同報佐證）：/g, 'Regime B (Corroborated / Mainstream Source): ')
       .replace(/次取樣/g, ' samples')
       .replace(/AI分/g, 'AI Score')
-      .replace(/規則分/g, 'Rule Score');
+      .replace(/規則分/g, 'Rule Score')
+      .replace(/修辭安全度/g, 'Rhetorical safety')
+      .replace(/（風險 R=/g, '(Risk R=')
+      .replace(/風險/g, 'risk')
+      .replace(/忠實度/g, 'Faithfulness')
+      .replace(/查無資料/g, 'No data')
+      .replace(/^not_found$/g, 'None')
+      .replace(/^none$/g, 'None')
+      .replace(/^not_checked$/g, 'Not checked')
+      .replace(/^disabled$/g, 'Disabled')
+      .replace(/^unknown$/g, 'Unknown');
   }
   return text;
 }
@@ -1233,7 +1253,7 @@ function renderResult(data) {
     row.className = 'metric';
     const valText = isNA ? 'N/A' : pct.toFixed(0) + '%';
     const valColor = isNA ? '#94a3b8' : barColor;
-    const descText = isNA ? '查無資料' : (m.desc || '—');
+    const descText = isNA ? (currentLang === 'ja' ? '該当データなし' : (currentLang === 'en' ? 'No data' : '查無資料')) : translateExplanation(m.desc || '—', currentLang);
     row.innerHTML = `
       <div class="metric-top">
         <span class="metric-name"><span class="icon">${def.icon}</span> ${def.name}</span>
@@ -1328,7 +1348,7 @@ function renderResult(data) {
           <td>${def.icon} ${def.name}</td>
           <td><b>${s > 0 ? '+' + s.toFixed(1) : s.toFixed(1)}</b></td>
           <td>/ ${w}</td>
-          <td style="color:var(--text-dim); font-size:11.5px;">${escapeHtml(m.desc || '—')}</td>
+          <td style="color:var(--text-dim); font-size:11.5px;">${escapeHtml(translateExplanation(m.desc || '—', currentLang))}</td>
         </tr>
       `;
     }
