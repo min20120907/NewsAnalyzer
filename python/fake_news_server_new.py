@@ -322,6 +322,19 @@ def _read_domain_file(fname: str) -> set:
     return out
 
 
+def _read_social_file(fname: str) -> set:
+    out = set()
+    try:
+        with open(os.path.join(_DOMAIN_DIR, fname), encoding="utf-8") as f:
+            for line in f:
+                line = line.strip().lower()
+                if line and not line.startswith("#"):
+                    out.add(line)
+    except FileNotFoundError:
+        pass
+    return out
+
+
 def load_domain_lists() -> bool:
     """mtime 變動才重載；回傳 True 表示本次有重載。"""
     global TAIWAN_MAINSTREAM_DOMAINS, UGC_DOMAINS, FACT_CHECK_DOMAINS
@@ -342,7 +355,7 @@ def load_domain_lists() -> bool:
     blk = ((_read_domain_file("blocklist.local.txt")
             | _read_domain_file("blocklist.remote.txt"))
            - wl - fc)  # 本地白名單永遠勝出
-    social_blk = _read_domain_file("social_blocklist.txt")
+    social_blk = _read_social_file("social_blocklist.txt")
     if wl:
         TAIWAN_MAINSTREAM_DOMAINS = wl
     if ugc:

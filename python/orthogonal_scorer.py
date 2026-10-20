@@ -555,11 +555,15 @@ def compute_d2_source_corroboration(
         except Exception:
             pass
 
-    C = max(0.0, min(1.0, c_dom + corr_boost + recency_bonus))
-    if n_corr > 0:
-        corr_str = f"｜{n_corr} 家外部來源同報（{', '.join(outlets[:4])}）"
+    if is_blocked:
+        C = 0.0
+        corr_str = "｜黑名單來源（不計外部同報）"
     else:
-        corr_str = "｜無額外跨媒體同報"
+        C = max(0.0, min(1.0, c_dom + corr_boost + recency_bonus))
+        if n_corr > 0:
+            corr_str = f"｜{n_corr} 家外部來源同報（{', '.join(outlets[:4])}）"
+        else:
+            corr_str = "｜無額外跨媒體同報"
 
     corroborated_base_pts = 52.0 + 34.0 * C if C >= 0.60 else 0.0
     status_lbl = "blocked" if is_blocked else ("corroborated" if C >= 0.60 else "uncorroborated")
