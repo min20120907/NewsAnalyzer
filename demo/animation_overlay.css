@@ -20,7 +20,6 @@
   background-repeat: no-repeat;
   pointer-events: none;
   z-index: 1000000;
-  transform: translate3d(-2px, -2px, 0);
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.7));
 }
@@ -54,7 +53,6 @@
   border: 4px solid #38bdf8;
   box-shadow: 0 0 0 9999px rgba(11, 15, 25, 0.78), 0 0 60px rgba(56, 189, 248, 0.85);
   pointer-events: none;
-  transition: all 0.38s cubic-bezier(0.25, 1, 0.5, 1);
   opacity: 0;
   z-index: 999990;
 }
