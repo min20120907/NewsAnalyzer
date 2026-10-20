@@ -344,27 +344,49 @@
     .result-info { text-align:center; }
     .btn { flex:1 1 100%; min-width:100%; }
   }
+  .lang-switch-wrap {
+    display: flex; justify-content: flex-end; gap: 6px;
+    width: 100%; max-width: 720px; margin-bottom: 12px;
+  }
+  .lang-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    border-radius: 8px; color: var(--text-dim);
+    font-size: 12px; font-weight: 500; padding: 4px 10px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .lang-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.12); }
+  .lang-btn.active {
+    color: #fff; background: var(--accent);
+    border-color: var(--accent); font-weight: 700;
+  }
 </style>
 </head>
 <body>
 
+  <div class="lang-switch-wrap">
+    <button class="lang-btn" data-lang-btn="zh">繁體中文</button>
+    <button class="lang-btn" data-lang-btn="en">English</button>
+    <button class="lang-btn" data-lang-btn="ja">日本語</button>
+  </div>
+
   <div class="header">
     <div class="logo">
-      <span>🛡️ NewsAnalyzer</span><span class="badge">AI 可靠度分析</span>
+      <span>🛡️ NewsAnalyzer</span><span class="badge" data-i18n="badge">AI 可靠度分析</span>
     </div>
-    <div class="subtitle">貼上 Facebook 貼文或新聞連結，立即分析內容可靠度</div>
+    <div class="subtitle" data-i18n="subtitle">貼上 Facebook 貼文或新聞連結，立即分析內容可靠度</div>
   </div>
 
   <div class="card">
     <div class="input-wrap">
-      <textarea id="input" placeholder="貼上新聞連結或 Facebook 貼文內容…&#10;&#10;例如：https://www.ettoday.net/news/20240826/1234.htm&#10;或直接貼上貼文文字內容"></textarea>
+      <textarea id="input" data-i18n-ph="input_placeholder" placeholder="貼上新聞連結或 Facebook 貼文內容…&#10;&#10;例如：https://www.ettoday.net/news/20240826/1234.htm&#10;或直接貼上貼文文字內容"></textarea>
     </div>
 
     <div class="actions">
-      <button class="btn btn-primary" id="analyzeBtn">🔍 開始分析</button>
+      <button class="btn btn-primary" id="analyzeBtn" data-i18n="analyze_btn">🔍 開始分析</button>
       <input type="file" id="mediaUploadInput" accept="image/*,video/*" style="display:none;">
-      <button class="btn btn-ghost" id="uploadMediaBtn" type="button">📷/🎬 上傳圖片或影片</button>
-      <button class="btn btn-ghost" id="clearBtn">🗑️ 清除</button>
+      <button class="btn btn-ghost" id="uploadMediaBtn" type="button" data-i18n="upload_btn">📷/🎬 上傳圖片或影片</button>
+      <button class="btn btn-ghost" id="clearBtn" data-i18n="clear_btn">🗑️ 清除</button>
     </div>
     <div id="mediaStatus" style="display:none; margin-top:8px; font-size:13px; color:#a5b4fc; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); border-radius:6px; padding:6px 10px;"></div>
 
@@ -412,7 +434,7 @@
         </svg>
         <div class="gauge-center">
           <div class="gauge-score"><span id="scoreNum">0</span><small> / 100</small></div>
-          <div class="gauge-label">可靠度分數</div>
+          <div class="gauge-label" data-i18n="score_label">可靠度分數</div>
         </div>
       </div>
       <div class="result-info">
@@ -427,56 +449,56 @@
 
     <!-- 權重與最終分數計算公式分解 (Score Calculation Pipeline) -->
     <div class="sources" id="scorePipeline" style="display:none;">
-      <div class="sources-title">🧮 評分權重與計算過程分解</div>
+      <div class="sources-title" data-i18n="title_pipeline">🧮 評分權重與計算過程分解</div>
       <div id="scorePipelineContent" class="pipeline-wrap"></div>
     </div>
 
     <!-- 各步驟耗時（只在 debug 模式有資料，2026-10-05） -->
     <div class="sources" id="timingsWrap" style="display:none;">
-      <div class="sources-title">⏱️ 各步驟耗時</div>
+      <div class="sources-title" data-i18n="title_timings">⏱️ 各步驟耗時</div>
       <div id="timingsList"></div>
     </div>
 
     <!-- 多源查核結果 -->
     <div class="sources" id="sources" style="display:none;">
-      <div class="sources-title">🔎 事實查核來源</div>
+      <div class="sources-title" data-i18n="title_sources">🔎 事實查核來源</div>
       <div id="sourcesList"></div>
     </div>
 
     <!-- 網路評論搜尋連結 -->
     <div class="sources" id="reviewLinks" style="display:none;">
-      <div class="sources-title">💬 網路評論搜尋</div>
+      <div class="sources-title" data-i18n="title_review">💬 網路評論搜尋</div>
       <div id="reviewLinksList" class="review-links"></div>
     </div>
 
     <!-- 真實網路評論/討論搜尋結果 -->
     <div class="sources" id="webResults" style="display:none;">
-      <div class="sources-title">🔍 網路評論實際搜尋結果</div>
+      <div class="sources-title" data-i18n="title_web">🔍 網路評論實際搜尋結果</div>
       <ul id="webResultsList" class="web-results"></ul>
     </div>
 
     <!-- 深入分析（本機 LLM） -->
     <div class="deep-analysis" id="deepAnalysis" style="display:none;">
-      <div class="deep-title">🧠 深入分析（本機 AI 模型）</div>
+      <div class="deep-title" data-i18n="title_deep">🧠 深入分析（本機 AI 模型）</div>
       <div class="deep-score-row">
         <div class="deep-score-badge" id="deepScoreBadge">–</div>
-        <div class="deep-score-bar"><div id="deepScoreBar"></div></div>
+        <div class="deep-score-bar"><div id=\"deepScoreBar\"></div></div>
       </div>
-      <div class="deep-section-label">關鍵質疑點</div>
+      <div class="deep-section-label" data-i18n="key_points_label">關鍵質疑點</div>
       <ul class="deep-key-points" id="deepKeyPoints"></ul>
 
       <div class="deep-claim" id="deepClaim" style="display:none;"></div>
       <div class="deep-provisional" id="deepProvisional" style="display:none;"></div>
       <div class="deep-evidence-used" id="deepEvidenceUsed" style="display:none;"></div>
       
-      <button id="toggleDeepDetailsBtn" type="button" style="margin-top: 10px; padding: 6px 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #cbd5e1; cursor: pointer; font-size: 12.5px; display: none; width: 100%; text-align: center; transition: background 0.2s;">
+      <button id="toggleDeepDetailsBtn" type="button" data-i18n="toggle_deep_btn" style="margin-top: 10px; padding: 6px 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #cbd5e1; cursor: pointer; font-size: 12.5px; display: none; width: 100%; text-align: center; transition: background 0.2s;">
         🔍 查看進階分析細節 (AI 觀點與總結) ▾
       </button>
 
       <div id="deepDetailsContainer" style="display: none; margin-top: 5px;">
-        <div class="deep-section-label">正反觀點</div>
+        <div class="deep-section-label" data-i18n="viewpoints_label">正反觀點</div>
         <div class="deep-viewpoints" id="deepViewpoints"></div>
-        <div class="deep-section-label">分析總結</div>
+        <div class="deep-section-label" data-i18n="analysis_label">分析總結</div>
         <div class="deep-analysis-text" id="deepAnalysisText"></div>
       </div>
 
@@ -485,9 +507,137 @@
     </div>
   </div>
 
-  <div class="footer">NewsAnalyzer · 基於多模態 AI 模型分析 · 結果僅供參考</div>
+  <div class="footer" data-i18n="footer">NewsAnalyzer · 基於多模態 AI 模型分析 · 結果僅供參考</div>
 
 <script>
+const I18N = {
+  zh: {
+    badge: "AI 可靠度分析",
+    subtitle: "貼上 Facebook 貼文或新聞連結，立即分析內容可靠度",
+    input_placeholder: "貼上新聞連結或 Facebook 貼文內容…\n\n例如：https://www.ettoday.net/news/...\n或直接貼上貼文文字內容",
+    analyze_btn: "🔍 開始分析",
+    upload_btn: "📷/🎬 上傳圖片或影片",
+    clear_btn: "🗑️ 清除",
+    score_label: "可靠度分數",
+    title_pipeline: "🧮 評分權重與計算過程分解",
+    title_timings: "⏱️ 各步驟耗時",
+    title_sources: "🔎 事實查核來源",
+    title_review: "💬 網路評論搜尋",
+    title_web: "🔍 網路評論實際搜尋結果",
+    title_deep: "🧠 深入分析（本機 AI 模型）",
+    key_points_label: "關鍵質疑點",
+    toggle_deep_btn: "🔍 查看進階分析細節 (AI 觀點與總結) ▾",
+    viewpoints_label: "正反觀點",
+    analysis_label: "分析總結",
+    footer: "NewsAnalyzer · 基於多模態 AI 模型分析 · 結果僅供參考",
+    ratings: {
+      "高度可信": "高度可信",
+      "大致可信": "大致可信",
+      "待查證": "待查證",
+      "疑似不實": "疑似不實",
+      "高度可疑": "高度可疑"
+    }
+  },
+  en: {
+    badge: "AI Reliability Analysis",
+    subtitle: "Paste a news link, Facebook post, or text to evaluate reliability instantly",
+    input_placeholder: "Paste news URL or social post content…\n\ne.g.: https://www.reuters.com/...\nor paste text content directly",
+    analyze_btn: "🔍 Analyze",
+    upload_btn: "📷/🎬 Upload Image/Video",
+    clear_btn: "🗑️ Clear",
+    score_label: "Reliability Score",
+    title_pipeline: "🧮 Score Calculation & Weight Breakdown",
+    title_timings: "⏱️ Step Latency",
+    title_sources: "🔎 Fact-Checking Sources",
+    title_review: "💬 Web Discussion Search",
+    title_web: "🔍 Actual Web Search Results",
+    title_deep: "🧠 Deep Analysis (Local AI Model)",
+    key_points_label: "Key Findings & Questions",
+    toggle_deep_btn: "🔍 View In-depth Details (AI Viewpoints & Summary) ▾",
+    viewpoints_label: "Perspectives & Facts",
+    analysis_label: "Conclusion & Summary",
+    footer: "NewsAnalyzer · Powered by Multimodal AI · For reference only",
+    ratings: {
+      "高度可信": "Highly Credible",
+      "大致可信": "Mostly Credible",
+      "待查證": "Unverified",
+      "疑似不實": "Suspicious",
+      "高度可疑": "Highly Questionable"
+    }
+  },
+  ja: {
+    badge: "AI 信頼性分析",
+    subtitle: "ニュースURLやFacebook投稿を貼り付けて、信頼性を即座に分析",
+    input_placeholder: "ニュースのリンクや投稿内容を貼り付けてください…\n\n例：https://www3.nhk.or.jp/news/...\nまたは本文を直接入力",
+    analyze_btn: "🔍 分析開始",
+    upload_btn: "📷/🎬 画像・動画をアップロード",
+    clear_btn: "🗑️ クリア",
+    score_label: "信頼性スコア",
+    title_pipeline: "🧮 スコア算出と重み付けの内訳",
+    title_timings: "⏱️ 各ステップの処理時間",
+    title_sources: "🔎 ファクトチェック情報源",
+    title_review: "💬 ネット言及・議論の検索",
+    title_web: "🔍 実際のウェブ検索結果",
+    title_deep: "🧠 詳細分析（ローカルAIモデル）",
+    key_points_label: "主な確認・疑問点",
+    toggle_deep_btn: "🔍 詳細な分析結果を表示 (AI見解・要約) ▾",
+    viewpoints_label: "賛否の観点・客観事実",
+    analysis_label: "分析結論",
+    footer: "NewsAnalyzer · マルチモーダルAI分析 · 参考情報としてご利用ください",
+    ratings: {
+      "高度可信": "極めて高信頼",
+      "大致可信": "概ね高信頼",
+      "待查證": "要確認・未検証",
+      "疑似不實": "不審・虚偽の疑い",
+      "高度可疑": "極めて低信頼"
+    }
+  }
+};
+
+let currentLang = 'zh';
+
+function setLanguage(lang) {
+  if (!I18N[lang]) lang = 'zh';
+  currentLang = lang;
+  localStorage.setItem('na_lang', lang);
+  document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : (lang === 'ja' ? 'ja' : 'en');
+
+  document.querySelectorAll('[data-lang-btn]').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang-btn') === lang);
+  });
+
+  const dict = I18N[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key]) el.textContent = dict[key];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    if (dict[key]) el.placeholder = dict[key];
+  });
+
+  const badge = $('ratingBadge');
+  if (badge && badge.dataset.rawRating) {
+    badge.textContent = (dict.ratings && dict.ratings[badge.dataset.rawRating]) || badge.dataset.rawRating;
+  }
+}
+
+function detectInitialLang() {
+  const saved = localStorage.getItem('na_lang');
+  if (saved && I18N[saved]) return saved;
+  const navLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+  if (navLang.startsWith('ja')) return 'ja';
+  if (navLang.startsWith('zh')) return 'zh';
+  return 'en';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-lang-btn]').forEach(btn => {
+    btn.addEventListener('click', () => setLanguage(btn.getAttribute('data-lang-btn')));
+  });
+  setLanguage(detectInitialLang());
+});
+
 const $ = id => document.getElementById(id);
 const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const escapeAttr = s => escapeHtml(s).replace(/'/g, '&#39;');
@@ -800,7 +950,9 @@ function renderResult(data) {
 
   // 等級徽章
   const badge = $('ratingBadge');
-  badge.textContent = rating;
+  badge.dataset.rawRating = rating;
+  const dict = I18N[currentLang] || I18N.zh;
+  badge.textContent = (dict.ratings && dict.ratings[rating]) || rating;
   badge.className = 'rating-badge ' + badgeCls;
 
   // 標題與網址
