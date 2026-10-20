@@ -2077,6 +2077,78 @@ def judge_news():
         "debug": _debug,
     }
 
+
+@app.route("/extract_media", methods=["POST"])
+def extract_media():
+    """多模態抽取：支援圖片 (OCR) 與影片 (音訊 STT + 畫面 OCR)，轉為純文字後直接輸入 /judge。"""
+    if "file" not in request.files:
+        return {"ok": False, "error": "未提供上傳檔案"}, 400
+    f = request.files["file"]
+    if not f.filename:
+        return {"ok": False, "error": "無檔名"}, 400
+    fname = f.filename.lower()
+    import tempfile, subprocess
+    suffix = os.path.splitext(fname)[1] or ".bin"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        f.save(tmp.name)
+        tmp_path = tmp.name
+
+    text = ""
+    media_type = "unknown"
+    try:
+        # 1. 圖片處理 (RapidOCR)
+        if any(fname.endswith(ext) for ext in (".png", ".jpg", ".jpeg", ".webp", ".bmp")):
+            media_type = "image"
+            from rapidocr_onnxruntime import RapidOCR
+            ocr = RapidOCR()
+            result, _ = ocr(tmp_path)
+            if result:
+                text = "\n".join(line[1] for line in result)
+        # 2. 影片處理 (ffmpeg + faster_whisper + 影格 OCR)
+        elif any(fname.endswith(ext) for ext in (".mp4", ".mov", ".mkv", ".avi", ".webm")):
+            media_type = "video"
+            audio_path = tmp_path + ".wav"
+            subprocess.run(["ffmpeg", "-y", "-i", tmp_path, "-vn", "-ar", "16000", "-ac", "1", audio_path],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
+            whisper_text = ""
+            if os.path.exists(audio_path) and os.path.getsize(audio_path) > 1000:
+                from faster_whisper import WhisperModel
+                w_model = WhisperModel("base", device="cpu", compute_type="int8")
+                segments, _ = w_model.transcribe(audio_path, language="zh")
+                whisper_text = "".join(seg.text for seg in segments).strip()
+                try: os.unlink(audio_path)
+                except Exception: pass
+            
+            frame_path = tmp_path + ".png"
+            subprocess.run(["ffmpeg", "-y", "-ss", "00:00:01", "-i", tmp_path, "-vframes", "1", frame_path],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
+            ocr_text = ""
+            if os.path.exists(frame_path):
+                from rapidocr_onnxruntime import RapidOCR
+                result, _ = RapidOCR()(frame_path)
+                if result:
+                    ocr_text = " ".join(line[1] for line in result)
+                try: os.unlink(frame_path)
+                except Exception: pass
+            
+            parts = []
+            if ocr_text: parts.append(f"【畫面文字】：{ocr_text}")
+            if whisper_text: parts.append(f"【語音口白】：{whisper_text}")
+            text = "\n\n".join(parts) or whisper_text or ocr_text
+    except Exception as e:
+        print(f"[extract_media] error: {e}", flush=True)
+        return {"ok": False, "error": f"解析{media_type}失敗: {e}"}, 500
+    finally:
+        try: os.unlink(tmp_path)
+        except Exception: pass
+
+    if not text.strip():
+        return {"ok": False, "error": f"未能從{media_type}中識別出足夠的文字或語音內容"}, 422
+    
+    first_line = [l.strip() for l in text.splitlines() if l.strip()]
+    title = first_line[0][:80] if first_line else "媒體上傳內容"
+    return {"ok": True, "text": text.strip(), "title": title, "media_type": media_type}
+
 def generate_test_results_page():
     """Generate an interactive HTML page showing test results on the WSDM Chinese fake news title dataset."""
     # Limit rows for speed; adjust as needed

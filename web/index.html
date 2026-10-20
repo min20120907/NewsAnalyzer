@@ -362,8 +362,11 @@
 
     <div class="actions">
       <button class="btn btn-primary" id="analyzeBtn">🔍 開始分析</button>
+      <input type="file" id="mediaUploadInput" accept="image/*,video/*" style="display:none;">
+      <button class="btn btn-ghost" id="uploadMediaBtn" type="button">📷/🎬 上傳圖片或影片</button>
       <button class="btn btn-ghost" id="clearBtn">🗑️ 清除</button>
     </div>
+    <div id="mediaStatus" style="display:none; margin-top:8px; font-size:13px; color:#a5b4fc; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); border-radius:6px; padding:6px 10px;"></div>
 
     <!-- Debug 登入：登入後才露出模型選擇（2026-10-05） -->
     <div class="debug-bar" id="debugBar">
@@ -512,6 +515,49 @@ clearBtn.addEventListener('click', () => {
 });
 
 analyzeBtn.addEventListener('click', analyze);
+
+const uploadMediaBtn = $('uploadMediaBtn');
+const mediaUploadInput = $('mediaUploadInput');
+const mediaStatus = $('mediaStatus');
+
+uploadMediaBtn.addEventListener('click', () => mediaUploadInput.click());
+
+mediaUploadInput.addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  const isVideo = file.type.startsWith('video') || /\.(mp4|mov|mkv|avi|webm)$/i.test(file.name);
+  mediaStatus.innerHTML = `⏳ 正在分析${isVideo ? '影片（語音轉錄＋畫面辨識）' : '圖片（OCR 文字萃取）'}，請稍候…`;
+  mediaStatus.style.display = 'block';
+  uploadMediaBtn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('file', file);
+
+  try {
+    const resp = await fetch('/extract_media', { method: 'POST', body: fd });
+    const res = await resp.json();
+    if (!resp.ok || !res.ok) {
+      showError(res.error || '媒體解析失敗');
+      mediaStatus.style.display = 'none';
+      uploadMediaBtn.disabled = false;
+      return;
+    }
+    mediaStatus.innerHTML = `✅ 已成功從${res.media_type === 'video' ? '影片' : '圖片'}萃取內容，正在啟動可靠度分析…`;
+    input.value = res.text;
+    uploadMediaBtn.disabled = false;
+    setTimeout(() => {
+      mediaStatus.style.display = 'none';
+      analyze();
+    }, 600);
+  } catch (err) {
+    showError('上傳或解析媒體時發生錯誤: ' + err.message);
+    mediaStatus.style.display = 'none';
+    uploadMediaBtn.disabled = false;
+  } finally {
+    mediaUploadInput.value = '';
+  }
+});
 
 /* ---------- Debug 模式（2026-10-05）：登入後才露出模型選擇＋耗時 ---------- */
 const debugBar = $('debugBar'), debugMsg = $('debugMsg');
