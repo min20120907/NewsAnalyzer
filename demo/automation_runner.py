@@ -59,6 +59,14 @@ def run_scenario(page, scenario, speed=1.0, is_simulation=False, index=1, total=
         page.evaluate(f"if (typeof setLanguage === 'function') setLanguage('{init['lang']}');")
         page.wait_for_timeout(int(300 / speed))
 
+    # 視窗捲動回頂端並重置游標位置，確保情境起始點完全對齊
+    page.evaluate("window.scrollTo({top: 0, behavior: 'smooth'});")
+    page.evaluate("window.CinemaOverlay.hideSpotlight();")
+    page.evaluate("window.CinemaOverlay.hideTooltip();")
+    page.evaluate("window.CinemaOverlay.hideExplainer();")
+    page.evaluate(f"window.CinemaOverlay.updateCursorPos(window.innerWidth / 2, 180, false);")
+    page.wait_for_timeout(int(500 / speed))
+
     # 3. 依序執行操作步驟
     steps = scenario.get("steps", [])
     for idx, step in enumerate(steps, 1):
