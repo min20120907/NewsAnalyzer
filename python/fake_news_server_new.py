@@ -1707,8 +1707,9 @@ def _extract_facebook_selenium(url: str) -> Dict:
 def _extract_youtube(url: str) -> Optional[Dict]:
     """YouTube 影片解析：免下載影片，直接提取標題 + 影片敘述/AI簡介 + 封面圖 (Thumbnail) OCR 字卡。"""
     try:
-        import subprocess, json, urllib.request
-        cmd = ["yt-dlp", "--dump-json", "--no-warnings", "--skip-download", url]
+        import subprocess, json, urllib.request, shutil, sys
+        ytdlp_bin = shutil.which("yt-dlp") or os.path.join(os.path.dirname(sys.executable), "yt-dlp") or "yt-dlp"
+        cmd = [ytdlp_bin, "--dump-json", "--no-warnings", "--skip-download", url]
         p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=12, text=True)
         if p.returncode == 0 and p.stdout:
             data = json.loads(p.stdout)
