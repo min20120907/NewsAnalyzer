@@ -47,7 +47,7 @@
       },
       {
         "action": "explainer",
-        "target": "#scoreBadge",
+        "target": "#resultCard",
         "html": "<b>🏁 最終評分 (Final Score)：88.5 / 100</b><br>評級：<b>高度可信</b><br>系統融合規則引擎與本地 LLM 模型之加權分數，判定為高信賴度新聞。",
         "delay": 4500
       },
@@ -59,26 +59,12 @@
       },
       {
         "action": "explainer",
-        "target": "#dim-D1",
         "html": "<b>D1 查核證據蘊涵度：0%</b><br>查無 Cofacts/MyGoPen 等查核庫命中紀錄。此為正常現象，未查證不代表假新聞，交由 D2 跨源佐證路由。",
         "delay": 4500
       },
       {
         "action": "explainer",
-        "target": "#dim-D2",
         "html": "<b>D2 跨源報導佐證度：88%</b><br>檢索到公視 (pts.org.tw) 原文，並偵測到中央社與聯合報同步報導，佐證指數極高 (0.88)。",
-        "delay": 4500
-      },
-      {
-        "action": "explainer",
-        "target": "#dim-D3",
-        "html": "<b>D3 標題內文忠實度：100%</b><br>LLM 判定標題完美忠實反映內文主旨，無任何誇大或斷章取義之懸念誘餌。",
-        "delay": 4500
-      },
-      {
-        "action": "explainer",
-        "target": "#dim-D4",
-        "html": "<b>D4 內文修辭與可驗性風險：8%</b><br>內文語氣客觀平實，具備官方具名受訪與具體工程數據，修辭安全度極高 (R=0.08)。",
         "delay": 4500
       },
       {
