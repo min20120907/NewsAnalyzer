@@ -773,7 +773,7 @@ def qwen_queue_eta() -> float:
 
 _DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只能使用下方實際提供的材料判斷，不得腦補事實。
 
-只輸出一個 JSON 物件，所有文字一律使用繁體中文，精簡扼要：
+只輸出一個 JSON 物件，{lang_instruction}
 {{"claim":"本次主張濃縮(25字內)","neutral_title":"還原之客觀真實標題(20字內，去除釣魚懸念)","evidence_state":"full_body_evidence | search_hit_body_missing | no_evidence | unrelated_evidence","evidence_used":["引用的來源名稱"],"key_points":["2條重點(每條30字內，須指明依據)"],"viewpoints":"正反立場或客觀事實(50字內)","credibility_score":0到100整數,"analysis":"結論(60字內，必須點名來源、關鍵事實與明確理由)","abstain":true或false,"title_bait":true或false,"title_bait_reason":"一句話(title_bait為true時必填)"}}
 
 【規則】
@@ -803,7 +803,8 @@ _DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只
 
 
 def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
-                              content: str = "", facts: "Optional[list]" = None) -> str:
+                              content: str = "", facts: "Optional[list]" = None,
+                              lang: str = "zh") -> str:
     lines = []
     for i, r in enumerate(web_results[:4], 1):
         t = (r.get("title") or "").strip()
@@ -853,11 +854,18 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
     if len(body) > 1000:
         body = body[:1000] + "…"
     from datetime import date as _date
+    if lang == "ja":
+        lang_ins = "すべてのフィールドを必ず自然な日本語で記述し、簡潔に出力してください："
+    elif lang == "en":
+        lang_ins = "Write all text field values in fluent English concisely:"
+    else:
+        lang_ins = "所有文字一律使用繁體中文，精簡扼要："
     return _DEEP_PROMPT_TMPL.format(title=title or "（無標題）",
                                     body=body,
                                     web_summary=web_summary,
                                     fc_block=fc_summary,
-                                    today=_date.today().isoformat())
+                                    today=_date.today().isoformat(),
+                                    lang_instruction=lang_ins)
 
 
 # 傳言／匿名轉傳的確定性訊號。這類文本「本身」就是未經證實的內容，
@@ -927,7 +935,7 @@ def _evidence_is_unrelated(deep) -> bool:
 
 def deep_analyze(title: str, web_results: list, sources: list,
                  timeout: "float | None" = None, content: str = "",
-                 model_id: str = "") -> dict:
+                 model_id: str = "", lang: str = "zh") -> dict:
     """呼叫 LLM 做深入分析。回傳 dict 或空 dict（失敗）。
 
     model_id=None → 用既有 QWEN_URL/QWEN_MODEL（生產行為不變）。
@@ -945,13 +953,20 @@ def deep_analyze(title: str, web_results: list, sources: list,
             headers = _reg.request_headers(_cfg)
         except Exception as _e:
             print(f"[judge] deep_analyze registry failed: {_e}", flush=True)
-    prompt = _deep_analyze_build_prompt(title, web_results, sources, content=content)
+    prompt = _deep_analyze_build_prompt(title, web_results, sources, content=content, lang=lang)
+    if lang == "ja":
+        sys_content = ("あなたはファクトチェックの分析アシスタントです。提供された情報に基づき、単一のJSONオブジェクトのみを出力してください。"
+                       "すべてのフィールドを必ず自然な日本語で作成してください。各フィールドの結論と要点は簡潔に（60字以内）記述し、推論過程や英語は出力しないでください。")
+    elif lang == "en":
+        sys_content = ("You are a fact-checking assistant. Output only a single JSON object based on the provided information. "
+                       "Write all field values in fluent English concisely (under 60 words) without reasoning text.")
+    else:
+        sys_content = ("你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字）。"
+                       "務必使用繁體中文撰寫所有欄位值。各欄位結論與重點務必精簡扼要（60字內），直接輸出 JSON，不要推理過程、不要英文。")
     payload = {
         "model": model_name,
         "messages": [
-            {"role": "system",
-             "content": "你是一個事實查核分析助手。根據提供的資訊，只輸出一個 JSON 物件（不要任何其他文字）。"
-                        "務必使用繁體中文撰寫所有欄位值。各欄位結論與重點務必精簡扼要（60字內），直接輸出 JSON，不要推理過程、不要英文。"},
+            {"role": "system", "content": sys_content},
             {"role": "user", "content": prompt},
         ],
         "temperature": 0.2,
@@ -1043,7 +1058,7 @@ def deep_analyze(title: str, web_results: list, sources: list,
 
 def deep_analyze_ensemble(title: str, web_results: list, sources: list,
                           samples: int = None, timeout: float = None,
-                          content: str = "", model_id: str = "") -> dict:
+                          content: str = "", model_id: str = "", lang: str = "zh") -> dict:
     """多次取樣本機 LLM 以降低 7B 模型分數抖動；並回傳 std / 樣本數供前端說明。
     並發呼叫（ThreadPoolExecutor）控制總延遲約等於單次。
     註：27B 單次即穩定，預設單樣本（:8088 單槽下多樣本會互相排隊超時）。"""
@@ -1078,7 +1093,7 @@ def deep_analyze_ensemble(title: str, web_results: list, sources: list,
 
     def _one():
         return deep_analyze(title, web_results, sources, timeout=to, content=content,
-                            model_id=model_id)
+                            model_id=model_id, lang=lang)
 
     results = []
     if n == 1:
@@ -1207,7 +1222,7 @@ def _samples_for(mode: str) -> int:
     return 1 if mode == "fast" else int(os.environ.get("DEEP_ANALYZE_SAMPLES", "3"))
 
 
-def _score_single(title: str, url: str, content: str, refs: List[str], publish_date=None, target_url: str = None, mode: str = "fast", llm_model: str = "") -> Dict:
+def _score_single(title: str, url: str, content: str, refs: List[str], publish_date=None, target_url: str = None, mode: str = "fast", llm_model: str = "", lang: str = "zh") -> Dict:
     """Return full orthogonal 4-dimension + 3-regime verdict dict for one article.
 
     架構升級（四維度正交評分＋三態路由）：
@@ -1295,7 +1310,7 @@ def _score_single(title: str, url: str, content: str, refs: List[str], publish_d
             _t = time.perf_counter()
             deep = deep_analyze_ensemble(
                 _title_clean or content[:60], web_results, sources,
-                content=content, samples=n_samples, model_id=llm_model
+                content=content, samples=n_samples, model_id=llm_model, lang=lang
             )
             timings["deep_analyze"] = round((time.perf_counter() - _t) * 1000, 1)
         except Exception as _e:
@@ -1409,14 +1424,14 @@ def analyze_batch_article_data(
 # 7. Existing single‑article wrapper & Flask API (minimal changes)
 # ---------------------------------------------------------------
 
-def analyze_article_data(title: str = "", url: str = "", content: str = "", publish_date=None, target_url: str = None, mode: str = "fast", llm_model: str = "", **_) -> Dict:
+def analyze_article_data(title: str = "", url: str = "", content: str = "", publish_date=None, target_url: str = None, mode: str = "fast", llm_model: str = "", lang: str = "zh", **_) -> Dict:
     if not content:
         raise ValueError("content required for single analysis")
     if not url:
         url = "https://unknown"
     return _score_single(title or "N/A", url, content, [title] if title else [],
                          publish_date=publish_date, target_url=target_url,
-                         mode=mode, llm_model=llm_model)
+                         mode=mode, llm_model=llm_model, lang=lang)
 
 # --------------------------- Flask -----------------------------
 app = Flask(__name__)
@@ -2076,6 +2091,18 @@ def judge_news():
     # （擋掉繞過前端直接打 API 指定模型的請求）。
     _debug = _is_debug(request)
     mode = (data.get("mode") or "fast") if _debug else "fast"
+    req_lang = (data.get("lang") or "auto").lower()
+    if req_lang == "auto" or not req_lang:
+        blob = (title or "") + " " + (content or "")
+        if re.search(r"[\u3040-\u309f\u30a0-\u30ff]", blob):
+            lang = "ja"
+        elif not re.search(r"[\u4e00-\u9fff]", blob) and re.search(r"[a-zA-Z]{4,}", blob):
+            lang = "en"
+        else:
+            lang = "zh"
+    else:
+        lang = req_lang if req_lang in ("zh", "en", "ja") else "zh"
+
     # 2026-10-02：前端選單傳 'backend/model'，空字串＝沿用 QWEN_URL（行為不變）
     llm_model = (data.get("llm_model") or "") if _debug else ""
     # 2026-10-02：前端勾選多個模型 → 共識投票。
@@ -2092,7 +2119,7 @@ def judge_news():
     score = analyze_article_data(title=title, url=url, content=content,
                                  publish_date=extracted.get("publish_date"),
                                  target_url=extracted.get("source"), mode=mode,
-                                 llm_model=llm_model)
+                                 llm_model=llm_model, lang=lang)
     # 2026-10-02：llm_model='consensus' → 多模型共識投票取代單一 deep 分析。
     # 分歧時 abstain（不硬選），分歧度一起回前端。
     if llm_model == "consensus":

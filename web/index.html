@@ -541,6 +541,42 @@ const I18N = {
       rhetorical_risk: 'D4 內文修辭與可驗性風險',
       basis_lbl: '本篇依據：', def_lbl: '測量定義：', err_lbl: '失效邊界：',
     },
+    dim_defs: {
+      evidence_verdict: {
+        measures: '已核實查核庫（Cofacts / MyGoPen / Google FC 等）對「同一具體事件」之蘊涵或駁斥立場與證據信心',
+        boundary: '若誤將無關查核當命中會直接壓低真新聞；若漏召回則 c_E=0 退回未查證路由，絕不偷送 +15 分'
+      },
+      source_corroboration: {
+        measures: '新聞原始發布機構之信譽等級、獨立媒體交叉同報家數，以及文章自身發布時效一致性',
+        boundary: '若把內容農場互抄算成同報會高估未查證文章；若漏算新興媒體則退回待查證區間（45~58分），不會誤殺為假新聞'
+      },
+      headline_faithfulness: {
+        measures: '新聞標題之斷言是否忠實反映內文，有無誇大釣魚、懸念誘導或斷章取義',
+        boundary: '誤報時僅對該文施加標題失真扣分（最高 -22 分）與黃牌提示；漏報時因 F 不提供正分，絕不會把假新聞墊高到可信帶'
+      },
+      rhetorical_risk: {
+        measures: '文本自身之情緒操弄、催促轉發動員、偏方爆料話術，以及無出處之偽冒官方公告風險',
+        boundary: '作用範圍嚴格限制在「無查核且無同報」之未查證區間 [18, 58] 內，絕不會覆寫 D1 查核證據，也不會把無證據文章推過 60 分'
+      }
+    },
+    statuses: {
+      inaccurate: '不實', partial: '部分正確', accurate: '屬實', not_found: '查無', disabled: '未啟用', error: '查詢失敗'
+    },
+    claim_pfx: '查核主張：',
+    evidence_pfx: '引用來源：',
+    rule_pfx: '規則分 ',
+    model_pfx: '模型：',
+    ai_pfx: 'AI分 ',
+    sample_sfx: '次取樣',
+    prov_warn: '⚠️ 本次為暫時分數，非查核結論｜證據狀態：',
+    prov_tail: '｜此時不應把分數當成真偽判定',
+    prov_states: {
+      full_body_evidence: '已載入查核正文',
+      search_hit_body_missing: '搜尋命中但正文未載入',
+      no_evidence: '查無相關證據',
+      unrelated_evidence: '命中的查核不屬同一事件',
+    },
+    analyzing: '分析中…',
     metric_names: {
       sentiment: '情緒傾向', domain: '來源可信度', similarity: '內容相似度',
       fact_check: '事實查核', user_feedback: '查核庫回報', timeliness: '時效性'
@@ -586,6 +622,42 @@ const I18N = {
       rhetorical_risk: 'D4 Rhetorical & Verifiability Risk',
       basis_lbl: 'Evidence Basis: ', def_lbl: 'What it Measures: ', err_lbl: 'Failure Boundary: ',
     },
+    dim_defs: {
+      evidence_verdict: {
+        measures: 'Entailment/refutation stance and confidence from fact-checking databases for the same specific event',
+        boundary: 'False matches would depress real news; missed recalls safely fall back to unverified routing without bogus bonuses'
+      },
+      source_corroboration: {
+        measures: 'Publisher credibility tier, independent media corroboration count, and publication timeliness',
+        boundary: 'Content-farm scraping excluded; missed emerging media gracefully falls back to unverified zone [45-58]'
+      },
+      headline_faithfulness: {
+        measures: 'Whether the headline faithfully reflects the article body without clickbait exaggeration or cherry-picking',
+        boundary: 'Distortion triggers penalties up to -22 pts; faithfulness never artificially inflates fake news scores'
+      },
+      rhetorical_risk: {
+        measures: 'Emotional manipulation, sharing coercion, pseudoscience rhetoric, and unattributed official announcement risks',
+        boundary: 'Strictly bounded to unverified articles [18, 58]; never overrides D1 evidence or pushes ungrounded claims past 60'
+      }
+    },
+    statuses: {
+      inaccurate: 'False', partial: 'Partially True', accurate: 'True', not_found: 'None', disabled: 'Disabled', error: 'Error'
+    },
+    claim_pfx: 'Claim: ',
+    evidence_pfx: 'Sources: ',
+    rule_pfx: 'Rule Score ',
+    model_pfx: 'Model: ',
+    ai_pfx: 'AI Score ',
+    sample_sfx: ' samples',
+    prov_warn: '⚠️ Provisional score, not a final fact-check verdict | Evidence state: ',
+    prov_tail: ' | Do not treat this score as truth verdict',
+    prov_states: {
+      full_body_evidence: 'Fact-check body loaded',
+      search_hit_body_missing: 'Search hit but body missing',
+      no_evidence: 'No matching evidence',
+      unrelated_evidence: 'Fact-check does not match this event',
+    },
+    analyzing: 'Analyzing…',
     metric_names: {
       sentiment: 'Sentiment Tendency', domain: 'Source Credibility', similarity: 'Content Relevance',
       fact_check: 'Fact-Check Records', user_feedback: 'Crowd Feedback', timeliness: 'Timeliness'
@@ -631,6 +703,42 @@ const I18N = {
       rhetorical_risk: 'D4 修辞と検証可能性のリスク',
       basis_lbl: '判定根拠：', def_lbl: '測定指標：', err_lbl: '判定限界：',
     },
+    dim_defs: {
+      evidence_verdict: {
+        measures: '検証済みファクトチェックDB（Cofacts/MyGoPen/Google FC等）における同一具体事象の含意・反論・証拠信頼度',
+        boundary: '無関係な検証を誤判定すると真実のニュースを不当に引き下げ、リコール漏れ時は未検証ルートへ安全に後退'
+      },
+      source_corroboration: {
+        measures: '配信メディアの信頼性ランク、独立メディアによるクロス報道機関数、および配信の適時性',
+        boundary: 'コピーサイトの相互参照は除外。新興メディアの見落とし時も要確認帯（45〜58点）に留まり誤認を防止'
+      },
+      headline_faithfulness: {
+        measures: '見出しの主張が本文を正確に反映しているか（誇張、釣り、断章取義の有無）',
+        boundary: '誤検知時は見出し減点（最大-22点）のみ適用。見出し一致による過剰加点を行わないため、偽ニュースを押し上げない設計'
+      },
+      rhetorical_risk: {
+        measures: 'テキストの感情扇動、拡散誘導、民間療法話法、および出所不明の公式発表偽装リスク',
+        boundary: '「ファクトチェックおよび複数裏付けなし」の要確認帯[18, 58]に厳格制限され、証拠なしの文章が60点を超えることはありません'
+      }
+    },
+    statuses: {
+      inaccurate: '不実', partial: '一部正確', accurate: '正確', not_found: '該当なし', disabled: '無効', error: 'エラー'
+    },
+    claim_pfx: '検証対象の主張：',
+    evidence_pfx: '引用元：',
+    rule_pfx: 'ルール点 ',
+    model_pfx: 'モデル：',
+    ai_pfx: 'AIスコア ',
+    sample_sfx: '回サンプリング',
+    prov_warn: '⚠️ 本結果は暫定スコアであり検証結論ではありません｜証拠状態：',
+    prov_tail: '｜このスコアを真偽の確定判断としないでください',
+    prov_states: {
+      full_body_evidence: 'ファクトチェック本文取得済み',
+      search_hit_body_missing: '検索ヒット（本文未取得）',
+      no_evidence: '関連する証拠なし',
+      unrelated_evidence: 'ヒットした検証は本件と無関係',
+    },
+    analyzing: '分析中…',
     metric_names: {
       sentiment: '感情傾向', domain: '情報源の信頼性', similarity: '内容の一致度',
       fact_check: 'ファクトチェック', user_feedback: 'ユーザー報告', timeliness: 'タイムリー性'
@@ -647,6 +755,57 @@ const I18N = {
     }
   }
 };
+
+function translateExplanation(text, lang) {
+  if (!text || lang === 'zh') return text;
+  if (lang === 'ja') {
+    return text
+      .replace(/外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）/g, '外部ファクトチェックDBに本件の検証記録なし（クロスソース裏付けD2および本文リスクD4にルーティング）')
+      .replace(/外部事實查核庫無此具體事件之核實紀錄/g, '外部ファクトチェックDBに本件の検証記録なし')
+      .replace(/交由跨源佐證 D2 與內文風險 D4 路由/g, 'クロスソース裏付けD2および本文リスクD4にルーティング')
+      .replace(/一般外部網域/g, '一般外部ドメイン')
+      .replace(/內文具名出處核實/g, '本文の名指し情報源確認済み')
+      .replace(/1 家外部來源同報/g, '1社の外部ソースが同時報道')
+      .replace(/(\d+)\s*家外部來源同報/g, '$1社の外部ソースが同時報道')
+      .replace(/近期發布\s*\(1天內\)/g, '最近の配信（1日以内）')
+      .replace(/近期發布/g, '最近の配信')
+      .replace(/佐證指數/g, '裏付け指数')
+      .replace(/標題平實反映內文主旨/g, '見出しは本文の主旨を客観的に反映')
+      .replace(/標題—內文一致性/g, '見出し・本文整合性')
+      .replace(/無誇大或斷章取義/g, '誇張や歪曲なし')
+      .replace(/0 扣分；忠實度不額外灌水加分/g, '減点0（忠実度による不当な加点はなし）')
+      .replace(/內文語氣平實、無煽動轉發或偽冒公告特徵/g, '本文は平易な表現で、煽動や公式発表の偽装といったリスク特徴なし')
+      .replace(/低風險/g, '低リスク')
+      .replace(/惟缺外部查核時最高停留於待查證區間/g, '外部検証がないため要確認帯に留まります')
+      .replace(/路由 B（主流來源／跨源同報佐證）：/g, 'ルートB（主要ソース／複数メディアの裏付けあり）：')
+      .replace(/主流來源／跨源同報佐證/g, '主要ソース／複数メディアの裏付けあり')
+      .replace(/次取樣/g, '回サンプリング')
+      .replace(/AI分/g, 'AIスコア')
+      .replace(/規則分/g, 'ルール点');
+  }
+  if (lang === 'en') {
+    return text
+      .replace(/外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）/g, 'No matching records in external fact-check databases (routed to D2 corroboration & D4 risk)')
+      .replace(/外部事實查核庫無此具體事件之核實紀錄/g, 'No matching records in external fact-check databases')
+      .replace(/一般外部網域/g, 'General external domain')
+      .replace(/內文具名出處核實/g, 'Named source verified in body')
+      .replace(/(\d+)\s*家外部來源同報/g, '$1 external sources corroborating')
+      .replace(/近期發布\s*\(1天內\)/g, 'Recently published (<1d)')
+      .replace(/近期發布/g, 'Recently published')
+      .replace(/佐證指數/g, 'Corroboration index')
+      .replace(/標題平實反映內文主旨/g, 'Headline objectively reflects article body')
+      .replace(/標題—內文一致性/g, 'Headline-body consistency')
+      .replace(/無誇大或斷章取義/g, 'No clickbait or cherry-picking')
+      .replace(/0 扣分；忠實度不額外灌水加分/g, '0 penalty; faithfulness does not inflate score')
+      .replace(/內文語氣平實、無煽動轉發或偽冒公告特徵/g, 'Objective tone, no viral coercion or fake announcement patterns')
+      .replace(/低風險/g, 'Low risk')
+      .replace(/路由 B（主流來源／跨源同報佐證）：/g, 'Regime B (Corroborated / Mainstream Source): ')
+      .replace(/次取樣/g, ' samples')
+      .replace(/AI分/g, 'AI Score')
+      .replace(/規則分/g, 'Rule Score');
+  }
+  return text;
+}
 
 let currentLang = 'zh';
 let lastAnalysisData = null;
@@ -955,6 +1114,7 @@ async function analyze() {
   const payload = /^https?:\/\/\S+$/i.test(text)
     ? { url: text }
     : { postText: text };
+  payload.lang = currentLang;
   // 勾 2+ 個 → 後端走多模型共識投票；勾 1 個或 0 個 → 沿用預設行為
   // 2026-10-05：只在 debug 模式送模型選擇
   if (debugToken && picked.length) payload.llm_models = picked;
@@ -976,10 +1136,11 @@ async function analyze() {
 }
 
 function setLoading(on) {
+  const dict = I18N[currentLang] || I18N.zh;
   analyzeBtn.disabled = on;
   analyzeBtn.innerHTML = on
-    ? '<span class="spinner"></span> 分析中…'
-    : '🔍 開始分析';
+    ? `<span class="spinner"></span> ${dict.analyzing || '分析中…'}`
+    : (dict.analyze_btn || '🔍 開始分析');
 }
 
 function showError(msg) { errorBox.textContent = msg; errorBox.classList.add('show'); }
@@ -1124,6 +1285,10 @@ function renderResult(data) {
         valText = `R=${Number(d.value).toFixed(2)}`;
         barColor = d.value >= 0.5 ? 'var(--red)' : (d.value >= 0.3 ? 'var(--yellow)' : 'var(--green)');
       }
+      const dimDef = (dict.dim_defs && dict.dim_defs[dKey]) || {};
+      const measuresText = dimDef.measures || d.what_it_measures || '';
+      const boundaryText = dimDef.boundary || d.what_if_wrong || '';
+      const explText = translateExplanation(d.explanation, currentLang) || '—';
       const row = document.createElement('div');
       row.className = 'metric';
       row.innerHTML = `
@@ -1132,10 +1297,10 @@ function renderResult(data) {
           <span class="metric-val" style="color:${barColor}">${valText}</span>
         </div>
         <div class="bar"><div class="bar-fill" style="background:${barColor}; width:${pct}%"></div></div>
-        <div class="metric-desc"><b>${dt.basis_lbl}</b>${escapeHtml(d.explanation || '—')}</div>
+        <div class="metric-desc"><b>${dt.basis_lbl}</b>${escapeHtml(explText)}</div>
         <div class="metric-desc" style="font-size:11px; color:#94a3b8; margin-top:3px;">
-          📏 <b>${dt.def_lbl}</b>${escapeHtml(d.what_it_measures || '')}<br>
-          ⚠️ <b>${dt.err_lbl}</b>${escapeHtml(d.what_if_wrong || '')}
+          📏 <b>${dt.def_lbl}</b>${escapeHtml(measuresText)}<br>
+          ⚠️ <b>${dt.err_lbl}</b>${escapeHtml(boundaryText)}
         </div>
       `;
       mEl.appendChild(row);
@@ -1246,14 +1411,19 @@ function renderResult(data) {
   if (sources.length) {
     sourcesWrap.style.display = 'block';
     sourcesList.innerHTML = '';
-    const labelMap = { cofacts: 'Cofacts', google: 'Google 查核', mygopen: 'MyGoPen', rumtoast: '蘭姆酒吐司', hkbu: 'HKBU 查核', infact: 'InFact', jfc: '日本FCセンター', politifact: 'PolitiFact' };
+    const labelMap = {
+      zh: { cofacts: 'Cofacts', google: 'Google 查核', mygopen: 'MyGoPen', rumtoast: '蘭姆酒吐司', hkbu: 'HKBU 查核', infact: 'InFact', jfc: '日本FCセンター', politifact: 'PolitiFact' },
+      ja: { cofacts: 'Cofacts (台湾)', google: 'Google ファクトチェック', mygopen: 'MyGoPen (台湾)', rumtoast: 'RumorTruth', hkbu: 'HKBU 検証', infact: 'InFact (日本)', jfc: '日本ファクトチェックセンター', politifact: 'PolitiFact' },
+      en: { cofacts: 'Cofacts', google: 'Google Fact-Check', mygopen: 'MyGoPen', rumtoast: 'RumorTruth', hkbu: 'HKBU Fact-Check', infact: 'InFact', jfc: 'Japan FactCheck Center', politifact: 'PolitiFact' }
+    }[currentLang] || { cofacts: 'Cofacts', google: 'Google 查核', mygopen: 'MyGoPen', rumtoast: '蘭姆酒吐司', hkbu: 'HKBU 查核', infact: 'InFact', jfc: '日本FCセンター', politifact: 'PolitiFact' };
+    const stMap = dict.statuses || {};
     const statusMap = {
-      inaccurate: { t: '不實', c: 'hit' },
-      partial:    { t: '部分正確', c: 'hit' },
-      accurate:   { t: '屬實', c: 'ok' },
-      not_found:  { t: '查無', c: '' },
-      disabled:   { t: '未啟用', c: '' },
-      error:      { t: '查詢失敗', c: '' },
+      inaccurate: { t: stMap.inaccurate || '不實', c: 'hit' },
+      partial:    { t: stMap.partial || '部分正確', c: 'hit' },
+      accurate:   { t: stMap.accurate || '屬實', c: 'ok' },
+      not_found:  { t: stMap.not_found || '查無', c: '' },
+      disabled:   { t: stMap.disabled || '未啟用', c: '' },
+      error:      { t: stMap.error || '查詢失敗', c: '' },
     };
     for (const s of sources) {
       const st = statusMap[s.status] || { t: s.status, c: '' };
@@ -1368,7 +1538,7 @@ function renderResult(data) {
     // 主張摘要：讓使用者先看到「這次到底在查什麼」，而不是先看到一個分數
     const claimEl = $('deepClaim');
     if (da.claim) {
-      claimEl.textContent = '查核主張：' + da.claim;
+      claimEl.textContent = (dict.claim_pfx || '查核主張：') + da.claim;
       claimEl.style.display = 'block';
     } else {
       claimEl.style.display = 'none';
@@ -1377,14 +1547,9 @@ function renderResult(data) {
     const provEl = $('deepProvisional');
     if (da.abstain === true || data.is_provisional) {
       const st = da.evidence_state || data.evidence_state || '';
-      const labelMap = {
-        full_body_evidence: '已載入查核正文',
-        search_hit_body_missing: '搜尋命中但正文未載入',
-        no_evidence: '查無相關證據',
-        unrelated_evidence: '命中的查核不屬同一事件',
-      };
-      provEl.textContent = '⚠️ 本次為暫時分數，非查核結論｜證據狀態：'
-        + (labelMap[st] || st || '未載入正文') + '｜此時不應把分數當成真偽判定';
+      const stateTxt = (dict.prov_states && dict.prov_states[st]) || st || '未載入正文';
+      provEl.textContent = (dict.prov_warn || '⚠️ 本次為暫時分數，非查核結論｜證據狀態：')
+        + stateTxt + (dict.prov_tail || '｜此時不應把分數當成真偽判定');
       provEl.style.display = 'block';
     } else {
       provEl.style.display = 'none';
@@ -1392,7 +1557,7 @@ function renderResult(data) {
     // 實際引用來源
     const usedEl = $('deepEvidenceUsed');
     if (Array.isArray(da.evidence_used) && da.evidence_used.length) {
-      usedEl.textContent = '引用來源：' + da.evidence_used.join('、');
+      usedEl.textContent = (dict.evidence_pfx || '引用來源：') + da.evidence_used.join('、');
       usedEl.style.display = 'block';
     } else {
       usedEl.style.display = 'none';
@@ -1405,16 +1570,16 @@ function renderResult(data) {
     if (hasDetails) {
         toggleBtn.style.display = 'block';
         detailsContainer.style.display = 'block'; // AI 分析回覆預設直接顯示
-        toggleBtn.textContent = '隱藏進階分析細節 ▴';
+        toggleBtn.textContent = dict.toggle_deep_hide || '隱藏進階分析細節 ▴';
         
         // 綁定點擊事件（先移除舊的，避免重複綁定）
         toggleBtn.onclick = function() {
             if (detailsContainer.style.display === 'none') {
                 detailsContainer.style.display = 'block';
-                toggleBtn.textContent = '隱藏進階分析細節 ▴';
+                toggleBtn.textContent = dict.toggle_deep_hide || '隱藏進階分析細節 ▴';
             } else {
                 detailsContainer.style.display = 'none';
-                toggleBtn.textContent = '🔍 查看進階分析細節 (AI 觀點與總結) ▾';
+                toggleBtn.textContent = dict.toggle_deep_btn || '🔍 查看進階分析細節 (AI 觀點與總結) ▾';
             }
         };
     } else {
@@ -1422,15 +1587,15 @@ function renderResult(data) {
         detailsContainer.style.display = 'none';
     }
 
-    const modelLine = '模型：' + (da.model || 'local-llm');
+    const modelLine = (dict.model_pfx || '模型：') + (da.model || 'local-llm');
     const rs = data.rule_score;
-    $('deepModel').textContent = (rs != null ? `規則分 ${Math.round(rs)} ｜ ` : '') + modelLine;
+    $('deepModel').textContent = (rs != null ? `${dict.rule_pfx || '規則分 '}${Math.round(rs)} ｜ ` : '') + modelLine;
     // 評分依據說明（為什麼給這個等級）
     const basisEl = $('scoringBasis');
     if (basisEl) {
-      let txt = data.scoring_basis || '';
+      let txt = translateExplanation(data.scoring_basis, currentLang) || '';
       if (da.samples && da.score_std != null) {
-        txt += ` ｜ AI分 ${da.credibility_score}±${da.score_std}（${da.samples}次取樣）`;
+        txt += ` ｜ ${dict.ai_pfx || 'AI分 '}${da.credibility_score}±${da.score_std}（${da.samples}${dict.sample_sfx || '次取樣'}）`;
       }
       basisEl.textContent = txt;
       basisEl.style.display = txt ? 'block' : 'none';
