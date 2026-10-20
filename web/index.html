@@ -482,7 +482,7 @@
       <div class="deep-title" data-i18n="title_deep">🧠 深入分析（本機 AI 模型）</div>
       <div class="deep-score-row">
         <div class="deep-score-badge" id="deepScoreBadge">–</div>
-        <div class="deep-score-bar"><div id=\"deepScoreBar\"></div></div>
+        <div class="deep-score-bar"><div id="deepScoreBar"></div></div>
       </div>
       <div class="deep-section-label" data-i18n="key_points_label">關鍵質疑點</div>
       <ul class="deep-key-points" id="deepKeyPoints"></ul>
@@ -527,15 +527,33 @@ const I18N = {
     title_deep: "🧠 深入分析（本機 AI 模型）",
     key_points_label: "關鍵質疑點",
     toggle_deep_btn: "🔍 查看進階分析細節 (AI 觀點與總結) ▾",
+    toggle_deep_hide: "隱藏進階分析細節 ▴",
     viewpoints_label: "正反觀點",
     analysis_label: "分析總結",
     footer: "NewsAnalyzer · 基於多模態 AI 模型分析 · 結果僅供參考",
+    bait_title: "🎣 偵測到點擊誘餌標題（已扣分壓制）",
+    bait_label: "💡 還原真實核心主旨：",
+    bait_reason_pfx: "原因：",
+    dim_titles: {
+      evidence_verdict: 'D1 查核證據蘊涵度',
+      source_corroboration: 'D2 跨源報導佐證度',
+      headline_faithfulness: 'D3 標題內文忠實度',
+      rhetorical_risk: 'D4 內文修辭與可驗性風險',
+      basis_lbl: '本篇依據：', def_lbl: '測量定義：', err_lbl: '失效邊界：',
+    },
+    metric_names: {
+      sentiment: '情緒傾向', domain: '來源可信度', similarity: '內容相似度',
+      fact_check: '事實查核', user_feedback: '查核庫回報', timeliness: '時效性'
+    },
+    pipe: {
+      s1_title: '階段 1：各維度基礎規則權重得分 (Rule Weights)', s1_base: '加權基底：',
+      th_dim: '評估維度', th_score: '得分', th_max: '權重上限', th_detail: '依據細節',
+      s2_title: '階段 2：本地 AI 模型動態加權融合', s2_pure: '純規則主導 (AI未融合)',
+      s3_title: '階段 3：事實查核安全上限錨定與最終判定 (Clamp & Final Score)',
+      clamped_badge: '🚨 觸發硬規則扣分', no_clamp: '無強制錨定',
+    },
     ratings: {
-      "高度可信": "高度可信",
-      "大致可信": "大致可信",
-      "待查證": "待查證",
-      "疑似不實": "疑似不實",
-      "高度可疑": "高度可疑"
+      "高度可信": "高度可信", "大致可信": "大致可信", "待查證": "待查證", "疑似不實": "疑似不實", "高度可疑": "高度可疑"
     }
   },
   en: {
@@ -554,15 +572,33 @@ const I18N = {
     title_deep: "🧠 Deep Analysis (Local AI Model)",
     key_points_label: "Key Findings & Questions",
     toggle_deep_btn: "🔍 View In-depth Details (AI Viewpoints & Summary) ▾",
+    toggle_deep_hide: "Hide In-depth Details ▴",
     viewpoints_label: "Perspectives & Facts",
     analysis_label: "Conclusion & Summary",
     footer: "NewsAnalyzer · Powered by Multimodal AI · For reference only",
+    bait_title: "🎣 Clickbait Headline Detected (Penalized & Capped)",
+    bait_label: "💡 Restored Objective Core Subject: ",
+    bait_reason_pfx: "Reason: ",
+    dim_titles: {
+      evidence_verdict: 'D1 Evidence Entailment',
+      source_corroboration: 'D2 Cross-Source Corroboration',
+      headline_faithfulness: 'D3 Headline Faithfulness',
+      rhetorical_risk: 'D4 Rhetorical & Verifiability Risk',
+      basis_lbl: 'Evidence Basis: ', def_lbl: 'What it Measures: ', err_lbl: 'Failure Boundary: ',
+    },
+    metric_names: {
+      sentiment: 'Sentiment Tendency', domain: 'Source Credibility', similarity: 'Content Relevance',
+      fact_check: 'Fact-Check Records', user_feedback: 'Crowd Feedback', timeliness: 'Timeliness'
+    },
+    pipe: {
+      s1_title: 'Stage 1: Dimension Rule Weight Scores', s1_base: 'Weight Base: ',
+      th_dim: 'Dimension', th_score: 'Score', th_max: 'Max Weight', th_detail: 'Basis Details',
+      s2_title: 'Stage 2: Local AI Model Dynamic Weight Fusion', s2_pure: 'Pure Rule-Based (AI Not Fused)',
+      s3_title: 'Stage 3: Fact-Check Safety Clamping & Final Decision',
+      clamped_badge: '🚨 Hard Rule Penalty Triggered', no_clamp: 'No Forced Clamping',
+    },
     ratings: {
-      "高度可信": "Highly Credible",
-      "大致可信": "Mostly Credible",
-      "待查證": "Unverified",
-      "疑似不實": "Suspicious",
-      "高度可疑": "Highly Questionable"
+      "高度可信": "Highly Credible", "大致可信": "Mostly Credible", "待查證": "Unverified", "疑似不實": "Suspicious", "高度可疑": "Highly Questionable"
     }
   },
   ja: {
@@ -581,20 +617,39 @@ const I18N = {
     title_deep: "🧠 詳細分析（ローカルAIモデル）",
     key_points_label: "主な確認・疑問点",
     toggle_deep_btn: "🔍 詳細な分析結果を表示 (AI見解・要約) ▾",
+    toggle_deep_hide: "詳細な分析結果を閉じる ▴",
     viewpoints_label: "賛否の観点・客観事実",
     analysis_label: "分析結論",
     footer: "NewsAnalyzer · マルチモーダルAI分析 · 参考情報としてご利用ください",
+    bait_title: "🎣 釣り見出し（クリックベイト）を検出（減点・上限固定適用）",
+    bait_label: "💡 客観的な本来の見出し：",
+    bait_reason_pfx: "理由：",
+    dim_titles: {
+      evidence_verdict: 'D1 検証証拠の含意度',
+      source_corroboration: 'D2 複数メディアの裏付け度',
+      headline_faithfulness: 'D3 見出しと本文の整合性',
+      rhetorical_risk: 'D4 修辞と検証可能性のリスク',
+      basis_lbl: '判定根拠：', def_lbl: '測定指標：', err_lbl: '判定限界：',
+    },
+    metric_names: {
+      sentiment: '感情傾向', domain: '情報源の信頼性', similarity: '内容の一致度',
+      fact_check: 'ファクトチェック', user_feedback: 'ユーザー報告', timeliness: 'タイムリー性'
+    },
+    pipe: {
+      s1_title: 'ステージ1：基本ルール重み付けスコア (Rule Weights)', s1_base: '重み付け合計：',
+      th_dim: '評価項目', th_score: '獲得点', th_max: '最大重み', th_detail: '判定詳細',
+      s2_title: 'ステージ2：ローカルAIモデル動的融合', s2_pure: '純粋ルール主導（AIスコア未融合）',
+      s3_title: 'ステージ3：ファクトチェック安全上限固定と最終判定',
+      clamped_badge: '🚨 安全ルール減点発動', no_clamp: '上限固定なし',
+    },
     ratings: {
-      "高度可信": "極めて高信頼",
-      "大致可信": "概ね高信頼",
-      "待查證": "要確認・未検証",
-      "疑似不實": "不審・虚偽の疑い",
-      "高度可疑": "極めて低信頼"
+      "高度可信": "極めて高信頼", "大致可信": "概ね高信頼", "待查證": "要確認・未検証", "疑似不實": "不審・虚偽の疑い", "高度可疑": "極めて低信頼"
     }
   }
 };
 
 let currentLang = 'zh';
+let lastAnalysisData = null;
 
 function setLanguage(lang) {
   if (!I18N[lang]) lang = 'zh';
@@ -619,6 +674,10 @@ function setLanguage(lang) {
   const badge = $('ratingBadge');
   if (badge && badge.dataset.rawRating) {
     badge.textContent = (dict.ratings && dict.ratings[badge.dataset.rawRating]) || badge.dataset.rawRating;
+  }
+
+  if (lastAnalysisData) {
+    renderResult(lastAnalysisData);
   }
 }
 
@@ -927,8 +986,13 @@ function showError(msg) { errorBox.textContent = msg; errorBox.classList.add('sh
 function hideError() { errorBox.classList.remove('show'); }
 
 function renderResult(data) {
+  lastAnalysisData = data;
   const score = Math.round(data.final_score);
   const rating = data.rating_text;
+  const dict = I18N[currentLang] || I18N.zh;
+  const dt = dict.dim_titles || I18N.zh.dim_titles;
+  const mn = dict.metric_names || I18N.zh.metric_names;
+  const pt = dict.pipe || I18N.zh.pipe;
 
   // 分數環
   const CIRC = 414.69;
@@ -951,7 +1015,6 @@ function renderResult(data) {
   // 等級徽章
   const badge = $('ratingBadge');
   badge.dataset.rawRating = rating;
-  const dict = I18N[currentLang] || I18N.zh;
   badge.textContent = (dict.ratings && dict.ratings[rating]) || rating;
   badge.className = 'rating-badge ' + badgeCls;
 
@@ -965,10 +1028,10 @@ function renderResult(data) {
       restoredTitleEl.innerHTML = `
         <div style="margin: 8px 0 10px 0; padding: 10px 13px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; font-size: 13.5px; color: #fbbf24; line-height: 1.5;">
           <div style="font-weight: 700; margin-bottom: 3px; display: flex; align-items: center; gap: 6px;">
-            <span>🎣 偵測到點擊誘餌標題（已扣分壓制）</span>
+            <span>${dict.bait_title}</span>
           </div>
-          <div style="color: #fef3c7;">💡 <b>還原真實核心主旨：</b>${escapeHtml(neutralTitle)}</div>
-          ${daObj.title_bait_reason ? `<div style="font-size: 12px; color: rgba(254, 243, 199, 0.7); margin-top: 3px;">原因：${escapeHtml(daObj.title_bait_reason)}</div>` : ''}
+          <div style="color: #fef3c7;"><b>${dict.bait_label}</b>${escapeHtml(neutralTitle)}</div>
+          ${daObj.title_bait_reason ? `<div style="font-size: 12px; color: rgba(254, 243, 199, 0.7); margin-top: 3px;">${dict.bait_reason_pfx}${escapeHtml(daObj.title_bait_reason)}</div>` : ''}
         </div>
       `;
       restoredTitleEl.style.display = 'block';
@@ -989,12 +1052,12 @@ function renderResult(data) {
   const dimensions = data.dimensions || null;
   const metrics = data.metrics || {};
   const defs = {
-    sentiment:     { name: '情緒傾向',   icon: '😊', max: 15 },
-    domain:        { name: '來源可信度', icon: '🏛️', max: 25 },
-    similarity:    { name: '內容相似度', icon: '📊', max: 15 },
-    fact_check:    { name: '事實查核',   icon: '✅', max: 30 },
-    user_feedback: { name: '查核庫回報',   icon: '👥', max: 10 },
-    timeliness:    { name: '時效性',     icon: '⏱️', max: 5 },
+    sentiment:     { name: mn.sentiment,     icon: '😊', max: 15 },
+    domain:        { name: mn.domain,        icon: '🏛️', max: 25 },
+    similarity:    { name: mn.similarity,    icon: '📊', max: 15 },
+    fact_check:    { name: mn.fact_check,    icon: '✅', max: 30 },
+    user_feedback: { name: mn.user_feedback, icon: '👥', max: 10 },
+    timeliness:    { name: mn.timeliness,    icon: '⏱️', max: 5 },
   };
   // 無資料的 desc 視為 N/A（不顯示 0% 誤導使用者）
   const NA_DESCS = new Set(['none', 'unknown', 'not_found', 'not_checked', 'disabled', '—', '']);
@@ -1031,33 +1094,34 @@ function renderResult(data) {
   if (dimensions && Object.keys(dimensions).length === 4) {
     mEl.innerHTML = '';
     const dimOrder = [
-      ['evidence_verdict', '✅', 'D1 查核證據蘊涵度'],
-      ['source_corroboration', '🏛️', 'D2 跨源報導佐證度'],
-      ['headline_faithfulness', '🎯', 'D3 標題內文忠實度'],
-      ['rhetorical_risk', '🛡️', 'D4 內文修辭與可驗性風險'],
+      ['evidence_verdict', '✅', dt.evidence_verdict],
+      ['source_corroboration', '🏛️', dt.source_corroboration],
+      ['headline_faithfulness', '🎯', dt.headline_faithfulness],
+      ['rhetorical_risk', '🛡️', dt.rhetorical_risk],
     ];
     for (const [dKey, icon, titleText] of dimOrder) {
       const d = dimensions[dKey];
       if (!d) continue;
       let pct = 50, valText = '', barColor = 'var(--yellow)';
       if (dKey === 'evidence_verdict') {
-        if (d.status_label === 'supports') { pct = Math.round(d.confidence * 100); valText = `屬實 (信心 ${pct}%)`; barColor = 'var(--green)'; }
-        else if (d.status_label === 'refutes') { pct = Math.round(d.confidence * 100); valText = `不實 (信心 ${pct}%)`; barColor = 'var(--red)'; }
-        else if (d.status_label === 'partially_refutes') { pct = 50; valText = '部分不實'; barColor = 'var(--yellow)'; }
-        else if (d.status_label === 'unrelated') { pct = 0; valText = '無關已剔除'; barColor = '#94a3b8'; }
-        else { pct = 0; valText = '無查核紀錄'; barColor = '#94a3b8'; }
+        if (d.status_label === 'supports') { pct = Math.round(d.confidence * 100); valText = (currentLang === 'en' ? `True (${pct}%)` : (currentLang === 'ja' ? `真実 (${pct}%)` : `屬實 (信心 ${pct}%)`)); barColor = 'var(--green)'; }
+        else if (d.status_label === 'refutes') { pct = Math.round(d.confidence * 100); valText = (currentLang === 'en' ? `False (${pct}%)` : (currentLang === 'ja' ? `虚偽 (${pct}%)` : `不實 (信心 ${pct}%)`)); barColor = 'var(--red)'; }
+        else if (d.status_label === 'partially_refutes') { pct = 50; valText = (currentLang === 'en' ? 'Partially False' : (currentLang === 'ja' ? '一部虚偽' : '部分不實')); barColor = 'var(--yellow)'; }
+        else if (d.status_label === 'unrelated') { pct = 0; valText = (currentLang === 'en' ? 'Unrelated' : (currentLang === 'ja' ? '無関係' : '無關已剔除')); barColor = '#94a3b8'; }
+        else { pct = 0; valText = (currentLang === 'en' ? 'No Records' : (currentLang === 'ja' ? '記録なし' : '無查核紀錄')); barColor = '#94a3b8'; }
       } else if (dKey === 'source_corroboration') {
         pct = Math.round(d.value * 100);
-        valText = `${pct}% (${d.status_label === 'corroborated' ? '跨源佐證' : d.status_label === 'blocked' ? '黑名單' : '單一/未佐證'})`;
+        const tag = d.status_label === 'corroborated' ? (currentLang === 'en' ? 'Corroborated' : currentLang === 'ja' ? '裏付けあり' : '跨源佐證') : (d.status_label === 'blocked' ? (currentLang === 'en' ? 'Blocklist' : currentLang === 'ja' ? 'ブラックリスト' : '黑名單') : (currentLang === 'en' ? 'Single Source' : currentLang === 'ja' ? '単一情報源' : '單一/未佐證'));
+        valText = `${pct}% (${tag})`;
         barColor = pct >= 60 ? 'var(--green)' : (d.status_label === 'blocked' ? 'var(--red)' : 'var(--yellow)');
       } else if (dKey === 'headline_faithfulness') {
         pct = Math.round(d.value * 100);
-        valText = d.impact_pts < 0 ? `扣分 ${d.impact_pts} 分` : '忠實 (0 扣分)';
+        valText = d.impact_pts < 0 ? (currentLang === 'en' ? `-${Math.abs(d.impact_pts)} pts` : (currentLang === 'ja' ? `減点 ${d.impact_pts}` : `扣分 ${d.impact_pts} 分`)) : (currentLang === 'en' ? 'Faithful (0)' : (currentLang === 'ja' ? '整合 (0)' : '忠實 (0 扣分)'));
         barColor = d.impact_pts < 0 ? 'var(--red)' : 'var(--green)';
       } else if (dKey === 'rhetorical_risk') {
         const safetyPct = Math.round((1 - d.value) * 100);
         pct = safetyPct;
-        valText = `風險 R=${Number(d.value).toFixed(2)}`;
+        valText = `R=${Number(d.value).toFixed(2)}`;
         barColor = d.value >= 0.5 ? 'var(--red)' : (d.value >= 0.3 ? 'var(--yellow)' : 'var(--green)');
       }
       const row = document.createElement('div');
@@ -1068,10 +1132,10 @@ function renderResult(data) {
           <span class="metric-val" style="color:${barColor}">${valText}</span>
         </div>
         <div class="bar"><div class="bar-fill" style="background:${barColor}; width:${pct}%"></div></div>
-        <div class="metric-desc"><b>本篇依據：</b>${escapeHtml(d.explanation || '—')}</div>
+        <div class="metric-desc"><b>${dt.basis_lbl}</b>${escapeHtml(d.explanation || '—')}</div>
         <div class="metric-desc" style="font-size:11px; color:#94a3b8; margin-top:3px;">
-          📏 <b>測量定義：</b>${escapeHtml(d.what_it_measures || '')}<br>
-          ⚠️ <b>失效邊界：</b>${escapeHtml(d.what_if_wrong || '')}
+          📏 <b>${dt.def_lbl}</b>${escapeHtml(d.what_it_measures || '')}<br>
+          ⚠️ <b>${dt.err_lbl}</b>${escapeHtml(d.what_if_wrong || '')}
         </div>
       `;
       mEl.appendChild(row);
@@ -1112,17 +1176,17 @@ function renderResult(data) {
     let html = `
       <div class="pipeline-card">
         <div class="pipeline-step-title">
-          <span>階段 1：各維度基礎規則權重得分 (Rule Weights)</span>
-          <span class="pipeline-badge badge-normal">加權基底：${sumW} 分</span>
+          <span>${pt.s1_title}</span>
+          <span class="pipeline-badge badge-normal">${pt.s1_base}${sumW}</span>
         </div>
         <table class="pipeline-table">
           <thead>
-            <tr><th>評估維度</th><th>得分</th><th>權重上限</th><th>依據細節</th></tr>
+            <tr><th>${pt.th_dim}</th><th>${pt.th_score}</th><th>${pt.th_max}</th><th>${pt.th_detail}</th></tr>
           </thead>
           <tbody>${rowsHtml}</tbody>
         </table>
         <div class="pipeline-formula">
-          📐 規則總分 (Rule Score) = (${sumRaw.toFixed(1)} ÷ ${sumW}) × 100 = <b>${ruleScore} 分</b>
+          📐 Rule Score = (${sumRaw.toFixed(1)} ÷ ${sumW}) × 100 = <b>${ruleScore}</b>
         </div>
       </div>
     `;
@@ -1135,11 +1199,11 @@ function renderResult(data) {
         html += `
           <div class="pipeline-card">
             <div class="pipeline-step-title">
-              <span>階段 2：本地 AI 模型 (${(data.deep_analysis && data.deep_analysis.model) || 'local-llm'}) 動態加權融合</span>
-              <span class="pipeline-badge badge-normal">AI 權重: ${aiWeightPct}% ｜ 規則權重: ${ruleWeightPct}%</span>
+              <span>${pt.s2_title}</span>
+              <span class="pipeline-badge badge-normal">${currentLang === 'en' ? 'AI' : 'AI權重'}: ${aiWeightPct}% ｜ ${currentLang === 'en' ? 'Rule' : '規則'}: ${ruleWeightPct}%</span>
             </div>
             <div class="pipeline-formula">
-              🧠 融合分數 = (規則分 ${ruleScore} × ${(1 - fusionW).toFixed(2)}) + (AI評分 ${aiCs} × ${fusionW.toFixed(2)}) = <b>${postFusion} 分</b>
+              🧠 (${ruleScore} × ${(1 - fusionW).toFixed(2)}) + (${aiCs} × ${fusionW.toFixed(2)}) = <b>${postFusion}</b>
             </div>
           </div>
         `;
@@ -1147,11 +1211,11 @@ function renderResult(data) {
         html += `
           <div class="pipeline-card">
             <div class="pipeline-step-title">
-              <span>階段 2：本地 AI 模型 (${(data.deep_analysis && data.deep_analysis.model) || 'local-llm'}) 參考與保留</span>
-              <span class="pipeline-badge badge-normal">純規則主導 (AI未融合)</span>
+              <span>${pt.s2_title}</span>
+              <span class="pipeline-badge badge-normal">${pt.s2_pure}</span>
             </div>
             <div class="pipeline-formula">
-              🧠 AI 自評 ${aiCs} 分（${data.deep_analysis && data.deep_analysis.abstain ? 'AI因證據正文不足宣告保留' : '無觸發融合門檻'}），基準維持規則分 <b>${postFusion} 分</b>
+              🧠 AI: ${aiCs} ➔ <b>${postFusion}</b>
             </div>
           </div>
         `;
@@ -1162,12 +1226,12 @@ function renderResult(data) {
     html += `
       <div class="pipeline-card">
         <div class="pipeline-step-title">
-          <span>階段 3：事實查核安全上限錨定與最終判定 (Clamp & Final Score)</span>
-          ${data.clamped ? '<span class="pipeline-badge badge-clamp">🚨 觸發硬規則扣分</span>' : '<span class="pipeline-badge badge-normal">無強制錨定</span>'}
+          <span>${pt.s3_title}</span>
+          ${data.clamped ? `<span class="pipeline-badge badge-clamp">${pt.clamped_badge}</span>` : `<span class="pipeline-badge badge-normal">${pt.no_clamp}</span>`}
         </div>
-        ${data.clamped ? `<div style="color:#f87171; font-size:12.5px; margin-bottom:6px;">⚠️ ${escapeHtml(data.clamp_reason || '命中查核庫不實紀錄，強制上限錨定')}</div>` : ''}
+        ${data.clamped ? `<div style="color:#f87171; font-size:12.5px; margin-bottom:6px;">⚠️ ${escapeHtml(data.clamp_reason || '')}</div>` : ''}
         <div class="pipeline-formula">
-          🏁 最終可靠度 (Final Score) = <b>${finalScore} 分</b> ➔ 評級：<b>${escapeHtml(data.rating_text || '—')}</b>
+          🏁 Final Score = <b>${finalScore}</b> ➔ <b>${escapeHtml((dict.ratings && dict.ratings[data.rating_text]) || data.rating_text || '—')}</b>
         </div>
       </div>
     `;
@@ -1272,14 +1336,16 @@ function renderResult(data) {
     const badge = $('deepScoreBadge');
     const bar = $('deepScoreBar');
     if (scoreValid) {
-      badge.textContent = score;
+      if (badge) badge.textContent = score;
       const col = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--yellow)' : 'var(--red)';
-      badge.style.color = col;
-      bar.style.background = col;
-      requestAnimationFrame(() => { requestAnimationFrame(() => { bar.style.width = score + '%'; }); });
+      if (badge) badge.style.color = col;
+      if (bar) {
+        bar.style.background = col;
+        requestAnimationFrame(() => { requestAnimationFrame(() => { if (bar) bar.style.width = score + '%'; }); });
+      }
     } else {
-      badge.textContent = '–';
-      bar.style.width = '0%';
+      if (badge) badge.textContent = '–';
+      if (bar) bar.style.width = '0%';
     }
     // 關鍵質疑點
     const kp = $('deepKeyPoints');
