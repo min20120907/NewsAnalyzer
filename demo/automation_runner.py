@@ -36,15 +36,18 @@ def inject_animation_layer(page):
     page.add_script_tag(content=js_content)
 
 
-def run_scenario(page, scenario, speed=1.0, is_simulation=False):
+def run_scenario(page, scenario, speed=1.0, is_simulation=False, index=1, total=1):
     title = scenario.get("title", "")
     desc = scenario.get("description", "")
-    print(f"\n▶ 正在播放情境: {title} ({scenario['id']})")
+    print(f"\n▶ 正在播放情境 {index}/{total}: {title} ({scenario['id']})")
 
-    # 1. 設置速度與展示進場橫幅
+    # 1. 過場動畫與前期提要 (Cinematic Briefing)
     page.evaluate(f"window.CinemaOverlay.speed = {speed};")
-    page.evaluate(f"window.CinemaOverlay.showBanner({json.dumps(title)}, {json.dumps(desc)}, 2200);")
-    page.wait_for_timeout(int(2400 / speed))
+    page.evaluate(f"window.CinemaOverlay.shutterTransition();")
+    page.wait_for_timeout(int(300 / speed))
+    points = scenario.get("briefing_points", [])
+    page.evaluate(f"window.CinemaOverlay.showBriefing({json.dumps('SCENARIO ' + str(index) + ' / ' + str(total))}, {json.dumps(title)}, {json.dumps(desc)}, {json.dumps(points)}, 4500);")
+    page.wait_for_timeout(int(1200 / speed))
 
     # 2. 初始狀態配置
     init = scenario.get("initial", {})
@@ -77,11 +80,11 @@ def run_scenario(page, scenario, speed=1.0, is_simulation=False):
             # 同步視覺滑鼠點擊與 Playwright 真實點擊
             page.evaluate(f"window.CinemaOverlay.click({json.dumps(target)});")
             page.wait_for_timeout(int(200 / speed))
-            if is_simulation and step.get("target") == "#analyzeBtn":
-                # Simulation 模式：直接以 mock_result 觸發渲染
+            if step.get("target") == "#analyzeBtn":
+                # Record / Simulation 模式：直接以 mock_result 觸發渲染，避免等待網路與後端 LLM
                 mock_json = json.dumps(scenario.get("mock_result", {}))
                 page.evaluate(f"if (typeof renderResult === 'function') renderResult({mock_json});")
-            else:
+            elif not is_simulation:
                 page.locator(target).first.click()
             page.wait_for_timeout(int(delay / speed))
 
@@ -106,8 +109,19 @@ def run_scenario(page, scenario, speed=1.0, is_simulation=False):
             page.locator(target).first.wait_for(state="visible", timeout=timeout)
             page.wait_for_timeout(int(800 / speed))
 
+        elif action == "explainer":
+            # 顯示結果區塊解析器 (Explainer Annotation)
+            explainer_html = step.get("html", "")
+            explainer_delay = step.get("delay", 4000)
+            page.evaluate(f"window.CinemaOverlay.showExplainer({json.dumps(explainer_html)});")
+            if target:
+                page.evaluate(f"window.CinemaOverlay.showSpotlight({json.dumps(target)});")
+                page.evaluate(f"window.CinemaOverlay.moveTo({json.dumps(target)});")
+            page.wait_for_timeout(int(explainer_delay / speed))
+
     # 4. 清理動畫指示器
     page.evaluate("window.CinemaOverlay.hideTooltip();")
+    page.evaluate("window.CinemaOverlay.hideExplainer();")
     page.evaluate("window.CinemaOverlay.hideSpotlight();")
     page.wait_for_timeout(int(600 / speed))
 
@@ -126,6 +140,8 @@ def run_scenario(page, scenario, speed=1.0, is_simulation=False):
         print(f"✅ 驗證成功: {selector} 成功包含關鍵文字 '{exp_txt}'。")
 
     print(f"✔ 情境 {scenario['id']} 播放完成！")
+    # 過場轉場動畫
+    page.evaluate("window.CinemaOverlay.shutterTransition();")
 
 
 def convert_video_to_mp4(webm_path, mp4_path):
@@ -195,9 +211,10 @@ def main():
 
         is_sim = (args.mode == "simulation")
 
-        # 依序執行所選情境
-        for s in scenarios:
-            run_scenario(page, s, speed=args.speed, is_simulation=is_sim)
+        # 依序執行所選情境 (加入總數計算)
+        total_scenarios = len(scenarios)
+        for idx, s in enumerate(scenarios, 1):
+            run_scenario(page, s, speed=args.speed, is_simulation=is_sim, index=idx, total=total_scenarios)
             page.wait_for_timeout(1000)
 
         # 取得錄影檔路徑

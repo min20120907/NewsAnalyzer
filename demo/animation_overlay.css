@@ -4,57 +4,57 @@
   inset: 0;
   pointer-events: none;
   z-index: 999999;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans TC", sans-serif;
   overflow: hidden;
 }
 
-/* 虛擬滑鼠游標 */
+/* 虛擬滑鼠游標 (1.4x 放大，使用 fixed 確保捲動時不偏移) */
 .cinema-cursor {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 28px;
-  height: 28px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="%233b82f6" stroke="%23ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 7 18 3-7 7-3L3 3z"/></svg>');
+  width: 44px;
+  height: 44px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="%2338bdf8" stroke="%23ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 7 18 3-7 7-3L3 3z"/></svg>');
   background-size: contain;
   background-repeat: no-repeat;
   pointer-events: none;
   z-index: 1000000;
   transform: translate3d(-2px, -2px, 0);
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.7));
 }
 .cinema-cursor.clicking {
-  transform: translate3d(-2px, -2px, 0) scale(0.82);
+  transform: translate3d(-2px, -2px, 0) scale(0.85);
 }
 
-/* 點擊漣漪光環 */
+/* 點擊漣漪光環 (1.4x 放大) */
 .cinema-ripple {
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
   pointer-events: none;
-  border: 2.5px solid #60a5fa;
-  background: rgba(59, 130, 246, 0.28);
+  border: 4px solid #38bdf8;
+  background: rgba(56, 189, 248, 0.4);
   transform: translate(-50%, -50%) scale(0.2);
   opacity: 1;
-  animation: cinema-ripple-anim 0.65s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  animation: cinema-ripple-anim 0.7s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
   z-index: 999998;
 }
 @keyframes cinema-ripple-anim {
   to {
-    transform: translate(-50%, -50%) scale(2.6);
+    transform: translate(-50%, -50%) scale(3.2);
     opacity: 0;
   }
 }
 
-/* 聚焦聚光燈效果 */
+/* 聚焦聚光燈效果 (1.4x 放大, 16px padding, 緊密貼合目標防偏移) */
 .cinema-spotlight-box {
-  position: absolute;
-  border-radius: 10px;
-  border: 2px solid #38bdf8;
-  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.65), 0 0 25px rgba(56, 189, 248, 0.5);
+  position: fixed;
+  border-radius: 16px;
+  border: 4px solid #38bdf8;
+  box-shadow: 0 0 0 9999px rgba(11, 15, 25, 0.78), 0 0 60px rgba(56, 189, 248, 0.85);
   pointer-events: none;
-  transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: all 0.38s cubic-bezier(0.25, 1, 0.5, 1);
   opacity: 0;
   z-index: 999990;
 }
@@ -62,42 +62,111 @@
   opacity: 1;
 }
 
-/* 操作指引氣泡 */
+/* 操作指引氣泡 (1.4x 放大) */
 .cinema-tooltip {
-  position: absolute;
-  background: rgba(15, 23, 42, 0.92);
+  position: fixed;
+  background: rgba(15, 23, 42, 0.96);
   color: #f8fafc;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-  font-size: 13.5px;
-  font-weight: 500;
+  padding: 16px 26px;
+  border-radius: 14px;
+  border: 2px solid rgba(56, 189, 248, 0.6);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(56, 189, 248, 0.4);
+  font-size: 19px;
+  font-weight: 600;
   pointer-events: none;
   white-space: nowrap;
   opacity: 0;
-  transform: translate3d(22px, 22px, 0);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: translate3d(35px, 35px, 0);
+  transition: opacity 0.25s ease, transform 0.25s ease;
   z-index: 1000001;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
 }
 .cinema-tooltip.active {
   opacity: 1;
-  transform: translate3d(24px, 24px, 0);
+  transform: translate3d(38px, 38px, 0);
 }
 
-/* 場景進場大標題橫幅 */
+/* 前期提要卡片 (Scenario Recap / Briefing - 1.4x 放大) */
+.cinema-briefing {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.92);
+  width: 90%;
+  max-width: 950px;
+  background: rgba(15, 23, 42, 0.97);
+  border: 2.5px solid rgba(56, 189, 248, 0.55);
+  border-radius: 24px;
+  padding: 40px 48px;
+  color: #fff;
+  box-shadow: 0 35px 80px rgba(0, 0, 0, 0.9), 0 0 60px rgba(56, 189, 248, 0.4);
+  backdrop-filter: blur(16px);
+  z-index: 1000015;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cinema-briefing.show {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+.briefing-tag {
+  display: inline-block;
+  background: rgba(56, 189, 248, 0.2);
+  border: 2px solid rgba(56, 189, 248, 0.6);
+  color: #38bdf8;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 30px;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+.briefing-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 18px;
+  line-height: 1.35;
+}
+.briefing-desc {
+  font-size: 21px;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.briefing-points {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: rgba(30, 41, 59, 0.7);
+  border-radius: 16px;
+  padding: 22px 28px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+.briefing-point {
+  font-size: 20px;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.briefing-point b {
+  color: #38bdf8;
+}
+
+/* 情境進場小橫幅 (1.4x 放大) */
 .cinema-banner {
   position: fixed;
-  top: 24px;
+  top: 40px;
   left: 50%;
   transform: translateX(-50%) translateY(-30px);
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+  border: 2.5px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 0 20px 45px -5px rgba(0, 0, 0, 0.7);
   color: #fff;
-  padding: 12px 28px;
-  border-radius: 12px;
+  padding: 22px 48px;
+  border-radius: 18px;
   text-align: center;
   opacity: 0;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -110,17 +179,59 @@
   opacity: 1;
 }
 .cinema-banner-title {
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 700;
   color: #38bdf8;
-  margin-bottom: 3px;
+  margin-bottom: 8px;
 }
 .cinema-banner-desc {
-  font-size: 12.5px;
+  font-size: 18px;
   color: #cbd5e1;
 }
 
-/* 播放控制器 HUD (支援 Play/Pause/Restart/Speed) */
+/* 結果區塊解析指示器 (Explainer Annotation Box) */
+.cinema-explainer {
+  position: fixed;
+  background: rgba(15, 23, 42, 0.97);
+  color: #f8fafc;
+  padding: 20px 28px;
+  border-radius: 16px;
+  border: 2.5px solid #38bdf8;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85), 0 0 35px rgba(56, 189, 248, 0.5);
+  font-size: 21px;
+  font-weight: 600;
+  pointer-events: none;
+  max-width: 650px;
+  line-height: 1.5;
+  opacity: 0;
+  transform: translate3d(40px, 40px, 0);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  z-index: 1000002;
+  backdrop-filter: blur(10px);
+}
+.cinema-explainer.active {
+  opacity: 1;
+  transform: translate3d(40px, 40px, 0);
+}
+.cinema-explainer b {
+  color: #38bdf8;
+}
+
+/* 全景過場光幕 (Cinema Shutter Transition) */
+.cinema-transition-shutter {
+  position: fixed;
+  inset: 0;
+  background: #0b0f19;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1000020;
+  transition: opacity 0.45s ease;
+}
+.cinema-transition-shutter.active {
+  opacity: 0.9;
+}
+
+/* 播放控制器 HUD */
 .cinema-hud {
   position: fixed;
   bottom: 24px;

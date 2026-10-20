@@ -1,6 +1,6 @@
 /**
  * Cinematic Animation Layer for NewsAnalyzer
- * 負責渲染虛擬滑鼠、點擊漣漪、聚光燈、提示氣泡與標題橫幅
+ * 負責渲染虛擬滑鼠、點擊漣漪、聚光燈、提示氣泡、標題橫幅、前期提要卡片、結果區塊解析器與轉場過場
  */
 (function () {
   if (window.CinemaOverlay) return;
@@ -12,7 +12,9 @@
       this.isInteractive = false;
       this.cursorX = 100;
       this.cursorY = 100;
+      this.currentFocusEl = null;
       this._initDOM();
+      this._bindEvents();
     }
 
     _initDOM() {
@@ -21,27 +23,57 @@
       const overlay = document.createElement('div');
       overlay.id = 'cinema-overlay';
       overlay.innerHTML = `
+        <div class="cinema-transition-shutter" id="cinema-shutter"></div>
         <div class="cinema-spotlight-box" id="cinema-spotlight"></div>
         <div class="cinema-cursor" id="cinema-cursor"></div>
         <div class="cinema-tooltip" id="cinema-tooltip"></div>
+        <div class="cinema-explainer" id="cinema-explainer"></div>
         <div class="cinema-banner" id="cinema-banner">
           <div class="cinema-banner-title" id="cinema-banner-title"></div>
           <div class="cinema-banner-desc" id="cinema-banner-desc"></div>
+        </div>
+        <div class="cinema-briefing" id="cinema-briefing">
+          <div class="briefing-tag" id="briefing-tag">SCENARIO BRIEFING</div>
+          <div class="briefing-title" id="briefing-title"></div>
+          <div class="briefing-desc" id="briefing-desc"></div>
+          <div class="briefing-points" id="briefing-points"></div>
         </div>
       `;
       document.body.appendChild(overlay);
 
       this.cursor = document.getElementById('cinema-cursor');
       this.tooltip = document.getElementById('cinema-tooltip');
+      this.explainer = document.getElementById('cinema-explainer');
       this.banner = document.getElementById('cinema-banner');
       this.bannerTitle = document.getElementById('cinema-banner-title');
       this.bannerDesc = document.getElementById('cinema-banner-desc');
       this.spotlight = document.getElementById('cinema-spotlight');
+      this.briefing = document.getElementById('cinema-briefing');
+      this.briefingTag = document.getElementById('briefing-tag');
+      this.briefingTitle = document.getElementById('briefing-title');
+      this.briefingDesc = document.getElementById('briefing-desc');
+      this.briefingPoints = document.getElementById('briefing-points');
+      this.shutter = document.getElementById('cinema-shutter');
 
-      // 初始化滑鼠位置在螢幕中央上方
       this.cursorX = window.innerWidth / 2;
       this.cursorY = 180;
       this.updateCursorPos(this.cursorX, this.cursorY, false);
+    }
+
+    _bindEvents() {
+      const sync = () => this._syncSpotlight();
+      window.addEventListener('scroll', sync, { passive: true });
+      window.addEventListener('resize', sync, { passive: true });
+    }
+
+    _syncSpotlight() {
+      if (!this.currentFocusEl || !this.spotlight.classList.contains('active')) return;
+      const rect = this.currentFocusEl.getBoundingClientRect();
+      const pad = 16;
+      this.spotlight.style.left = `${Math.max(0, rect.left - pad)}px`;
+      this.spotlight.style.top = `${Math.max(0, rect.top - pad)}px`;
+      this.spotlight.style.width = `${rect.width + pad * 2}px`;
+      this.spotlight.style.height = `${rect.height + pad * 2}px`;
     }
 
     updateCursorPos(x, y, animate = true) {
@@ -54,7 +86,6 @@
       }
       this.cursor.style.transform = `translate3d(${x}px, ${y}px, 0)`;
 
-      // 工具提示氣泡同步跟隨滑鼠
       this.tooltip.style.left = `${x}px`;
       this.tooltip.style.top = `${y}px`;
     }
@@ -95,11 +126,11 @@
       ripple.className = 'cinema-ripple';
       ripple.style.left = `${x}px`;
       ripple.style.top = `${y}px`;
-      ripple.style.width = '32px';
-      ripple.style.height = '32px';
+      ripple.style.width = '44px';
+      ripple.style.height = '44px';
       document.getElementById('cinema-overlay').appendChild(ripple);
 
-      setTimeout(() => ripple.remove(), 700);
+      setTimeout(() => ripple.remove(), 750);
     }
 
     showSpotlight(target) {
@@ -108,16 +139,13 @@
         this.hideSpotlight();
         return;
       }
-      const rect = el.getBoundingClientRect();
-      const pad = 8;
-      this.spotlight.style.left = `${Math.max(0, rect.left - pad)}px`;
-      this.spotlight.style.top = `${Math.max(0, rect.top - pad)}px`;
-      this.spotlight.style.width = `${rect.width + pad * 2}px`;
-      this.spotlight.style.height = `${rect.height + pad * 2}px`;
+      this.currentFocusEl = el;
+      this._syncSpotlight();
       this.spotlight.classList.add('active');
     }
 
     hideSpotlight() {
+      this.currentFocusEl = null;
       this.spotlight.classList.remove('active');
     }
 
@@ -132,6 +160,19 @@
 
     hideTooltip() {
       this.tooltip.classList.remove('active');
+    }
+
+    showExplainer(html) {
+      if (!html) {
+        this.hideExplainer();
+        return;
+      }
+      this.explainer.innerHTML = html;
+      this.explainer.classList.add('active');
+    }
+
+    hideExplainer() {
+      this.explainer.classList.remove('active');
     }
 
     async showBanner(title, desc = '', duration = 2500) {
@@ -149,7 +190,26 @@
       this.banner.classList.remove('show');
     }
 
-    async typeText(target, text, charDelay = 30) {
+    async showBriefing(tag, title, desc, points = [], duration = 4000) {
+      this.briefingTag.textContent = tag || 'SCENARIO BRIEFING';
+      this.briefingTitle.textContent = title;
+      this.briefingDesc.textContent = desc;
+      this.briefingPoints.innerHTML = points.map(p => `<div class="briefing-point"><span>🔹</span><span>${p}</span></div>`).join('');
+
+      this.briefing.classList.add('show');
+      await this.sleep(duration / this.speed);
+      this.briefing.classList.remove('show');
+      await this.sleep(400 / this.speed);
+    }
+
+    async shutterTransition(duration = 600) {
+      this.shutter.classList.add('active');
+      await this.sleep(duration / this.speed);
+      this.shutter.classList.remove('active');
+      await this.sleep(200 / this.speed);
+    }
+
+    async typeText(target, text, charDelay = 25) {
       const el = typeof target === 'string' ? document.querySelector(target) : target;
       if (!el) return;
 

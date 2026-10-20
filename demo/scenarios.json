@@ -3,6 +3,11 @@
     "id": "scenario_tw_mainstream",
     "title": "情境一：主流媒體新聞分析 (Mainstream Corroboration)",
     "description": "輸入公視/中央社新聞，系統即時跨源比對、計算時效性與網域信譽，給予高信任評級。",
+    "briefing_points": [
+      "主流媒體網域 (pts.org.tw) 信譽加權",
+      "跨源同報檢測 (CNA / 聯合報) 佐證指數計算",
+      "內文語氣風險 D4 評量與透明計分管線"
+    ],
     "lang": "zh",
     "initial": {
       "lang": "zh",
@@ -41,16 +46,52 @@
         "hint": "管線運算中：抽取正文、查核檢索與模型判讀"
       },
       {
+        "action": "explainer",
+        "target": "#scoreBadge",
+        "html": "<b>🏁 最終評分 (Final Score)：88.5 / 100</b><br>評級：<b>高度可信</b><br>系統融合規則引擎與本地 LLM 模型之加權分數，判定為高信賴度新聞。",
+        "delay": 4500
+      },
+      {
         "action": "scroll_to",
-        "target": "#metrics",
+        "target": "#dimensions",
         "hint": "步驟 3：檢視 D1~D4 四維度正交分析矩陣",
         "delay": 1200
       },
       {
-        "action": "spotlight",
+        "action": "explainer",
+        "target": "#dim-D1",
+        "html": "<b>D1 查核證據蘊涵度：0%</b><br>查無 Cofacts/MyGoPen 等查核庫命中紀錄。此為正常現象，未查證不代表假新聞，交由 D2 跨源佐證路由。",
+        "delay": 4500
+      },
+      {
+        "action": "explainer",
+        "target": "#dim-D2",
+        "html": "<b>D2 跨源報導佐證度：88%</b><br>檢索到公視 (pts.org.tw) 原文，並偵測到中央社與聯合報同步報導，佐證指數極高 (0.88)。",
+        "delay": 4500
+      },
+      {
+        "action": "explainer",
+        "target": "#dim-D3",
+        "html": "<b>D3 標題內文忠實度：100%</b><br>LLM 判定標題完美忠實反映內文主旨，無任何誇大或斷章取義之懸念誘餌。",
+        "delay": 4500
+      },
+      {
+        "action": "explainer",
+        "target": "#dim-D4",
+        "html": "<b>D4 內文修辭與可驗性風險：8%</b><br>內文語氣客觀平實，具備官方具名受訪與具體工程數據，修辭安全度極高 (R=0.08)。",
+        "delay": 4500
+      },
+      {
+        "action": "scroll_to",
         "target": "#scorePipeline",
         "hint": "步驟 4：檢視透明計分管線（加權融合與安全上限）",
-        "delay": 1500
+        "delay": 1200
+      },
+      {
+        "action": "explainer",
+        "target": "#scorePipeline",
+        "html": "<b>📐 透明計分管線 (Score Pipeline)：</b><br>1. 規則分數 (85.0) × 70% + 本地 AI 分數 (95.0) × 30% = <b>88.5</b><br>2. 查核安全上限檢查：無外部查核紀錄，不受 60 分封頂限制。",
+        "delay": 5000
       }
     ],
     "expected": {
@@ -118,6 +159,11 @@
     "id": "scenario_clickbait_intercept",
     "title": "情境二：點擊誘餌標題壓制與還原 (Clickbait Interception)",
     "description": "偵測懸念、遮蔽關鍵結果之釣魚標題（如「醫揭真相」「原因曝光」），自動扣分並提煉真實主旨。",
+    "briefing_points": [
+      "偵測高懸念遮蔽型標題 (Suspense Hiding)",
+      "LLM 自動提煉並還原中性真實主旨",
+      "啟動 D3 扣分機制以壓制其高信任度"
+    ],
     "lang": "zh",
     "initial": {
       "lang": "zh",
@@ -153,7 +199,13 @@
         "action": "spotlight",
         "target": "#restoredTitle",
         "hint": "步驟 3：檢視「真實主旨還原卡片」與扣分原因",
-        "delay": 2000
+        "delay": 1500
+      },
+      {
+        "action": "explainer",
+        "target": "#restoredTitle",
+        "html": "<b>🛡 釣魚標題攔截與還原：</b><br>偵測到典型懸念誘餌（大揭真相 / 致命反差）。<br>LLM 提煉真實主旨：<b>「過量飲用含糖高果糖漿飲料恐增加代謝症候群風險」</b><br>D3 維度自動扣除 18 分以壓制其信任度。",
+        "delay": 6500
       }
     ],
     "expected": {
@@ -185,6 +237,11 @@
     "id": "scenario_social_bot_blocked",
     "title": "情境三：社群假新聞與機器人黑名單 (Social Blocklist Routing)",
     "description": "輸入 X/Twitter 惡意外宣或被查核中心列管之機器人帳號，系統直接標記黑名單並壓制來源分數。",
+    "briefing_points": [
+      "FixTweet 快速抓取推文內容與時間戳",
+      "即時比對 Social Blocklist (黑名單帳號)",
+      "D2 跨源佐證度強制歸零 (C=0) 並降級"
+    ],
     "lang": "zh",
     "initial": {
       "lang": "zh",
@@ -217,10 +274,16 @@
         "hint": "後端 D2 引擎比對 Social Blocklist 中..."
       },
       {
-        "action": "spotlight",
+        "action": "scroll_to",
         "target": "#metrics",
         "hint": "步驟 3：檢視 D2 判定為「高風險造謠／機器人帳號黑名單」",
-        "delay": 2000
+        "delay": 1500
+      },
+      {
+        "action": "explainer",
+        "target": "#metrics",
+        "html": "<b>🚫 社群黑名單攔截 (D2 Source Corroboration = 0)：</b><br>偵測到貼文來源 <b>@globaltimesnews</b> 命中 Social Blocklist。<br>系統直接將跨源佐證指數強制歸零 (0.00)，並給予高度可疑評級 (25.0 / 100)。",
+        "delay": 6500
       }
     ],
     "expected": {
@@ -262,6 +325,11 @@
     "id": "scenario_i18n_switch",
     "title": "情境四：即時多語言介面無縫切換 (Instant Multilingual Switch)",
     "description": "展示繁體中文、English、日本語無刷新即時本地化切換，包含四正交維度契約定義與計算步驟。",
+    "briefing_points": [
+      "三語系 UI 無刷新即時切換 (繁中 / EN / 日)",
+      "後端 LLM 動態語種路由 (Prompt Localization)",
+      "D1~D4 契約定義與計分權重完整本地化"
+    ],
     "lang": "ja",
     "initial": {
       "lang": "zh"
@@ -277,7 +345,12 @@
         "action": "click",
         "target": "[data-lang-btn=\"ja\"]",
         "hint": "全介面切換日本語",
-        "delay": 800
+        "delay": 1200
+      },
+      {
+        "action": "explainer",
+        "html": "<b>🇯🇵 日本語 UI：</b><br>全介面 UI 文字、D1~D4 維度定義及計分管線步驟已無縫本地化為日文，且不需重新載入頁面。",
+        "delay": 4500
       },
       {
         "action": "spotlight",
@@ -289,13 +362,18 @@
         "action": "click",
         "target": "[data-lang-btn=\"en\"]",
         "hint": "全介面切換英語",
-        "delay": 800
+        "delay": 1200
+      },
+      {
+        "action": "explainer",
+        "html": "<b>🇺🇸 English UI：</b><br>Instantly switching the complete user interface to fluent English, including the 4-dimensional analytical matrix definitions and scoring pipeline weights.",
+        "delay": 4500
       },
       {
         "action": "click",
         "target": "[data-lang-btn=\"zh\"]",
         "hint": "切換回繁體中文",
-        "delay": 800
+        "delay": 1200
       }
     ],
     "expected": {
