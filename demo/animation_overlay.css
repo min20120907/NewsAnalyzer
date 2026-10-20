@@ -1,0 +1,178 @@
+/* Cinematic Animation Layer Styles */
+#cinema-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+}
+
+/* 虛擬滑鼠游標 */
+.cinema-cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="%233b82f6" stroke="%23ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 7 18 3-7 7-3L3 3z"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 1000000;
+  transform: translate3d(-2px, -2px, 0);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+}
+.cinema-cursor.clicking {
+  transform: translate3d(-2px, -2px, 0) scale(0.82);
+}
+
+/* 點擊漣漪光環 */
+.cinema-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 2.5px solid #60a5fa;
+  background: rgba(59, 130, 246, 0.28);
+  transform: translate(-50%, -50%) scale(0.2);
+  opacity: 1;
+  animation: cinema-ripple-anim 0.65s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  z-index: 999998;
+}
+@keyframes cinema-ripple-anim {
+  to {
+    transform: translate(-50%, -50%) scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* 聚焦聚光燈效果 */
+.cinema-spotlight-box {
+  position: absolute;
+  border-radius: 10px;
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.65), 0 0 25px rgba(56, 189, 248, 0.5);
+  pointer-events: none;
+  transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  opacity: 0;
+  z-index: 999990;
+}
+.cinema-spotlight-box.active {
+  opacity: 1;
+}
+
+/* 操作指引氣泡 */
+.cinema-tooltip {
+  position: absolute;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  font-size: 13.5px;
+  font-weight: 500;
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate3d(22px, 22px, 0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1000001;
+  backdrop-filter: blur(8px);
+}
+.cinema-tooltip.active {
+  opacity: 1;
+  transform: translate3d(24px, 24px, 0);
+}
+
+/* 場景進場大標題橫幅 */
+.cinema-banner {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-30px);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 12px;
+  text-align: center;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000005;
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+}
+.cinema-banner.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.cinema-banner-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 3px;
+}
+.cinema-banner-desc {
+  font-size: 12.5px;
+  color: #cbd5e1;
+}
+
+/* 播放控制器 HUD (支援 Play/Pause/Restart/Speed) */
+.cinema-hud {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 8px 16px;
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 1000010;
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+}
+.cinema-hud-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cinema-hud-btn:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+  color: #fff;
+}
+.cinema-hud-btn.active {
+  background: #38bdf8;
+  color: #0f172a;
+}
+.cinema-hud-select {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+.cinema-hud-status {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-left: 6px;
+}

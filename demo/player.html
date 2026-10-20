@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>NewsAnalyzer · Hybrid Cinematic Demo Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="animation_overlay.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { width: 100%; height: 100%; overflow: hidden; background: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    #demo-frame { width: 100%; height: 100%; border: none; }
+    
+    /* 播放控制懸浮面板 */
+    #player-hud {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 40px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(12px);
+      z-index: 1000020;
+    }
+    .hud-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #f1f5f9;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .hud-btn:hover { background: rgba(56, 189, 248, 0.25); border-color: #38bdf8; color: #fff; }
+    .hud-btn.primary { background: #0284c7; color: #fff; border-color: #38bdf8; }
+    .hud-select {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      outline: none;
+      cursor: pointer;
+    }
+    .hud-status {
+      font-size: 12px;
+      color: #94a3b8;
+      padding-left: 6px;
+      border-left: 1px solid rgba(255, 255, 255, 0.15);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 內嵌原始網站頁面 -->
+  <iframe id="demo-frame" src="../web/index.html"></iframe>
+
+  <!-- 獨立播放控制條 HUD -->
+  <div id="player-hud">
+    <select id="scenarioSelect" class="hud-select"></select>
+    <button id="playBtn" class="hud-btn primary"><span>▶</span> 播放</button>
+    <button id="restartBtn" class="hud-btn"><span>⏮</span> 重播</button>
+    <select id="speedSelect" class="hud-select">
+      <option value="0.8">0.8x 慢速教學</option>
+      <option value="1.0" selected>1.0x 正常速度</option>
+      <option value="1.5">1.5x 快速預覽</option>
+      <option value="2.0">2.0x 極速展示</option>
+    </select>
+    <div id="hudStatus" class="hud-status">準備就緒</div>
+  </div>
+
+  <script src="animation_overlay.js"></script>
+  <script>
+    let scenarios = [];
+    let currentScenarioIdx = 0;
+    let isPlaying = false;
+    let isPaused = false;
+    let speed = 1.0;
+    let playAll = false;
+    let frameDoc = null;
+    let frameWin = null;
+
+    const frame = document.getElementById('demo-frame');
+    const playBtn = document.getElementById('playBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const speedSelect = document.getElementById('speedSelect');
+    const scenarioSelect = document.getElementById('scenarioSelect');
+    const hudStatus = document.getElementById('hudStatus');
+
+    frame.addEventListener('load', async () => {
+      frameWin = frame.contentWindow;
+      frameDoc = frame.contentDocument;
+
+      // 載入情境設定
+      const resp = await fetch('scenarios.json');
+      scenarios = await resp.json();
+
+      // 初始化選單
+      scenarioSelect.innerHTML = scenarios.map((s, idx) => `<option value="${idx}">${s.title}</option>`).join('') + '<option value="all">🔁 全部情境自動輪播</option>';
+
+      // 在 iframe 中掛載 mock 攔截
+      frameWin.fetch = async (url, opts) => {
+        if (url.includes('/judge')) {
+          const s = scenarios[currentScenarioIdx];
+          const mock = s && s.mock_result ? s.mock_result : { final_score: 85, rating: "高度可信" };
+          return new Response(JSON.stringify(mock), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+        return window.fetch(url, opts);
+      };
+
+      // 注入動畫層至 iframe
+      const link = frameDoc.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'animation_overlay.css';
+      frameDoc.head.appendChild(link);
+
+      const script = frameDoc.createElement('script');
+      script.src = 'animation_overlay.js';
+      frameDoc.body.appendChild(script);
+
+      hudStatus.textContent = '系統已就緒 (離線模擬模式)';
+    });
+
+    speedSelect.addEventListener('change', () => {
+      speed = parseFloat(speedSelect.value);
+      if (frameWin && frameWin.CinemaOverlay) {
+        frameWin.CinemaOverlay.speed = speed;
+      }
+    });
+
+    scenarioSelect.addEventListener('change', () => {
+      if (scenarioSelect.value === 'all') {
+        playAll = true;
+        currentScenarioIdx = 0;
+      } else {
+        playAll = false;
+        currentScenarioIdx = parseInt(scenarioSelect.value, 10);
+      }
+      restartScenario();
+    });
+
+    playBtn.addEventListener('click', () => {
+      if (!isPlaying) {
+        startPlay();
+      } else {
+        isPaused = !isPaused;
+        if (frameWin && frameWin.CinemaOverlay) frameWin.CinemaOverlay.paused = isPaused;
+        playBtn.innerHTML = isPaused ? '<span>▶</span> 繼續' : '<span>⏸</span> 暫停';
+        hudStatus.textContent = isPaused ? '已暫停' : '播放中…';
+      }
+    });
+
+    restartBtn.addEventListener('click', restartScenario);
+
+    function restartScenario() {
+      isPlaying = false;
+      isPaused = false;
+      playBtn.innerHTML = '<span>▶</span> 播放';
+      hudStatus.textContent = '重置完畢';
+      if (frameDoc) {
+        const inp = frameDoc.querySelector('#input');
+        if (inp) inp.value = '';
+        const rc = frameDoc.querySelector('#resultCard');
+        if (rc) rc.classList.remove('show');
+        if (frameWin.CinemaOverlay) {
+          frameWin.CinemaOverlay.hideSpotlight();
+          frameWin.CinemaOverlay.hideTooltip();
+          frameWin.CinemaOverlay.hideBanner();
+        }
+      }
+    }
+
+    async function startPlay() {
+      isPlaying = true;
+      isPaused = false;
+      playBtn.innerHTML = '<span>⏸</span> 暫停';
+
+      const overlay = frameWin.CinemaOverlay;
+      overlay.speed = speed;
+
+      while (isPlaying && currentScenarioIdx < scenarios.length) {
+        const s = scenarios[currentScenarioIdx];
+        scenarioSelect.value = playAll ? 'all' : currentScenarioIdx;
+        hudStatus.textContent = `播放中: ${s.id}`;
+
+        // 橫幅動畫
+        await overlay.showBanner(s.title, s.description, 2000);
+
+        // 初始狀態
+        if (s.initial && s.initial.lang) {
+          frameWin.setLanguage(s.initial.lang);
+        }
+
+        // 步驟執行
+        for (const step of s.steps) {
+          if (!isPlaying) break;
+          while (isPaused) await overlay.sleep(100);
+
+          if (step.hint) overlay.showTooltip(step.hint);
+
+          if (step.action === 'spotlight') {
+            overlay.showSpotlight(step.target);
+            await overlay.moveTo(step.target);
+            await overlay.sleep(step.delay || 500);
+          } else if (step.action === 'click') {
+            await overlay.click(step.target);
+            const el = frameDoc.querySelector(step.target);
+            if (el) el.click();
+            await overlay.sleep(step.delay || 600);
+          } else if (step.action === 'type') {
+            await overlay.typeText(step.target, step.value, step.char_delay || 25);
+          } else if (step.action === 'scroll_to') {
+            overlay.hideSpotlight();
+            const el = frameDoc.querySelector(step.target);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await overlay.moveTo(step.target);
+            await overlay.sleep(step.delay || 1000);
+          } else if (step.action === 'wait_for') {
+            await overlay.sleep(1200);
+          }
+        }
+
+        overlay.hideTooltip();
+        overlay.hideSpotlight();
+        await overlay.sleep(1500);
+
+        if (!playAll) break;
+        currentScenarioIdx++;
+      }
+
+      isPlaying = false;
+      playBtn.innerHTML = '<span>▶</span> 播放完畢';
+      hudStatus.textContent = '展示結束';
+    }
+  </script>
+</body>
+</html>

@@ -461,7 +461,7 @@ def compute_d2_source_corroboration(
     # 檢查社群帳號黑名單 (social_blocklist)
     social_blocked_match = ""
     if social_blocklist:
-        combined_text = f"{url or ''} {target_url or ''} {title or ''}".lower()
+        combined_text = f"{url or ''} {target_url or ''} {title or ''} {(content or '')[:400]}".lower()
         for s_item in social_blocklist:
             s_item_clean = s_item.strip().lower()
             if not s_item_clean or s_item_clean.startswith("#"):
