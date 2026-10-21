@@ -10,7 +10,7 @@ API = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-
 KEY = os.environ.get("GEMINI_API_KEY", "")
 VOICE = "Charon"
 CACHE = Path("/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/tts_cache")
-VIDEO = "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/demo/newsanalyzer_demo_1080p.mp4"
+VIDEO = "/home/min20120907/.hermes/cache/videos/video_b4252671ac56.mp4"
 OUT   = "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/demo/newsanalyzer_demo_1080p_narrated.mp4"
 SCRIPT = "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/demo/narration_zh_tw.json"
 VOLUME = 0.85
@@ -26,7 +26,7 @@ def gen(i, text):
         return wav
     body = {"contents":[{"parts":[{"text":text}]}],
             "generationConfig":{"speechConfig":{"voiceConfig":{"prebuiltVoiceConfig":{"voiceName":VOICE}}}}}
-    for attempt in range(8):
+    for attempt in range(12):
         req = urllib.request.Request(API, data=json.dumps(body).encode(),
                                      headers={"x-goog-api-key":KEY, "Content-Type":"application/json"})
         try:
@@ -42,8 +42,8 @@ def gen(i, text):
             print(f"  [{i}] OK")
             return wav
         except urllib.error.HTTPError as e:
-            if e.code == 429 and attempt < 7:
-                wait = 30 * (attempt + 1)
+            if e.code == 429 and attempt < 11:
+                wait = min(60, 15 * (attempt + 1))
                 print(f"  [{i}] 429, wait {wait}s")
                 time.sleep(wait)
                 continue
