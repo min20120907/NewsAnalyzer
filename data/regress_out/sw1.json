@@ -2,94 +2,150 @@
  "available_weight": 100.0,
  "clamp_reason": "",
  "clamped": false,
+ "corroboration": {
+  "count": 4,
+  "outlets": [
+   "news.cnyes.com",
+   "chinatimes.com",
+   "money.udn.com",
+   "businesstoday.com.tw"
+  ]
+ },
+ "debug": false,
  "deep_analysis": {
-  "abstain": true,
-  "analysis": "Cofacts查核條目內容為投資詐騙手法說明，與本主張之ETF績效數據無關，屬於無關證據。目前僅有新聞報導提及相關數據，缺乏獨立查核機構對該財務數據屬實性的判定。需補充針對0052 ETF具體績效數據之查核原文或官方公告方可判定。",
-  "claim": "富邦科技ETF（0052）掛牌20年累積報酬率超過2400%且資產規模突破1600億元",
-  "credibility_score": 60,
-  "evidence_state": "unrelated_evidence",
+  "abstain": false,
+  "analysis": "本主張為具體的金融數據陳述，鉅亨網報導提供了詳細背景與數據，且搜尋結果中載入了投信投顧公會委託台大教授的統計資料，確認0052成立以來報酬率為2427%，與新聞所述「超過2400%」及「翻24倍」高度吻合。資產規模突破1600億元的說法亦有內文詳細說明分割後規模成長的脈絡。證據完整且來源可靠，判定為屬實。",
+  "claim": "富邦科技ETF（0052）掛牌20周年，累積投資報酬率超過2400%，資產規模突破1600億元。",
+  "credibility_score": 95,
+  "evidence_state": "full_body_evidence",
   "evidence_state_consistent": true,
   "evidence_state_disputed": false,
   "evidence_used": [
-   "Cofacts"
+   "鉅亨網",
+   "投信投顧公會委託台大教授資料統計"
   ],
-  "is_provisional": true,
+  "is_provisional": false,
   "key_points": [
-   "Cofacts查核條目內容為投資詐騙集團手法說明，與本主張之ETF績效數據無關",
-   "鉅亨網新聞內文雖提及報酬翻24倍及規模逾1600億元，但缺乏獨立第三方查核機構對該數據屬實性的判定",
-   "Google查核與MyGoPen均顯示未找到相關查核結果，無法確認該財務數據之真實性"
+   "鉅亨網報導指出，富邦科技ETF（0052）於2026年9月29日迎來掛牌20周年，累積投資報酬率超過2400%，資產規模突破1600億元。",
+   "搜尋結果摘要2引用投信投顧公會委託台大教授統計，確認0052成立以來至2026年8月底績效達2427%，與新聞標題及內文數據相符。",
+   "內文提及台積電權重從2006年的約20%上升至2026年8月底的64%，解釋了「小台積」稱號的由來及報酬來源。",
+   "證交所董事長林修銘與富邦投信董事長黃昭棠在記者會上的發言，佐證了該ETF作為台灣首檔科技主題ETF的歷史地位與市場規模成長。"
   ],
   "model": "qwen3.8-27b-fastmtp",
-  "samples": 3,
+  "samples": 1,
   "score_std": 0.0,
-  "viewpoints": "新聞來源（鉅亨網）主張0052報酬翻24倍且規模破1600億；查核機構（Cofacts）僅提供詐騙手法說明，未對該ETF績效數據進行屬實或不實之判定，故無正反雙方針對此數據之查核立場"
+  "title_bait": false,
+  "title_bait_reason": "",
+  "viewpoints": "新聞內文與鉅亨網報導一致，指出0052報酬翻24倍、規模逾1600億元；外部搜尋結果中的專業統計數據（2427%）支持了這一說法，無明顯反方觀點或質疑。"
  },
- "evidence_state": "unrelated_evidence",
- "final_score": 64.17942476272583,
- "fusion_weight": 0.0,
- "is_provisional": true,
+ "dimensions": {
+  "evidence_verdict": {
+   "confidence": 0.0,
+   "explanation": "外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）",
+   "id": "D1",
+   "impact_pts": 0.0,
+   "key": "evidence_verdict",
+   "name": "查核證據蘊涵度",
+   "status_label": "none",
+   "value": 0.0,
+   "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞；若漏召回則 c_E=0 退回未查證路由，絕不偷送 +15 分",
+   "what_it_measures": "已核實查核庫（Cofacts / MyGoPen / Google FC 等）對「同一具體事件」之蘊涵或駁斥立場與證據信心"
+  },
+  "headline_faithfulness": {
+   "confidence": 0.9,
+   "explanation": "標題平實反映內文主旨（標題—內文一致性 64%），無誇大或斷章取義（0 扣分；忠實度不額外灌水加分）",
+   "id": "D3",
+   "impact_pts": -0.0,
+   "key": "headline_faithfulness",
+   "name": "標題內文忠實度",
+   "status_label": "faithful",
+   "value": 1.0,
+   "what_if_wrong": "誤報時僅對該文施加標題失真扣分（最高 -22 分）與黃牌提示；漏報時因 F 不提供正分，絕不會把假新聞墊高到可信帶",
+   "what_it_measures": "新聞標題之斷言是否忠實反映內文，有無誇大釣魚、懸念誘導或斷章取義"
+  },
+  "rhetorical_risk": {
+   "confidence": 0.85,
+   "explanation": "內文語氣平實、無煽動轉發或偽冒公告特徵（低風險 R=0.15，惟缺外部查核時最高停留於待查證區間）",
+   "id": "D4",
+   "impact_pts": 52.0,
+   "key": "rhetorical_risk",
+   "name": "內文修辭與可驗性風險",
+   "status_label": "low_risk",
+   "value": 0.15,
+   "what_if_wrong": "作用範圍嚴格限制在「無查核且無同報」之未查證區間 [18, 58] 內，絕不會覆寫 D1 查核證據，也不會把無證據文章推過 60 分",
+   "what_it_measures": "文本自身之情緒操弄、催促轉發動員、偏方爆料話術，以及無出處之偽冒官方公告風險"
+  },
+  "source_corroboration": {
+   "confidence": 1.0,
+   "explanation": "一般外部網域 (cnyes.com)＋內文具名出處核實｜4 家外部來源同報（news.cnyes.com, chinatimes.com, money.udn.com, businesstoday.com.tw）（佐證指數 1.00）",
+   "id": "D2",
+   "impact_pts": 86.0,
+   "key": "source_corroboration",
+   "name": "跨源報導佐證度",
+   "status_label": "corroborated",
+   "value": 1.0,
+   "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章；若漏算新興媒體則退回待查證區間（45~58分），不會誤殺為假新聞",
+   "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數，以及文章自身發布時效一致性"
+  }
+ },
+ "evidence_state": "full_body_evidence",
+ "final_score": 88.7,
+ "fusion_weight": 0.3,
+ "is_provisional": false,
  "metrics": {
   "domain": {
-   "desc": "cnyes.com",
-   "score": 15.0,
+   "desc": "一般外部網域 (cnyes.com)＋內文具名出處核實",
+   "score": 25.0,
    "weight": 25.0
   },
   "fact_check": {
    "desc": "not_found",
-   "score": 15.0,
+   "score": 0.0,
    "weight": 30.0
   },
   "sentiment": {
-   "desc": "0.75",
-   "score": 12.0,
+   "desc": "修辭安全度 85%（風險 R=0.15）",
+   "score": 12.75,
    "weight": 15.0
   },
   "similarity": {
-   "desc": "81.20%（標題—內文一致性，非真實性）",
-   "score": 12.17942476272583,
+   "desc": "忠實度 100%（faithful）",
+   "score": 15.0,
    "weight": 15.0
   },
   "timeliness": {
-   "desc": "940 天前",
+   "desc": "unknown",
    "score": 0.0,
    "weight": 5.0
   },
   "user_feedback": {
-   "desc": "有查核討論",
-   "score": 10.0,
+   "desc": "none",
+   "score": 0.0,
    "weight": 10.0
   }
  },
- "mode": "deep",
- "post_fusion_score": 64.17942476272583,
- "rating_text": "大致可信",
+ "mode": "fast",
+ "post_fusion_score": 88.7,
+ "rating_text": "高度可信",
+ "regime": "CORROBORATED_REPORT",
+ "regime_desc": "路由 B（主流來源／跨源同報佐證）：一般外部網域 (cnyes.com)＋內文具名出處核實｜4 家外部來源同報（news.cnyes.com, chinatimes.com, money.udn.com, businesstoday.com.tw）（佐證指數 1.00）",
  "review_links": {
   "duckduckgo": "https://duckduckgo.com/?q=%E3%80%8C%E5%B0%8F%E5%8F%B0%E7%A9%8D%E3%80%8D0052%E8%A6%8B%E8%AD%89%E5%8F%B0%E7%81%A3%E7%A7%91%E6%8A%80%E9%BB%83%E9%87%9120%E5%B9%B4+%E5%A0%B1%E9%85%AC%E7%BF%BB24%E5%80%8D%E3%80%81%E8%A6%8F%E6%A8%A1%E9%80%BE1600%E5%84%84%E5%85%83+-+Yahoo%E8%82%A1%E5%B8%82+評論+討論",
   "threads": "https://www.threads.net/search?q=%E3%80%8C%E5%B0%8F%E5%8F%B0%E7%A9%8D%E3%80%8D0052%E8%A6%8B%E8%AD%89%E5%8F%B0%E7%81%A3%E7%A7%91%E6%8A%80%E9%BB%83%E9%87%9120%E5%B9%B4+%E5%A0%B1%E9%85%AC%E7%BF%BB24%E5%80%8D%E3%80%81%E8%A6%8F%E6%A8%A1%E9%80%BE1600%E5%84%84%E5%85%83+-+Yahoo%E8%82%A1%E5%B8%82"
  },
- "rule_score": 64.17942476272583,
- "scoring_basis": "命中的查核與本主張無關，已忽略該錨定（暫時分數，非查核結論）",
+ "rule_score": 88.7,
+ "scoring_basis": "路由 B（主流來源／跨源同報佐證）：一般外部網域 (cnyes.com)＋內文具名出處核實｜4 家外部來源同報（news.cnyes.com, chinatimes.com, money.udn.com, businesstoday.com.tw）（佐證指數 1.00）",
  "sources": [
   {
-   "alternatives": [],
-   "article_id": "-ptbDY4BBMtPEaE08b49",
-   "created_at": 1709621113.148,
+   "article_id": null,
+   "created_at": null,
    "feedback_count": 0,
-   "llm_promoted": false,
-   "matched_text": "14:44\n存入\n交易規則\n股票市場\n在線客服\n存股借券\n大廳 市場\n富橋\n提領資金\nBANK\n線上開戶\n自選股\n寶藏股\nETF\n自選\nLTE ↓↑\n%\n資金流水\n台指期\n交易\n融資借款\n目\n指數行情\n申購\n個人訊息\n",
-   "needs_llm_verdict": true,
-   "reasons": [
-    {
-     "text": "被害人加入投資群組後，詐騙集團成員於群組內佯裝「投資老師」、「會員」等人，遊說民眾登錄投資網站或下載投資APP，佯稱可以匯款或面交現金方式投資股票、虛擬貨幣等，保證獲利、翻倍獲利云云，被害人因而受騙而登錄投資網站或下載投資APP，殊不知此等投資網站或APP均為造假。",
-     "type": "RUMOR"
-    }
-   ],
-   "similarity_score": 0.6157360076904297,
-   "soft_hit_sim": 0.6157360076904297,
-   "soft_hit_status": "inaccurate",
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": 0.0,
    "source": "cofacts",
    "status": "not_found",
-   "url": "https://cofacts.tw/article/-ptbDY4BBMtPEaE08b49"
+   "url": null
   },
   {
    "article_id": null,
@@ -112,57 +168,92 @@
    "source": "mygopen",
    "status": "not_found",
    "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "rumtoast",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "hkbu",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "infact",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "jfc",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "politifact",
+   "status": "not_found",
+   "url": null
   }
  ],
- "timings": {
-  "deep_analyze": 30536.7,
-  "extract": 8609.7,
-  "fact_check": 3667.0,
-  "scoring": 30537.0,
-  "sentiment": 776.6,
-  "similarity": 340.0,
-  "total": 43591.5,
-  "web_search": 2199.0
- },
+ "timings": {},
  "title": "「小台積」0052見證台灣科技黃金20年 報酬翻24倍、規模逾1600億元 - Yahoo股市",
- "total_raw_score": 64.17942476272583,
+ "total_raw_score": 88.7,
  "url": "https://news.google.com/rss/articles/CBMi6wJBVV95cUxPQ2dVbnpFMTc3SnVRTjJkQW1QOG9JYWg0b0d1SXRudmNGMzVIMGdjOGF5NzVFemZBdWJ0U1A1UDQ5X3VJSXd2Q2VJN3lBT2daM3Bya3JBcWRwME9yLTQzc202NWpDbld2M1hsWHNPemRGNzdYQTVtWWUxVDRzWGZWeXFfTV9BaXFnZ3BZdTVMeTA4ajY1WkZ4RmRwZ0Q3VGNWa1l2MmEycXdjMUtHYVdGWHlMdFgwUzVCblBzWTlDcmxMNGNXOWN6SDRTSnF1d2lvOHdOeFJ3VVdkNEhscUpleHJlQzVDZ2Q2b2RKSTlKTE5Hbk9xQUZXNlNvTTlrdnI0RkZlWXdib0tJQi1ESDFQYmstQTVSb1pac3RESllscVBlN1d1cVM1MEpleFViakRhMzNuX090b25ndWVDT0l1SENoOGE5UnZtc3FFVDMtOERjczZGT0swTW9jcUw0Tng0UDI0MjRHZllqNE0?oc=5",
  "web_results": [
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "「小台積」0052見證台灣科技黃金20年 報酬翻24倍、規模逾1600億元 - news.cnyes.com",
-   "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE1ydkhjX2M4Nm9ZX2pzTnZTc0UyTVppeGY1NzFlRjhqeWRBNW9oQk1PM3M3aGUtc3VfRXlqRDN3T2lJeEgyN1ZialRGcDJpNFU?oc=5"
+   "snippet": "0052掛牌20周年，累積報酬率逾2,400%，資產規模突破1,600億元。\n台積電權重自20%升至64%，0052涵蓋72檔科技電子股，完整布局台灣科技供應鏈。\nAI硬體需求強勁、CSP資本支出擴張，訂單能見度上看2028年，AI支撐長線成長。",
+   "source": "bing_news",
+   "title": "「小台積」0052見證台灣科技黃金20年 報酬翻24倍、規模逾1600億元",
+   "url": "https://news.cnyes.com/news/id/6617867"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "《基金》見證台灣科技崛起！0052掛牌20年累計報酬率2427% - 旺得富理財網",
-   "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE5EMVh6Mkl5a1luMmYzbUVZT1BuRVNKNE1kellCdjhMajJoa2JIMlQtZ1pMeFFWWUE3ckJaM0EtZklOeEpOODRqMW56TUpzYVJwbU0wRXhpQkFvelNWdkljTllQZEZRcFBvM0E?oc=5"
+   "body": "有「小台積」之稱的富邦科技ETF（0052）掛牌已20周年。發行商富邦投信今（29）日舉行記者會，細數0052自2006年9月12日上市以來，陪伴投資人走過金融海嘯、科技產業循環及多次市場震盪，完整參與台灣科技產業躍升全球關鍵供應鏈的成長歷程。統計0052成立以來，至今績效已達2427%，相當驚人。\n根據投信投顧公會委託台大教授資料統計，0052成立以來至2026年8月底，一年、二年、三年、五年、十年及成立以來報酬率分別為115.91%、157.17%、304.91%、320.4%、1313.90%及2427.05%。基金規模已於今年2月突破千億元，從台灣首檔科技型ETF，逐步成為具指標性的台股科技投資主軸。\n證交所董事長林修銘29日參加0052掛牌20周年記者會致詞表示，富邦科技上市當時正值台灣產業由傳統產業逐步邁向高科技發展的重要階段，作為台灣首檔科技主題型ETF，不僅掌握產業轉型契機，也為投資人提供參與臺灣科技產業成長的新選擇。\n林修銘指出，0052的資產規模這20年來持續成長，至2026年9月已達1千600億元、受益人次超過45萬人次、定期定額戶數超過7萬戶；最近一年的成長更是驚人，近一年0052資產規模成長超過10倍、受益人次成長超過15倍，均在國內ETF市場中名列前茅。他認為，0052展現了一個商品從萌芽、茁壯到穩定發展的成長歷程。\n林修銘認為，目前面臨的是一場全新的科技革命，人工智慧、5G、物聯網、雲端運算等技術，正以前所未有的速度重塑全球產業格局；0052見證了台灣產業不斷升級、突破，整體生態系持續壯大，成為新世代科技的資金匯集地。\n富邦科技（0052）經理人洪珮甄表示，0052成長軌跡與台灣科技產業高度同步，2006年9月12日掛牌之初，全球科技主流仍以PC為核心，此後歷經智慧型手機、雲端運算、高效能運算（HPC），如今進入生成式AI與算力革命；台灣科技產業也從製造基地，躍升為全球半導體與AI供應鏈不可或缺的一環。0052追蹤「台灣資訊科技指數」，以台灣50指數及台灣中型100指數成分股為母體，篩選科技類股，依流通市值調整權重，且無持股權重及檔數限制，每年進行四次指數調整，藉此反映台灣科技產業版圖變化。\n0052已於2025年11月完成「1拆7」分割，在基金總價值及投資組合不因分割而改變的前提下，大幅降低單位投資門檻，讓小資族、年輕族群及定期定額投資人更容易參與。\n展望下一個20年，富邦投信董事長黃昭棠指出，台灣科技產業已由過去的製造優勢，進一步成為全球AI供應鏈核心，對投資人而言，面對科技股短期波動，與其追逐市場高低點，不如透過分批布局、定期定額等方式參與長期趨勢。他強調，0052見證台灣科技從PC走向AI，下一個20年，也將持續與台灣科技產業同行，掌握全球AI與科技創新的長期成長契機。",
+   "snippet": "有「小台積」之稱的富邦科技ETF（0052）掛牌已20周年。發行商富邦投信今（29）日舉行記者會，細數0052自2006年9月12日上市以來，陪伴投資人走過金融海嘯、科技產業循環及多次市場震盪，完整參與台灣科技產業躍升全球 ...",
+   "source": "bing_news",
+   "title": "《基金》見證台灣科技崛起！0052掛牌20年累計報酬率2427%",
+   "url": "https://www.chinatimes.com/realtimenews/20260929003544-260410"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "「小台積」ETF掛牌20年，報酬率飆破2400%！0052見證台股科技轉型的黃金時代 | 林彥呈 | 財經 - Storm.mg",
-   "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTFBQT05oRUlXZzVHMEJwU3VEUC1nNWQzcUdxbEJJSWFzNlNYVWFzOXozYmtUd1I2UDhIZlVreENFbVMySUNKV042NjlWMTAtZw?oc=5"
+   "snippet": "台灣科技產業帶動長期投資成果開花結果！富邦投信於9月29日舉辦有「小台積」之稱的富邦科技 ETF（0052）掛牌20周年記者會，回顧0052自2006年9月12日上市以來，陪伴投資人走過金融海嘯、科技產業循環及多次市場震盪，也完整參與台灣科技產業躍升全球關鍵供應鏈的成長歷程，使0052儼然成為台股大盤精煉過後的全民的科技ETF代表。",
+   "source": "bing_news",
+   "title": "0052掛牌20周年！見證台灣科技崛起、展望下一個20年續攻AI浪潮",
+   "url": "https://money.udn.com/money/story/5636/9786828"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "放20年資產滾24倍！「小台積」0052掛牌20周年漲破2400% - Yahoo股市",
-   "url": "https://news.google.com/rss/articles/CBMixgJBVV95cUxNR1QxMnNxUk5KZFJTM1dYTDB3YkRxOUx1eTVnSGJIeVZXYUhRXzZ3VnZReXRtZHJoanRBSnFBUHBGTEhCVVNMcGIzai0tY3FlVHU5dDItdGhCbDlEaklRbmQ1bkwxb2VoamNXSVpMN3BkQjlqbjFfRWNZb202ZFZzcEZBYTRXejhZT09TN0ZYS000cEhRYWFPdDFMdkxiZWtpZ2ZsU3FFLTN4ZUtsZ2owTF9IUjRDcEVlWWxyOWVtM0IxYlpIOVVpRklSMWtBVUVMaU9QUHRSdWZyd1JKWkdkWUJ3SUU5VEZOcGpZN3ZkU09sUDRvUzFEeEJlLUZHLTNrWWRFVkw3d0hlb25Bck9fRVFSWlpNZTBONnZDUWNrS3BvU0FSZ3RjY3BNT0JiaW9BdnFvVmZCaXpWN0hhREhMRVhPNGJTdw?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "0052累積報酬率狂飆24倍！規模破千億還能買？經理人給答案 - TVBS新聞網",
-   "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE5VYkp2NV9ob3BQY2JuWVN4akNjcEhyTTRQZVRSS24zSnhDM3pXV1FGM3NWTHFLWTRWNnI5YnBSS0hlZ0NKWFBjVkloRjF5ZWM?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "小台積20年翻24倍！富邦科技ETF（0052） 通吃科技生態系紅利 - 三立新聞網SETN.com",
-   "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE1RZkkyRGdlQkh0eGtJaVVPR185UWJXclh6dHdZaDZTdXZzVEhmSUZDNF9iNWt5ZExUbjZrQXJSWWRob2NzaTJtNVpZcw?oc=5"
+   "snippet": "台積電股價、0052股價、0052成分股！市場再次討論，面對不斷創高的台積電(2330)，投資人到底該不該怕「追高」？小台積ETF之稱的富邦科技ETF(0052)為例，在2006年成立時，智慧型手機尚未全面普及，更沒有生成式AI浪潮；20年來台灣科技產業歷經PC、手機、雲端、AI與高效能運算等多波產業升級，台積電也隨著全球晶圓代工與先進製程競爭力提升，占整體台股市值比重逐步攀升，0052的投資組合 ...",
+   "source": "bing_news",
+   "title": "台積電股價創高不敢碰？小台積ETF 0052能買？魏哲家一句想追上聯發科的啟示：散戶喊貴卻錯過25倍狂潮",
+   "url": "https://www.businesstoday.com.tw/article/category/183013/post/202609230024/"
   }
  ]
 }

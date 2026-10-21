@@ -2,109 +2,149 @@
  "available_weight": 100.0,
  "clamp_reason": "",
  "clamped": false,
+ "corroboration": {
+  "count": 4,
+  "outlets": [
+   "n.yam.com",
+   "mnews.tw",
+   "udn.com",
+   "tw.news.yahoo.com"
+  ]
+ },
+ "debug": false,
  "deep_analysis": {
-  "abstain": true,
-  "analysis": "根據台灣新聞雲的詳細報導，鄰近健康創辦人趙國鈞確實計畫於2026年10月1日在健康台灣2030論壇上，針對長照轉型關鍵進行演講並揭曉社區新解方。Cofacts查核機構已明確判定此資訊為準確，且多家媒體報導內容一致，證據鏈完整且相互印證，因此該主張高度可信。",
-  "claim": "鄰近健康創辦人趙國鈞將於2026年10月1日在健康台灣2030論壇上，聚焦長照轉型關鍵並揭曉高齡社會社區新解方。",
-  "credibility_score": 60,
+  "abstain": false,
+  "analysis": "本主張為特定活動預告，經查威傳媒與Yahoo新聞均有詳細報導，確認活動時間（2026年10月1日）、地點（南港展覽館）、主辦方（鄰近健康）及參與人物（趙國鈞、葉明功等）均與內文描述一致。內文內容屬實，無誇大或不實之處，可信度極高。",
+  "claim": "鄰近健康公司將於2026年10月1日在南港展覽館舉辦「健康台灣2030」論壇，聚焦長照轉型並邀集多位產官學界人士參與。",
+  "credibility_score": 95,
   "evidence_state": "full_body_evidence",
-  "evidence_state_consistent": false,
-  "evidence_state_disputed": true,
+  "evidence_state_consistent": true,
+  "evidence_state_disputed": false,
   "evidence_used": [
-   "台灣新聞雲",
-   "Cofacts"
+   "威傳媒",
+   "Yahoo新聞"
   ],
-  "is_provisional": true,
+  "is_provisional": false,
   "key_points": [
-   "台灣新聞雲報導明確指出，鄰近健康創辦人趙國鈞董事長將於10月1日上午10:00在「健康台灣2030」論壇，聚焦「長照家庭健康旅程」的轉型關鍵，並親自揭曉高齡社會社區新解方。",
-   "Cofacts查核結果判定該資訊為準確（accurate），確認了相關活動與人物陳述的真實性。",
-   "新聞內文詳細列出了論壇時間（10/01）、地點（南港展覽館一館）及參與的產官學領袖名單，與主張中的活動細節完全吻合。",
-   "網路搜尋結果中，自由健康網、蕃新聞等多家媒體均有相關報導，交叉印證了該論壇活動的真實存在與內容。"
+   "威傳媒報導確認「鄰近健康」創辦人趙國鈞將於10月1日上午10:00在「健康台灣2030」論壇聚焦長照家庭健康旅程轉型關鍵。",
+   "Yahoo新聞摘要證實該論壇將於2026年10月1日在台北南港展覽館一館舉辦，並邀集前食藥署署長葉明功等代表探討社區藥局轉型。",
+   "內文提及的衛福部長照3.0於2026年推動之背景，與搜尋結果中其他新聞（如賴清德總統推動健康台灣目標）的時間軸與政策方向一致。"
   ],
   "model": "qwen3.8-27b-fastmtp",
-  "samples": 3,
-  "score_std": 16.5,
-  "viewpoints": "主張方依據台灣新聞雲等媒體報導，指出鄰近健康創辦人趙國鈞將於2026年10月1日舉辦論壇並揭曉新解方；查核方Cofacts依據事實確認該活動資訊準確無誤，雙方資訊一致，無爭議。"
+  "samples": 1,
+  "score_std": 0.0,
+  "title_bait": false,
+  "title_bait_reason": "",
+  "viewpoints": "內文宣稱該論壇為聚焦長照轉型與社區藥局升級的產業活動，並列舉多位具名業界領袖參與；外部搜尋結果（威傳媒、Yahoo新聞）均報導了同一活動的時間、地點、主辦方及核心議題，雙方資訊完全吻合，無對立觀點。"
+ },
+ "dimensions": {
+  "evidence_verdict": {
+   "confidence": 0.0,
+   "explanation": "外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）",
+   "id": "D1",
+   "impact_pts": 0.0,
+   "key": "evidence_verdict",
+   "name": "查核證據蘊涵度",
+   "status_label": "none",
+   "value": 0.0,
+   "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞；若漏召回則 c_E=0 退回未查證路由，絕不偷送 +15 分",
+   "what_it_measures": "已核實查核庫（Cofacts / MyGoPen / Google FC 等）對「同一具體事件」之蘊涵或駁斥立場與證據信心"
+  },
+  "headline_faithfulness": {
+   "confidence": 0.9,
+   "explanation": "標題平實反映內文主旨（標題—內文一致性 45%），無誇大或斷章取義（0 扣分；忠實度不額外灌水加分）",
+   "id": "D3",
+   "impact_pts": -0.0,
+   "key": "headline_faithfulness",
+   "name": "標題內文忠實度",
+   "status_label": "faithful",
+   "value": 1.0,
+   "what_if_wrong": "誤報時僅對該文施加標題失真扣分（最高 -22 分）與黃牌提示；漏報時因 F 不提供正分，絕不會把假新聞墊高到可信帶",
+   "what_it_measures": "新聞標題之斷言是否忠實反映內文，有無誇大釣魚、懸念誘導或斷章取義"
+  },
+  "rhetorical_risk": {
+   "confidence": 0.85,
+   "explanation": "內文語氣平實、無煽動轉發或偽冒公告特徵（低風險 R=0.15，惟缺外部查核時最高停留於待查證區間）",
+   "id": "D4",
+   "impact_pts": 52.0,
+   "key": "rhetorical_risk",
+   "name": "內文修辭與可驗性風險",
+   "status_label": "low_risk",
+   "value": 0.15,
+   "what_if_wrong": "作用範圍嚴格限制在「無查核且無同報」之未查證區間 [18, 58] 內，絕不會覆寫 D1 查核證據，也不會把無證據文章推過 60 分",
+   "what_it_measures": "文本自身之情緒操弄、催促轉發動員、偏方爆料話術，以及無出處之偽冒官方公告風險"
+  },
+  "source_corroboration": {
+   "confidence": 1.0,
+   "explanation": "一般外部網域 (tnews.com.tw)＋內文具名出處核實｜4 家外部來源同報（n.yam.com, mnews.tw, udn.com, tw.news.yahoo.com）（佐證指數 1.00）",
+   "id": "D2",
+   "impact_pts": 86.0,
+   "key": "source_corroboration",
+   "name": "跨源報導佐證度",
+   "status_label": "corroborated",
+   "value": 1.0,
+   "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章；若漏算新興媒體則退回待查證區間（45~58分），不會誤殺為假新聞",
+   "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數，以及文章自身發布時效一致性"
+  }
  },
  "evidence_state": "full_body_evidence",
- "final_score": 77.85737466812134,
- "fusion_weight": 0.0,
- "is_provisional": true,
+ "final_score": 88.7,
+ "fusion_weight": 0.3,
+ "is_provisional": false,
  "metrics": {
   "domain": {
-   "desc": "tnews.com.tw",
-   "score": 15.0,
+   "desc": "一般外部網域 (tnews.com.tw)＋內文具名出處核實",
+   "score": 25.0,
    "weight": 25.0
   },
   "fact_check": {
-   "desc": "accurate",
-   "score": 30.0,
+   "desc": "not_found",
+   "score": 0.0,
    "weight": 30.0
   },
   "sentiment": {
-   "desc": "0.83",
-   "score": 12.0,
+   "desc": "修辭安全度 85%（風險 R=0.15）",
+   "score": 12.75,
    "weight": 15.0
   },
   "similarity": {
-   "desc": "72.38%（標題—內文一致性，非真實性）",
-   "score": 10.857374668121338,
+   "desc": "忠實度 100%（faithful）",
+   "score": 15.0,
    "weight": 15.0
   },
   "timeliness": {
-   "desc": "3023 天前",
+   "desc": "unknown",
    "score": 0.0,
    "weight": 5.0
   },
   "user_feedback": {
-   "desc": "有查核討論",
-   "score": 10.0,
+   "desc": "none",
+   "score": 0.0,
    "weight": 10.0
   }
  },
- "mode": "deep",
- "post_fusion_score": 77.85737466812134,
+ "mode": "fast",
+ "post_fusion_score": 88.7,
  "rating_text": "高度可信",
+ "regime": "CORROBORATED_REPORT",
+ "regime_desc": "路由 B（主流來源／跨源同報佐證）：一般外部網域 (tnews.com.tw)＋內文具名出處核實｜4 家外部來源同報（n.yam.com, mnews.tw, udn.com, tw.news.yahoo.com）（佐證指數 1.00）",
  "review_links": {
   "duckduckgo": "https://duckduckgo.com/?q=%E5%81%A5%E5%BA%B7%E5%8F%B0%E7%81%A32030%E8%AB%96%E5%A3%87+%E8%81%9A%E7%84%A6%E9%95%B7%E7%85%A7%E8%BD%89%E5%9E%8B%E9%97%9C%E9%8D%B5%E9%84%B0%E8%BF%91%E5%81%A5%E5%BA%B710%2F01%E6%8F%AD%E6%9B%89%E9%AB%98%E9%BD%A1%E7%A4%BE%E6%9C%83%E7%A4%BE%E5%8D%80%E6%96%B0%E8%A7%A3%E6%96%B9+-+%E5%8F%B0%E7%81%A3%E6%96%B0%E8%81%9E%E9%9B%B2+評論+討論",
   "threads": "https://www.threads.net/search?q=%E5%81%A5%E5%BA%B7%E5%8F%B0%E7%81%A32030%E8%AB%96%E5%A3%87+%E8%81%9A%E7%84%A6%E9%95%B7%E7%85%A7%E8%BD%89%E5%9E%8B%E9%97%9C%E9%8D%B5%E9%84%B0%E8%BF%91%E5%81%A5%E5%BA%B710%2F01%E6%8F%AD%E6%9B%89%E9%AB%98%E9%BD%A1%E7%A4%BE%E6%9C%83%E7%A4%BE%E5%8D%80%E6%96%B0%E8%A7%A3%E6%96%B9+-+%E5%8F%B0%E7%81%A3%E6%96%B0%E8%81%9E%E9%9B%B2"
  },
- "rule_score": 77.85737466812134,
- "scoring_basis": "查核機構判定屬實，規則分主導",
+ "rule_score": 88.7,
+ "scoring_basis": "路由 B（主流來源／跨源同報佐證）：一般外部網域 (tnews.com.tw)＋內文具名出處核實｜4 家外部來源同報（n.yam.com, mnews.tw, udn.com, tw.news.yahoo.com）（佐證指數 1.00）",
  "sources": [
   {
-   "alternatives": [
-    {
-     "matched_text": "日本再生醫學治療… \n非常進步的醫療信息… \n\nhttps://youtu.be/dEYYQZhmzFc",
-     "reasons": [
-      {
-       "text": "在日本再生醫學領域，岡野光夫扮演著先驅角色。1990 年，他成功利用患者的自體細胞，在體外培養製作成約 0.1 毫米薄片，然後再把培養出來的細胞片放回病患需要醫治的部分。這是全球第一個首次開發成功，關鍵就在使用獨創的「溫度感應細胞培養皿」，讓細胞片順利長大。",
-       "type": "NOT_RUMOR"
-      }
-     ],
-     "similarity_score": 0.5072559118270874,
-     "status": "accurate",
-     "url": "https://cofacts.tw/article/mbkpouez2bzf"
-    }
-   ],
-   "article_id": "2wgxgg37r3cw3",
-   "created_at": 1529633500.869,
-   "feedback_count": 10,
-   "llm_promoted": true,
-   "matched_text": "跟大家分享一項很重要的醫學新知，日本領先臺灣15-20年的新技術，還願意收跨海求治的臺灣民眾，真的可造福很多病人，燒燙傷皮膚再生，心衰竭等換心的人們，視網膜，食道癌，膝關節...的患者，不必再苦等他人的心臟捐贈，日本再生醫學治療… 非常進步的醫療信息… \n請務必內心看完\n\nhttps://youtu.be/dEYYQZhmzFc",
-   "needs_llm_verdict": true,
-   "reasons": [
-    {
-     "text": "在日本再生醫學領域，岡野光夫扮演著先驅角色。1990 年，他成功利用患者的自體細胞，在體外培養製作成約 0.1 毫米薄片，然後再把培養出來的細胞片放回病患需要醫治的部分。這是全球第一個首次開發成功，關鍵就在使用獨創的「溫度感應細胞培養皿」，讓細胞片順利長大。",
-     "type": "NOT_RUMOR"
-    }
-   ],
-   "similarity_score": 0.5531333684921265,
-   "soft_hit_sim": 0.5531333684921265,
-   "soft_hit_status": "accurate",
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": 0.0,
    "source": "cofacts",
-   "status": "accurate",
-   "url": "https://cofacts.tw/article/2wgxgg37r3cw3"
+   "status": "not_found",
+   "url": null
   },
   {
    "article_id": null,
@@ -127,57 +167,99 @@
    "source": "mygopen",
    "status": "not_found",
    "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "rumtoast",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "hkbu",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "infact",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "jfc",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "politifact",
+   "status": "not_found",
+   "url": null
   }
  ],
- "timings": {
-  "deep_analyze": 34115.1,
-  "extract": 8316.8,
-  "fact_check": 4093.1,
-  "scoring": 34115.4,
-  "sentiment": 594.0,
-  "similarity": 387.6,
-  "total": 47120.3,
-  "web_search": 1366.6999999999998
- },
+ "timings": {},
  "title": "健康台灣2030論壇 聚焦長照轉型關鍵鄰近健康10/01揭曉高齡社會社區新解方 - 台灣新聞雲",
- "total_raw_score": 77.85737466812134,
+ "total_raw_score": 88.7,
  "url": "https://news.google.com/rss/articles/CBMiR0FVX3lxTE1TMjRMUmxORFdid0hBWjJTVFhQeVB0bWdfQzRRNXhpNkNwWXV3dDZSRXZJYlZTMmdpU1RDalBDZGcwT1J6S1JJ?oc=5",
  "web_results": [
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "健康網》健康台灣2030論壇 聚焦長照轉型關鍵 - 自由健康網",
-   "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTFBISjVvTms2WkVNV1lRbXc2bEp4a2t0TFk0VDhTWnpndDNLaDkwemRqSGdobHMwU3VkMjFCZzhvTlNqclVrUWU3am0xaWxHZ1FBSHVWOHpiZ0JGQnpFS0swc1ZRUWg?oc=5"
+   "body": "健康台灣2030論壇 聚焦長照轉型關鍵 鄰近健康10/01揭曉高齡社會社區新解方\n【威傳媒記者蘇松濤報導】\n台灣逐步邁入超高齡社會，衛福部也公布長照3.0將自2026年起推動，社區藥局的角色，正從傳統藥品銷售，逐步延伸到健康諮詢、長照整合與居家健康服務的重要入口。接下來，誰能掌握「長照家庭健康旅程」，就能掌握下一個健康市場！「鄰近健康」創辦人趙國鈞董事長，10月1日上午10:00在「健康台灣2030」論壇，將聚焦「長照家庭健康旅程」的轉型關鍵，親自揭曉高齡社會社區新解方！同時攜手藥局產官學領袖：食藥署前署長葉明功、台灣製藥工業同業公會理事長黃榮男、中華民國製藥發展協會理事長陳志麟、藥師全聯會理事長林憶君、台北市藥師公會理事長黃彥儒、新北市藥師公會理事長許有杉，以及中華生技醫藥行業協會理事長陳建州，共築新一代健康服務生態系！\n數位健康服務領導品牌「鄰近健康」創辦人趙國鈞董事長指出，未來家庭健康需求不再只是單一商品購買，而是需要綜觀所有家庭成員的健康狀況，以及相關醫療需求，鋪墊成一段段的健康旅程。長照家庭的健康旅程更是如此，從日常保健、感冒腸胃等非處方用藥需求、慢性病照護、輔具租賃、居家安全、長照諮詢到照顧資源媒合的各項整合型服務，每一項都會影響家人長照健康旅程的生活品質與安全。社區藥局因具備高可近性、高信任度與在地關係，如何串聯非處方用藥、社區藥局與長照3.0，將成為下一階段健康服務轉型的重要節點。趙國鈞表示：「非處方用藥是入口，藥局是節點，長照是場景，居家是延伸。未來真正有價值的健康平台，不只是銷售商品，而是能陪伴家庭從日常健康走到長期照顧，升級成一站式社區健康中心。」\n由「鄰近健康」主辦的「健康台灣2030：長照家庭健康旅程的轉型關鍵與資源整合」產業論壇，將探討第一線健康服務如何從醫療院所延伸至社區，走進每一個家庭。\n本次論壇將聚焦四大議題：第一、非處方用藥如何成為家庭健康服務的入口；第二、社區藥局如何升級成一站式社區健康中心；第三、長照3.0與居家健康服務如何透過藥局落地；第四、供應商如何透過藥局通路進入家庭健康市場。屆時論壇首先將由中康生醫代表及中華生技醫藥行業協會理事長陳建州，透過第一線健康服務案例與現況，詳細闡述非處方用藥非處方用藥與藥局現況以及藥局與長照3.0的連結；接著，鄰近健康創辦人趙國鈞董事長，將邀請產官學醫代表，進行政策、產業、藥局「三方對談」，共同探討長照轉型關鍵與資源整合，重新定義第一線健康服務的角色與實踐，親自揭曉高齡社會的社區新解方！不只論壇內容精闢，「鄰近健康」也於同場地的2026國際照顧博覽會，展出主題展覽，展位：M0315–M0322，竭誠歡迎有興趣的藥師朋友及藥局業者親赴了解，詳情請洽詢https://www.caresexpo.com/zh-tw/program;id=55\n轉型不是口號，是現在進行式\n歡迎所有藥師、藥局經營者及關心健康產業的民眾親臨現場，見證社區藥局的智慧轉型之路！\n※活動資訊※\n健康台灣2030：長照家庭健康旅程的轉型關鍵與資源整合\n時間：10/01(四)10:00~12:00\n地點：南港展覽館一館4樓M會議室\n(台北市南港區經貿二路1號)\n圖片提供：鄰近健康\n(資料來源：威傳媒新聞-WinNews)",
+   "snippet": "台灣逐步邁入超高齡社會，衛福部也公布長照3.0將自2026年起推動，社區藥局的角色，正從傳統藥品銷售，逐步延伸到健康諮詢、長照整合與居家健康服務的重要入口。接下來，誰能掌握「長照 ...",
+   "source": "bing_news",
+   "title": "健康台灣2030論壇 聚焦長照轉型關鍵 鄰近健康10/01揭曉高齡社會社區新解方",
+   "url": "https://n.yam.com/Article/20260929635190"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "聚焦醫療創新！鏡報「2026醫療創新健康臺灣高峰論壇」登場 產官學醫齊聚共議健康未來 - 鏡報",
-   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE1lU3gybG9BbURLMXEzWWNoSTd4M2JibGtOLVdBZnRSaElJSnM3XzZESnREZkhtUVppNGh1Ymc2YU1PQnpERFNmSmY2M3poNFh2U3c?oc=5"
+   "snippet": "因應台灣邁入超高齡社會與衛生福利部長照3.0於2026年啟動，數位健康服務業者「鄰近健康」將於10月1日上午10時，在台北南港展覽館一館舉辦「健康台灣2030：長照家庭健康旅程的轉型關鍵與資源整合」產業論壇。活動將邀集前食品藥物管理署長葉明功等多位產官學界代表，探討社區藥局如何串聯非處方用藥與長照服務，轉型為一站式社區健康中心。",
+   "source": "bing_news",
+   "title": "長照3.0啟動！鄰近健康攜手產官學論壇 聚焦社區藥局轉型一站式健康中心",
+   "url": "https://www.mnews.tw/external/mirrordaily88552"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "攜手產官學 探討長照家庭健康旅程轉型關鍵 「鄰近健康」引領社區藥局 掌握下一個健康市場 - 蕃新聞",
-   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTFAxWGI2eTBwQlVFSjNVV2hvcUpSYXlTd1JNRmdfN1loYW1oY2tid01XMS1mZkV0bmtTWVpoWFVMNndQMGIxYklCT3NsVkZRZFprZFE?oc=5"
+   "body": "聽新聞\n                \n                  \n                  \n                  \n                \n                \n                  \n                  \n                  \n                \n                \n              \n            \n                  0:00 /\n                  0:00\n                \n              \n              賴清德總統：推動「健康台灣」 三大目標\n賴清德總統昨（18）日表示，政府推動「健康台灣」國家政策，設定國人平均壽命在2032年增加3歲目標，也希望2030年癌症、「三高」相關慢性病標準化死亡率可各降低三分之一。\n政府將持續擴大健保資源，明年編列1兆414億元預算，希望透過提高醫療支付、改善健保點值、更新醫療設備及提升醫護薪資待遇，全面提升國內醫療服務品質。\n新光醫院昨日舉行創院40周年暨第二醫療大樓「桂蘭大樓」落成啟用典禮，賴總統應邀出席致詞指出，國人平均壽命已約80歲，不健康餘命也達約8.4年，國人一生約有十分之一的時間處於不健康狀態，政府希望透過健康台灣政策，延長國人健康壽命。\n在具體政策目標方面，政府設定國人平均壽命增加3歲的目標，並將癌症與三高防治列為兩大重點。為達成上述目標，賴總統強調，增加健保支出是重要政策手段。政府近年持續擴大健保資源，2026年達1兆82億元，2027年則已編列1兆414億元，並送交立法院審議。\n針對立法院日前三讀通過65歲以上長者免繳健保費的修正案，衛福部長石崇良昨日表示，中央政府以公務預算挹注健保基金，讓保費不需要調漲，但若長者保費改由中央資源挹注，將排擠其他資源，未來就會出現保費調漲壓力。\n針對新光醫院斥資80億元興建的桂蘭大樓，賴總統表示，桂蘭大樓啟用不僅擴大醫療服務量能，更具體實踐政府推動的智慧醫療、精準醫療、韌性醫療及綠色醫療四大方向。\n新光醫院董事長吳東進更當場宣布，自12月1日起全體員工再加薪4%，加上過去三年護理人員已加薪七次、累計調幅超過28％，展現擴大醫療投資與留才決心。",
+   "snippet": "賴清德 總統昨（18）日表示，政府推動「健康台灣」國家政策，設定國人平均壽命在2032年增加3歲目標，也希望2030年癌症、「三高」相關慢性病標準化死亡率可各降低三分之一。",
+   "source": "bing_news",
+   "title": "賴清德總統：推動「健康台灣」 三大目標",
+   "url": "https://udn.com/news/story/6656/9822775"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "健康台灣2030論壇 聚焦長照轉型關鍵 鄰近健康10/01揭曉高齡社會社區新解方 - winnews.com.tw",
-   "url": "https://news.google.com/rss/articles/CBMiSkFVX3lxTFB2SXBTSFlQQ04xYjRKSjhPN1NoTF9wa2hZRXJDTWxaYXR2NlZPUDVkRF8yYmFJZHlqWHhkdlZtanRyVnVwa2N4c2FB?oc=5"
+   "snippet": "將 Yahoo 設為首選來源，在 Google 上查看更多我們的精彩報導 加入首選來源（另開新視窗） 鄰近健康創辦人暨中康生醫董事長趙國鈞（右），獲品牌領航獎。圖／鄰近健康提供 因應台灣邁入超 ...",
+   "source": "bing_news",
+   "title": "長照3.0啟動！鄰近健康攜手產官學論壇 聚焦社區藥局轉型一站式健康中心",
+   "url": "https://tw.news.yahoo.com/%E9%95%B7%E7%85%A73-0%E5%95%9F%E5%8B%95-%E9%84%B0%E8%BF%91%E5%81%A5%E5%BA%B7%E6%94%9C%E6%89%8B%E7%94%A2%E5%AE%98%E5%AD%B8%E8%AB%96%E5%A3%87-%E8%81%9A%E7%84%A6%E7%A4%BE%E5%8D%80%E8%97%A5%E5%B1%80%E8%BD%89%E5%9E%8B-%E7%AB%99%E5%BC%8F%E5%81%A5%E5%BA%B7%E4%B8%AD%E5%BF%83-054000979.html"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "長照3.0啟動！鄰近健康攜手產官學論壇 聚焦社區藥局轉型一站式健康中心 - 鏡報",
-   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE16amhzd1UyOHhyQVpmamprXzN1WFk1ZnFGYVEwZ3JMdlExcXZzM3NKNU5EV3padGJobjczN0p1ZXB2bVFNR0UxTzNvSC1TV3JIdWc?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "飲食、健康與運動表現論壇 聚焦健康與永續議題解方 - 蕃新聞",
-   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE9FLUFubkhqZlNPRVFaVFhCRHp0Y0todUZ6TTh2QlIwaWZMQ2ZmWHRDcDRvYm04Ylh4Q2xiemxXalgtamtZZkJuS0V0Vnc4Y0Fid2c?oc=5"
+   "snippet": "台北榮民總醫院新竹分院攜手衛福部「健康臺灣深耕計畫」專案辦公室，今天舉辦「健康臺灣深耕論壇」。總統府健康臺灣推動委員會副召集人陳志鴻領銜主講，並聚焦「偏鄉醫療」，提出「五大困境」（人力不足、醫療落差、財務失衡、服務斷鏈、高齡衝擊）與「四大戰略」（人才、品質、創新、財務），迴響熱烈。",
+   "source": "bing_news",
+   "title": "健康台灣深耕論壇首度移師北榮新竹分院 陳志鴻提偏鄉醫療四大戰略",
+   "url": "https://udn.com/news/story/7266/9822196"
   }
  ]
 }

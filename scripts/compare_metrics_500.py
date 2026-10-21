@@ -4,12 +4,12 @@
   cd ~/Documents/Web_and_App_Development/NewsAnalyzer
   .venv/bin/python scripts/compare_metrics_500.py
 """
-import json, os, statistics as st
+import json, os, statistics as st, sys
 from collections import Counter, defaultdict
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OLD = os.path.join(BASE, "data", "eval", "metrics_500.PREFIX-20261002.jsonl")
-NEW = os.path.join(BASE, "data", "eval", "metrics_500.jsonl")
+OLD = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BASE, "data", "eval", "metrics_500.PREFIX-20261002.jsonl")
+NEW = sys.argv[2] if len(sys.argv) > 2 else os.path.join(BASE, "data", "eval", "metrics_500.jsonl")
 COMPS = ("sentiment", "domain", "fact_check", "user_feedback", "similarity", "timeliness")
 
 
@@ -101,7 +101,7 @@ def main():
         # 舊基線（20261002 前）沒有 abstain 欄位，讀不到就是 0，不是 None。
         # None 混進 mean() 會讓整欄變 NaN —— 所以只收 bool 為真的。
         ab = [r for r in common if d[r].get("abstain") is True]
-        cs = [x.get("deep_cs") for x in ab if x.get("deep_cs") is not None]
+        cs = [d[x].get("deep_cs") for x in ab if d[x].get("deep_cs") is not None]
         extra = f"  deep_cs mean={mean(cs):.2f}" if cs else "  （無）"
         print(f"{tag:6} abstain={len(ab)}/{len(common)}{extra}")
 

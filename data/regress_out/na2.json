@@ -2,50 +2,110 @@
  "available_weight": 100.0,
  "clamp_reason": "",
  "clamped": false,
+ "corroboration": {
+  "count": 3,
+  "outlets": [
+   "tw.news.yahoo.com",
+   "star.setn.com",
+   "fnc.ebc.net.tw"
+  ]
+ },
+ "debug": false,
  "deep_analysis": {
   "abstain": true,
-  "analysis": "由於所有查核來源均顯示未找到相關判定，且網路搜尋僅提供新聞標題而未載入查核正文，證據狀態判定為no_evidence。目前無法確認志祺七七父親的具體持股數額及公司創辦人身份是否屬實，需補充查核機構的完整判定原文或官方財報資料方可判定。",
-  "claim": "YouTuber志祺七七的父親張季明是上市公司欣銓科技的創辦人之一，且持有該公司超過四千張股票，市值突破十億元。",
-  "credibility_score": 60,
+  "analysis": "由於所有查核機構均未找到相關紀錄，屬於證據不足情形。內文宣稱了可被即時獨立驗證的公共事實（如具體職稱、持股市值），卻沒有任何可查證出處或查核佐證，依據規則應視為可疑訊號。因此分數落在45至50區間，且必須標記為保留（abstain）。",
+  "claim": "志祺七七的父親張季明是欣銓科技創辦人，持股市值超過十億元。",
+  "credibility_score": 48,
   "evidence_state": "no_evidence",
   "evidence_state_consistent": true,
   "evidence_state_disputed": false,
   "evidence_used": [],
   "is_provisional": true,
   "key_points": [
-   "提供的查核結果顯示Cofacts、Google查核及MyGoPen均為not_found，缺乏事實查核機構的判定文字。",
-   "網路搜尋結果僅包含鏡週刊、三立新聞網等媒體的新聞標題與摘要，未載入查核正文或回覆原文。",
-   "雖然多家媒體報導了相同內容，但根據規則，僅有新聞標題或摘要不足以構成full_body_evidence，且無法排除報導本身的準確性。",
-   "缺少官方財報、公司註冊資料或查核機構對「創辦人身份」及「持股市值」具體數字的獨立驗證原文。"
+   "所有查核機構（如Cofacts、Google查核等）均顯示未找到相關查核紀錄，缺乏獨立事實查核來源。",
+   "網路搜尋摘要提及張季明為欣銓科技創辦人及副董事長，持股市值破十億，但僅為媒體報導摘要，非查核機構判定。",
+   "內文宣稱具體的公開事實（特定人物職稱、持股數量、市值金額），但缺乏可追溯的官方公告或查核機構佐證。"
   ],
   "model": "qwen3.8-27b-fastmtp",
-  "samples": 3,
+  "samples": 1,
   "score_std": 0.0,
-  "viewpoints": "目前僅有媒體報導一方聲稱志祺七七父親為欣銓科技創辦人且身家破十億，但缺乏查核機構或官方文件對該主張的獨立證實或反駁，正反雙方證據均不完整，無法形成對立觀點的完整摘要。"
+  "title_bait": false,
+  "title_bait_reason": "",
+  "viewpoints": "目前僅有媒體報導摘要支持該主張，指出張季明為欣銓科技創辦人且持股市值破十億；但無查核機構或官方來源提供反證或確認，正反雙方均無實質查核依據。"
+ },
+ "dimensions": {
+  "evidence_verdict": {
+   "confidence": 0.0,
+   "explanation": "外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）",
+   "id": "D1",
+   "impact_pts": 0.0,
+   "key": "evidence_verdict",
+   "name": "查核證據蘊涵度",
+   "status_label": "none",
+   "value": 0.0,
+   "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞；若漏召回則 c_E=0 退回未查證路由，絕不偷送 +15 分",
+   "what_it_measures": "已核實查核庫（Cofacts / MyGoPen / Google FC 等）對「同一具體事件」之蘊涵或駁斥立場與證據信心"
+  },
+  "headline_faithfulness": {
+   "confidence": 0.9,
+   "explanation": "標題平實反映內文主旨（標題—內文一致性 64%），無誇大或斷章取義（0 扣分；忠實度不額外灌水加分）",
+   "id": "D3",
+   "impact_pts": -0.0,
+   "key": "headline_faithfulness",
+   "name": "標題內文忠實度",
+   "status_label": "faithful",
+   "value": 1.0,
+   "what_if_wrong": "誤報時僅對該文施加標題失真扣分（最高 -22 分）與黃牌提示；漏報時因 F 不提供正分，絕不會把假新聞墊高到可信帶",
+   "what_it_measures": "新聞標題之斷言是否忠實反映內文，有無誇大釣魚、懸念誘導或斷章取義"
+  },
+  "rhetorical_risk": {
+   "confidence": 0.85,
+   "explanation": "檢出內文風險訊號：AI 內文審視指出可疑訊號 (自評 48 分)（風險值 R=0.30）",
+   "id": "D4",
+   "impact_pts": 46.0,
+   "key": "rhetorical_risk",
+   "name": "內文修辭與可驗性風險",
+   "status_label": "low_risk",
+   "value": 0.3,
+   "what_if_wrong": "作用範圍嚴格限制在「無查核且無同報」之未查證區間 [18, 58] 內，絕不會覆寫 D1 查核證據，也不會把無證據文章推過 60 分",
+   "what_it_measures": "文本自身之情緒操弄、催促轉發動員、偏方爆料話術，以及無出處之偽冒官方公告風險"
+  },
+  "source_corroboration": {
+   "confidence": 1.0,
+   "explanation": "具名主流媒體/白名單 (today.line.me)｜3 家外部來源同報（tw.news.yahoo.com, star.setn.com, fnc.ebc.net.tw）（佐證指數 1.00）",
+   "id": "D2",
+   "impact_pts": 86.0,
+   "key": "source_corroboration",
+   "name": "跨源報導佐證度",
+   "status_label": "corroborated",
+   "value": 1.0,
+   "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章；若漏算新興媒體則退回待查證區間（45~58分），不會誤殺為假新聞",
+   "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數，以及文章自身發布時效一致性"
+  }
  },
  "evidence_state": "no_evidence",
- "final_score": 64.26251244544983,
- "fusion_weight": 0.0,
- "is_provisional": true,
+ "final_score": 85.6,
+ "fusion_weight": 0.3,
+ "is_provisional": false,
  "metrics": {
   "domain": {
-   "desc": "line.me",
+   "desc": "具名主流媒體/白名單 (today.line.me)",
    "score": 25.0,
    "weight": 25.0
   },
   "fact_check": {
    "desc": "not_found",
-   "score": 15.0,
+   "score": 0.0,
    "weight": 30.0
   },
   "sentiment": {
-   "desc": "0.75",
-   "score": 12.0,
+   "desc": "修辭安全度 70%（風險 R=0.30）",
+   "score": 10.5,
    "weight": 15.0
   },
   "similarity": {
-   "desc": "81.75%（標題—內文一致性，非真實性）",
-   "score": 12.262512445449829,
+   "desc": "忠實度 100%（faithful）",
+   "score": 15.0,
    "weight": 15.0
   },
   "timeliness": {
@@ -59,15 +119,17 @@
    "weight": 10.0
   }
  },
- "mode": "deep",
- "post_fusion_score": 64.26251244544983,
- "rating_text": "大致可信",
+ "mode": "fast",
+ "post_fusion_score": 85.6,
+ "rating_text": "高度可信",
+ "regime": "CORROBORATED_REPORT",
+ "regime_desc": "路由 B（主流來源／跨源同報佐證）：具名主流媒體/白名單 (today.line.me)｜3 家外部來源同報（tw.news.yahoo.com, star.setn.com, fnc.ebc.net.tw）（佐證指數 1.00）",
  "review_links": {
   "duckduckgo": "https://duckduckgo.com/?q=%E5%BF%97%E7%A5%BA%E4%B8%83%E4%B8%83%E8%B6%85%E7%8B%82%E5%AE%B6%E4%B8%96%E6%9B%9D%E5%85%89%EF%BC%81%E7%88%B8%E6%98%AF%E5%8D%8A%E5%B0%8E%E9%AB%94%E5%85%AC%E5%8F%B8%E5%89%B5%E8%BE%A6%E4%BA%BA%E3%80%8C%E6%8C%81%E8%82%A1%E9%80%BE4%E5%8D%83%E5%BC%B5%E3%80%8D+%E5%B8%82%E5%80%BC%E7%A0%B410%E5%84%84+評論+討論",
   "threads": "https://www.threads.net/search?q=%E5%BF%97%E7%A5%BA%E4%B8%83%E4%B8%83%E8%B6%85%E7%8B%82%E5%AE%B6%E4%B8%96%E6%9B%9D%E5%85%89%EF%BC%81%E7%88%B8%E6%98%AF%E5%8D%8A%E5%B0%8E%E9%AB%94%E5%85%AC%E5%8F%B8%E5%89%B5%E8%BE%A6%E4%BA%BA%E3%80%8C%E6%8C%81%E8%82%A1%E9%80%BE4%E5%8D%83%E5%BC%B5%E3%80%8D+%E5%B8%82%E5%80%BC%E7%A0%B410%E5%84%84"
  },
- "rule_score": 64.26251244544983,
- "scoring_basis": "AI 模型判定證據不足，本次為暫時分數（非查核結論）：no_evidence",
+ "rule_score": 85.6,
+ "scoring_basis": "路由 B（主流來源／跨源同報佐證）：具名主流媒體/白名單 (today.line.me)｜3 家外部來源同報（tw.news.yahoo.com, star.setn.com, fnc.ebc.net.tw）（佐證指數 1.00）",
  "sources": [
   {
    "article_id": null,
@@ -101,56 +163,85 @@
    "source": "mygopen",
    "status": "not_found",
    "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "rumtoast",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "hkbu",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "infact",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "jfc",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "politifact",
+   "status": "not_found",
+   "url": null
   }
  ],
- "timings": {
-  "deep_analyze": 26044.0,
-  "fact_check": 2787.3,
-  "scoring": 26044.5,
-  "sentiment": 205.9,
-  "similarity": 208.5,
-  "total": 29038.5,
-  "web_search": 948.5
- },
+ "timings": {},
  "title": "志祺七七超狂家世曝光！爸是半導體公司創辦人「持股逾4千張」 市值破10億",
- "total_raw_score": 64.26251244544983,
+ "total_raw_score": 85.6,
  "url": "https://today.line.me/tw/v3/article/x2oNP3e",
  "web_results": [
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "志祺七七超狂家世曝光！爸是半導體公司創辦人「持股逾4千張」　市值10億持續漲 - 鏡週刊Mirror Media",
-   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE54YkNJNFFwRHQ3VDdYYm9Yb0tkM1o2VFZGSVlkQ0p5ODYtVmpWakZ6ODdfZHIydUJ0TlRLZG9WTzVBajJnNkFWUTFSbFlHYVhTb3Nya0RVWVFWZWPSAWBBVV95cUxPQkNhZFJDbGRKeml6S0YyMlZ6LWEwWWg4NVlhbVpkQ0huVDJtdTFQT1pYQ0w3d1ZMY1NSaGFSczRrOExpXy14Z1JZU3NjTk9uWXBUdnd3eVdZdURhRVhfLUg?oc=5"
+   "snippet": "YouTuber「志祺七七」（張志祺）的頻道以社會時事議題分享，累積超過170萬人訂閱，近日媒體報導更披露，他其實還有一個「富二代」的身分，他的父親張季明是上市公司欣銓科技的創辦人之一，目前擔任副董事長暨策略長，名下持股超過4千張；近期欣銓股價持續攀升，昨（28日）收246元，換算下來張季明的持股市值逾10億元。",
+   "source": "bing_news",
+   "title": "志祺七七超狂家世曝光！爸是半導體公司創辦人「持股逾4千張」 市值10億持續漲",
+   "url": "https://tw.news.yahoo.com/%E5%BF%97%E7%A5%BA%E4%B8%83%E4%B8%83%E8%B6%85%E7%8B%82%E5%AE%B6%E4%B8%96%E6%9B%9D%E5%85%89-%E7%88%B8%E6%98%AF%E5%8D%8A%E5%B0%8E%E9%AB%94%E5%85%AC%E5%8F%B8%E5%89%B5%E8%BE%A6%E4%BA%BA-%E6%8C%81%E8%82%A1%E9%80%BE4%E5%8D%83%E5%BC%B5-%E5%B8%82%E5%80%BC10%E5%84%84%E6%8C%81%E7%BA%8C%E6%BC%B2-011800670.html"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "志祺七七超狂身家曝！爸爸是半導體公司創辦人　持股市值10億還在漲 - 三立新聞網SETN.com",
-   "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE55QVJrMm5zTWF6V01LNWZaUHd5ZTE0VjBTWTJMZ0k0TFZadVJuT2g0cGpSclJDNlJOTUFTUDlXVFR3SVV6NUxRTzZpaVdyRkE0a185cEk1SDZ4czBPdi130gFfQVVfeXFMTnlBUmsybnNNYXpXTUs1ZlpQd3llMTRWMFNZMkxnSTRMVlp1Um5PaDRwalJyUkM2Uk5NQVNQOVdUVHdJVXo1TFFPNmlpV3JGQTRrXzlwSTVINnhzME92LXc?oc=5"
+   "snippet": "擁有170萬訂閱的知名YouTuber「志祺七七」，近日被網友起底驚人身世，其父親竟是上市公司欣銓科技創辦人張季明。據公開資料顯示，張季明在半導體界深耕30年，持股市值估計破10億元。儘管志祺七七是名副其實的「富二代」，但他始終保持低調，鮮少對外提及家庭背景。他畢業後選擇創業，創立「簡訊設計」與「圖文不符」，隨後投入自媒體產業，憑藉專業時事分析實力，成功在競爭激烈的網紅圈打響名號，成為極具影響力的 ...",
+   "source": "bing_news",
+   "title": "志祺七七超狂身家曝！爸爸是半導體公司創辦人 持股市值10億還在漲",
+   "url": "https://star.setn.com/news/1914396"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "志祺七七竟是富二代！爸爸是上市公司創辦人 「持股市值破10億」家世超狂 - 自由娛樂",
-   "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE5KMDZnSEVIdnBXYk5vdmFYVlVBRmtxRG9MRlE0czRKMVBobHMzZ2xSemExdjVfX2hTZGJ3RmZJOThyTU83R2Y4ZmdLM1U3MUppeWxyT05PV1psQl9U0gFiQVVfeXFMTklfOHM3ZXJ6RXhmNFdWenB4Z3hzYU5xS2NKMDhLQzB5S2tEX0RSeTFQS25jYjg3Um1uampFdWJoWVRmRERZQ0dmQXNxUE9aWkZER1NNblYyY01aWWd4eWt2U0E?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "志祺七七超狂家世曝光！父親是半導體創辦人身家破10億 - 中天新聞網",
-   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE1Lb3Z5c1E2V29ERW81YmozVTlLTmFRaW9yRmdlVWM3Uk13aEg3V1VybS0wZHZDWnVYX1lHbUpMNGxha2RydGVaTjloWlh3WnRreVBv?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "志祺七七富二代身分曝光！父親擁「逾10億身家」 - 民視新聞網",
-   "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5tN0FEUWZWRDhmREZRZ0FiOWFEa2k4Z3lJbHZpSUIzYUVFc0t5Y09kTzN3cGFfM0RRZXYyUWRWdlhhN05XQ1lGTVljZHBHU2oxRXpQNHlmdm1jd3pGdXYwUA?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "志祺七七富二代身分曝光！父親擁「逾10億身家」 | 民視新聞網 - LINE TODAY",
-   "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE9JRUI3dnNlSWFjbWc2N3N1SkRCdVpVSXN6dncwX2RoWHlEYzBTLVJKbVp6STRmYjhTQkV1VlBMZk5JRC16Qlcwb3ZZY3pPd191TzhKaEpB?oc=5"
+   "snippet": "百萬YouTuber志祺七七（張志祺）平時以解析時事、社會議題走紅，頻道累積超過170萬訂閱，向來鮮少公開談論家庭背景，沒想到近日家世意外成為網路話題。網友翻出公開資料發現，志祺七七父親張季明來頭不小，是半導體公司欣銓科技（3264）共同創辦人之一，目前擔任公司副董事長暨策略長，手中更持有超過4000張欣銓股票，光是持股市值就已突破10億元，「富二代」背景也因此掀起熱議。",
+   "source": "bing_news",
+   "title": "半導體創辦人之子！ 「志祺七七」顯赫家世曝光 父持股市值破10億",
+   "url": "https://fnc.ebc.net.tw/fncnews/headline/219888"
   }
  ]
 }

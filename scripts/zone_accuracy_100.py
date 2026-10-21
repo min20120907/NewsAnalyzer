@@ -69,7 +69,14 @@ def _post(title, content, mode="fast"):
 def _verdict(d):
     if "final_score" not in d:
         return None
-    return "REAL" if d["final_score"] >= 60 else "FAKE"
+    # 2026-10-14(A1)：三態。40–59.9 是「待查證」(AMBIGUOUS)，不算 FAKE。
+    # 舊版 >=60 REAL else FAKE 把 ja_real 33 筆待查證全算成 FP，acc 0.34 是假象。
+    fs = d["final_score"]
+    if fs >= 60:
+        return "REAL"
+    if fs < 40:
+        return "FAKE"
+    return "AMBIGUOUS"
 
 
 def _sample_tw():
@@ -219,19 +226,26 @@ def run_zone(zone, mode="fast"):
         if n_new % 10 == 0:
             print(f"[{zone}] {n_new} done", flush=True)
     fout.close()
-    # 汇总
+    # 汇总（2026-10-14 三態：AMBIGUOUS 不進混淆矩陣，另報 coverage）
     recs = [json.loads(l) for l in open(out_path, encoding="utf-8")]
     valid = [r for r in recs if r["pred"]]
-    tp = sum(1 for r in valid if r["pred"] == "FAKE" and r["truth"] == "FAKE")
-    tn = sum(1 for r in valid if r["pred"] == "REAL" and r["truth"] == "REAL")
-    fp = sum(1 for r in valid if r["pred"] == "FAKE" and r["truth"] == "REAL")
-    fn = sum(1 for r in valid if r["pred"] == "REAL" and r["truth"] == "FAKE")
+    decided = [r for r in valid if r["pred"] in ("REAL", "FAKE")]
+    tp = sum(1 for r in decided if r["pred"] == "FAKE" and r["truth"] == "FAKE")
+    tn = sum(1 for r in decided if r["pred"] == "REAL" and r["truth"] == "REAL")
+    fp = sum(1 for r in decided if r["pred"] == "FAKE" and r["truth"] == "REAL")
+    fn = sum(1 for r in decided if r["pred"] == "REAL" and r["truth"] == "FAKE")
+    n_amb = sum(1 for r in valid if r["pred"] == "AMBIGUOUS")
     acc = (tp + tn) / len(valid) if valid else 0.0
+    acc_dec = (tp + tn) / len(decided) if decided else 0.0
+    cov = len(decided) / len(valid) if valid else 0.0
     p_fake = tp / (tp + fp) if tp + fp else 0.0
     r_fake = tp / (tp + fn) if tp + fn else 0.0
     return {"n": len(recs), "valid": len(valid),
             "skipped": len(recs) - len(valid),
             "accuracy": round(acc, 4),
+            "accuracy_decided": round(acc_dec, 4),
+            "coverage": round(cov, 4),
+            "n_ambiguous": n_amb,
             "P_fake": round(p_fake, 4), "R_fake": round(r_fake, 4),
             "TP": tp, "TN": tn, "FP": fp, "FN": fn}
 

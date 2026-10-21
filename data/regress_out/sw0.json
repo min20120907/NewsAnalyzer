@@ -2,95 +2,149 @@
  "available_weight": 100.0,
  "clamp_reason": "",
  "clamped": false,
+ "corroboration": {
+  "count": 3,
+  "outlets": [
+   "money.udn.com",
+   "udn.com",
+   "chinatimes.com"
+  ]
+ },
+ "debug": false,
  "deep_analysis": {
-  "abstain": true,
-  "analysis": "提供的Cofacts查核原文內容為投資詐騙手法說明，與本主張的景氣燈號經濟數據無關，屬於無關證據。Google查核與MyGoPen查核均未找到相關結果。由於缺乏查核機構針對此特定經濟數據的判定原文，目前無法依據查核證據確認或否決該主張，需補充查核機構針對景氣燈號數據的正式判定原文方可判定。",
+  "abstain": false,
+  "analysis": "查核來源明確顯示國發會於2026年9月29日發布8月景氣燈號，綜合分數41分，連續第9個月亮紅燈，追平2021年創下的史上最長紀錄。內文所述AI發展支撐經濟成長與官方說明一致，數據與事實完全吻合，可信度極高。",
   "claim": "2026年8月台灣景氣燈號連續第9個月亮紅燈，追平史上最長連紅紀錄，且AI發展使經濟維持穩健成長。",
-  "credibility_score": 60,
-  "evidence_state": "unrelated_evidence",
-  "evidence_state_consistent": false,
-  "evidence_state_disputed": true,
+  "credibility_score": 95,
+  "evidence_state": "full_body_evidence",
+  "evidence_state_consistent": true,
+  "evidence_state_disputed": false,
   "evidence_used": [
-   "Cofacts"
+   "國發會發布8月景氣燈號再亮紅燈",
+   "8月景氣燈號連9紅 9月可望續亮紅燈刷新最長紀錄"
   ],
-  "is_provisional": true,
+  "is_provisional": false,
   "key_points": [
-   "Cofacts查核條目內容為LINE投資詐騙手法說明，與景氣燈號或經濟數據完全無關。",
-   "Google查核與MyGoPen查核結果均為未找到，缺乏針對此特定經濟數據的查核機構判定。",
-   "雖然網路搜尋摘要顯示多家媒體報導相同事實，但缺乏查核機構的正式判定原文作為證據接地。",
-   "現有查核證據（Cofacts）屬於防詐宣導文，根據規則屬於無關證據，不能用於確認或否決本主張。"
+   "國發會經濟發展處處長陳美菊證實8月景氣燈號綜合判斷分數為41分，與7月持平，燈號續呈紅燈。",
+   "搜尋結果確認連續第9個月亮紅燈，追平2021年創下的史上最長連紅紀錄。",
+   "國發會指出AI與雲端產業提高資本支出，支撐出口與投資動能，顯示經濟維持穩健成長。",
+   "內文與搜尋結果均提及9月有望續亮紅燈，將改寫史上最長紀錄，與標題主張一致。"
   ],
   "model": "qwen3.8-27b-fastmtp",
-  "samples": 3,
-  "score_std": 16.5,
-  "viewpoints": "主張方依據國發會發布的數據稱景氣燈號連9紅並歸因於AI發展；查核方（Cofacts）提供的證據僅涉及投資詐騙手法，未對景氣燈號數據進行查核，故無正反雙方針對此經濟數據的查核立場對照。"
+  "samples": 1,
+  "score_std": 0.0,
+  "title_bait": false,
+  "title_bait_reason": "",
+  "viewpoints": "國發會與多家財經媒體均確認8月景氣燈號連9紅並追平紀錄，依據為官方發布的綜合判斷分數及各項指標數據；無反方觀點，因該數據為官方統計事實。"
  },
- "evidence_state": "unrelated_evidence",
- "final_score": 60.92431914806365,
- "fusion_weight": 0.0,
- "is_provisional": true,
+ "dimensions": {
+  "evidence_verdict": {
+   "confidence": 0.0,
+   "explanation": "外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）",
+   "id": "D1",
+   "impact_pts": 0.0,
+   "key": "evidence_verdict",
+   "name": "查核證據蘊涵度",
+   "status_label": "none",
+   "value": 0.0,
+   "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞；若漏召回則 c_E=0 退回未查證路由，絕不偷送 +15 分",
+   "what_it_measures": "已核實查核庫（Cofacts / MyGoPen / Google FC 等）對「同一具體事件」之蘊涵或駁斥立場與證據信心"
+  },
+  "headline_faithfulness": {
+   "confidence": 0.9,
+   "explanation": "標題與內文語義偏離（相似度僅 18%）（標題—內文一致性 18%） ➔ 觸發標題失真扣分 (-15.0 分，不直接判假，但壓制可信度上限)",
+   "id": "D3",
+   "impact_pts": -15.0,
+   "key": "headline_faithfulness",
+   "name": "標題內文忠實度",
+   "status_label": "bait_or_unfaithful",
+   "value": 0.4,
+   "what_if_wrong": "誤報時僅對該文施加標題失真扣分（最高 -22 分）與黃牌提示；漏報時因 F 不提供正分，絕不會把假新聞墊高到可信帶",
+   "what_it_measures": "新聞標題之斷言是否忠實反映內文，有無誇大釣魚、懸念誘導或斷章取義"
+  },
+  "rhetorical_risk": {
+   "confidence": 0.85,
+   "explanation": "內文語氣平實、無煽動轉發或偽冒公告特徵（低風險 R=0.15，惟缺外部查核時最高停留於待查證區間）",
+   "id": "D4",
+   "impact_pts": 52.0,
+   "key": "rhetorical_risk",
+   "name": "內文修辭與可驗性風險",
+   "status_label": "low_risk",
+   "value": 0.15,
+   "what_if_wrong": "作用範圍嚴格限制在「無查核且無同報」之未查證區間 [18, 58] 內，絕不會覆寫 D1 查核證據，也不會把無證據文章推過 60 分",
+   "what_it_measures": "文本自身之情緒操弄、催促轉發動員、偏方爆料話術，以及無出處之偽冒官方公告風險"
+  },
+  "source_corroboration": {
+   "confidence": 1.0,
+   "explanation": "一般外部網域 (wealth.com.tw)＋內文具名出處核實｜3 家外部來源同報（money.udn.com, udn.com, chinatimes.com）（佐證指數 1.00）",
+   "id": "D2",
+   "impact_pts": 86.0,
+   "key": "source_corroboration",
+   "name": "跨源報導佐證度",
+   "status_label": "corroborated",
+   "value": 1.0,
+   "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章；若漏算新興媒體則退回待查證區間（45~58分），不會誤殺為假新聞",
+   "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數，以及文章自身發布時效一致性"
+  }
+ },
+ "evidence_state": "full_body_evidence",
+ "final_score": 73.7,
+ "fusion_weight": 0.3,
+ "is_provisional": false,
  "metrics": {
   "domain": {
-   "desc": "google.com",
-   "score": 15.0,
+   "desc": "一般外部網域 (wealth.com.tw)＋內文具名出處核實",
+   "score": 25.0,
    "weight": 25.0
   },
   "fact_check": {
    "desc": "not_found",
-   "score": 15.0,
+   "score": 0.0,
    "weight": 30.0
   },
   "sentiment": {
-   "desc": "0.74",
-   "score": 12.0,
+   "desc": "修辭安全度 85%（風險 R=0.15）",
+   "score": 12.75,
    "weight": 15.0
   },
   "similarity": {
-   "desc": "59.50%（標題—內文一致性，非真實性）",
-   "score": 8.92431914806366,
+   "desc": "忠實度 40%（bait_or_unfaithful）",
+   "score": 6.0,
    "weight": 15.0
   },
   "timeliness": {
-   "desc": "1047 天前",
+   "desc": "unknown",
    "score": 0.0,
    "weight": 5.0
   },
   "user_feedback": {
-   "desc": "有查核討論",
-   "score": 10.0,
+   "desc": "none",
+   "score": 0.0,
    "weight": 10.0
   }
  },
- "mode": "deep",
- "post_fusion_score": 60.92431914806365,
+ "mode": "fast",
+ "post_fusion_score": 73.7,
  "rating_text": "大致可信",
+ "regime": "CORROBORATED_REPORT",
+ "regime_desc": "路由 B（主流來源／跨源同報佐證）：一般外部網域 (wealth.com.tw)＋內文具名出處核實｜3 家外部來源同報（money.udn.com, udn.com, chinatimes.com）（佐證指數 1.00）；標題與內文語義偏離（相似度僅 18%）（標題—內文一致性 18%） ➔ 觸發標題失真扣分 (-15.0 分，不直接判假，但壓制可信度上限)",
  "review_links": {
   "duckduckgo": "https://duckduckgo.com/?q=%E6%99%AF%E6%B0%A3%E7%87%88%E8%99%9F%E9%80%A39%E7%B4%85%EF%BC%81%E8%BF%BD%E5%B9%B3%E5%8F%B2%E4%B8%8A%E6%9C%80%E9%95%B7%E9%80%A3%E7%B4%85%E7%B4%80%E9%8C%84+AI%E7%99%BC%E5%B1%95%E4%BD%BF%E5%8F%B0%E7%81%A3%E7%B6%93%E6%BF%9F%E7%B6%AD%E6%8C%81%E7%A9%A9%E5%81%A5%E6%88%90%E9%95%B7+-+%E8%B2%A1%E8%A8%8A+評論+討論",
   "threads": "https://www.threads.net/search?q=%E6%99%AF%E6%B0%A3%E7%87%88%E8%99%9F%E9%80%A39%E7%B4%85%EF%BC%81%E8%BF%BD%E5%B9%B3%E5%8F%B2%E4%B8%8A%E6%9C%80%E9%95%B7%E9%80%A3%E7%B4%85%E7%B4%80%E9%8C%84+AI%E7%99%BC%E5%B1%95%E4%BD%BF%E5%8F%B0%E7%81%A3%E7%B6%93%E6%BF%9F%E7%B6%AD%E6%8C%81%E7%A9%A9%E5%81%A5%E6%88%90%E9%95%B7+-+%E8%B2%A1%E8%A8%8A"
  },
- "rule_score": 60.92431914806365,
- "scoring_basis": "命中的查核與本主張無關，已忽略該錨定（暫時分數，非查核結論）",
+ "rule_score": 73.7,
+ "scoring_basis": "路由 B（主流來源／跨源同報佐證）：一般外部網域 (wealth.com.tw)＋內文具名出處核實｜3 家外部來源同報（money.udn.com, udn.com, chinatimes.com）（佐證指數 1.00）；標題與內文語義偏離（相似度僅 18%）（標題—內文一致性 18%） ➔ 觸發標題失真扣分 (-15.0 分，不直接判假，但壓制可信度上限)",
  "sources": [
   {
-   "alternatives": [],
-   "article_id": "M_W35YsBAjOeMOklSPaM",
-   "created_at": 1700366076.03,
+   "article_id": null,
+   "created_at": null,
    "feedback_count": 0,
-   "llm_promoted": false,
-   "matched_text": "【帳戶入帳通知】\n入帳金額:NT$ 538,458\n入帳時間: 2023/10/19 13:39:31\n帳號末四碼:9509\n123\n查看明細\n园 台新ATM跨行交易加碼\n理財是人生的必修課程\n雖然目前的社會都還沒有正規它\n但它是真真實實存在\n也是可以改變一個人的人生的\n關於投資理財\n學校沒有告訴你的\n由我們來告訴你\n",
-   "needs_llm_verdict": true,
-   "reasons": [
-    {
-     "text": "詐騙關鍵字：低成本、高報酬、顧問老師。\n透過LINE投資群組，把被害人鎖在一個封閉的情境裡，去施展話術、提供假照片、假影片、假證件、丟連結。提供其他學員高額獲利資訊，等到被害人發現怪怪的，開始質疑，就直接「被退群」。\n透過LINE群組「傳訊息」或「上直播課」分享股市訊息，過程中說要「傳授心法」、「講義要保密」。(一方面博取信任，降低警覺心；一方面讓你不知要向外向外求證)\n透過假稱提供高獲利飆股資訊",
-     "type": "RUMOR"
-    }
-   ],
-   "similarity_score": 0.4681536853313446,
-   "soft_hit_sim": 0.4681536853313446,
-   "soft_hit_status": "inaccurate",
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": 0.0,
    "source": "cofacts",
    "status": "not_found",
-   "url": "https://cofacts.tw/article/M_W35YsBAjOeMOklSPaM"
+   "url": null
   },
   {
    "article_id": null,
@@ -113,45 +167,93 @@
    "source": "mygopen",
    "status": "not_found",
    "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "rumtoast",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "hkbu",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "infact",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "jfc",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "politifact",
+   "status": "not_found",
+   "url": null
   }
  ],
- "timings": {
-  "deep_analyze": 32868.1,
-  "extract": 19012.7,
-  "fact_check": 3372.7,
-  "scoring": 32868.4,
-  "sentiment": 465.4,
-  "similarity": 345.1,
-  "total": 55720.0,
-  "web_search": 766.3
- },
+ "timings": {},
  "title": "景氣燈號連9紅！追平史上最長連紅紀錄 AI發展使台灣經濟維持穩健成長 - 財訊",
- "total_raw_score": 60.92431914806366,
+ "total_raw_score": 73.7,
  "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTE91dlFvVHlIbnoxRXVuTkpCYV9JYzVMTFl3cjlZLTZQYUh3V3I5bGhMV1VQcnJfb1gwLWdXVmI5clNlWTZEdlhZN0l6b2R4RGktNk1td0Nta09qVU5GTENRc1NFaTJ5M2FQY0VqN1NSUjJMQTRuQVkyM3RONA?oc=5",
  "web_results": [
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "8月景氣燈號連9紅　追平史上最長紅燈紀錄 - 經濟日報",
-   "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE44Q3lNTnNrVXNoZml5dDZiX09lMVNLLTR0Y0hVcWhILXczTEdldThQNEdCUzdZVjM1YzdtVWVKQ3JIYjhhN05YMjg5dGRtT3FSbkk4cXR1Wmc5d9IBX0FVX3lxTE92dmd4QXBUc0JiaVN4Vk92Z3U3YW00RXBaSXN3TTVsbG4xbnlMZ2NWOGdrMm1HR0h3dmplUUJyX3VFOFd5dDdueGZIVXFmTi1CRThrbXFTakNaaDVmRENB?oc=5"
+   "body": "本文共700字\n國發會發布8月景氣燈號，亮出連續第九顆代表熱絡的紅燈，追平史上最長紀錄，綜合判斷分數則與上月持平為41分，國發會經濟發展處處長陳美菊表示，國內經濟維持穩健成長，對於亮出第十顆紅燈是審慎樂觀，但分數可能會有微幅波動。\n陳美菊表示，本月9項構成項目燈號均維持不變，其中出口表現最佳，批發、零售與餐飲也創歷年同月新高，廠商對於未來半年看好比例也增加。前一次連九紅出現在2021年2月至10月，她也說，觀察中秋假期間內需持續暢旺，分數可能會有變動的是貨幣總計數M1B，但再亮紅燈應該是沒什麼問題。\n陳美菊表示，本月領先指標連續13個月上升，累計升幅6.06%，外銷訂單動向指數受到AI出口帶動，半導體廠商也持續在台灣擴充產能，而同時指標則是連續11個月上升，累計升幅6.22%，主要因為AI應用持續發酵，消費性電子產品備貨需求，加上零售、餐飲受到中元、暑假帶動，內需相當活絡。\n至於相對辛苦的傳統產業，陳美菊說，與AI相關的傳產已經起來了，而第四季是傳產的傳統旺季，還需要持續觀察。\n展望未來，陳美菊表示，隨AI與雲端產業提高資本支出，伺服器新品與自研晶片量產，加上部分傳統產業受惠AI外溢效果並進入出貨旺季，將維繫出口成長動能；投資方面，國內半導體供應鏈持續投資高階製程與先進封裝產能，相關供應鏈亦積極擴廠，以及政府推動AI新十大建設，並加速中小微企業轉型升級，可望增添民間投資成長動能。\n至於消費方面，陳美菊指出，國內就業市場穩定、企業獲利良好，有助提高調薪及股利發放意願，加上股市維持高檔之財富效果，將持續挹注民間消費成長。惟美伊停戰協議進展、美國關稅措施變化、主要經濟體貨幣政策走向等不確定因素，仍須密切留意。\n※ 歡迎用「轉貼」或「分享」的方式轉傳文章連結；未經授權，請勿複製轉貼文章內容",
+   "snippet": "國發會發布8月景氣燈號，亮出連續第九顆代表熱絡的紅燈，追平史上最長紀錄，綜合判斷分數則與上月持平為41分，國發會經濟發展處處長陳美菊表示，國內經濟維持穩健成長，對於亮出第十顆 ...",
+   "source": "bing_news",
+   "title": "追平最長連九紅紀錄 國發會發布8月景氣燈號再亮紅燈",
+   "url": "https://money.udn.com/money/story/10869/9783732"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "8月景氣燈號連九紅 追平史上最長紅燈紀錄 | MoneyDJ理財網 - LINE TODAY",
-   "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTFBfbUdVWGtqaWkzU1JXSXFKRnE4MFhidkczZEZiVXJidGlYaXBSMW16aGFOT3NNdHVsNnJ5bGVEZ1FLNHVUa29jVlBMazRERUZpNkllcVVB?oc=5"
+   "body": "本文共903字\n國發會今天公布8月景氣燈號續亮紅燈，呈現連9紅，已經追平COVID-19疫情過後締造的紀錄，且因人工智慧（AI）熱潮支撐經濟成長動能，如無意外，9月也將續亮紅燈，改寫最長紅燈紀錄。\n國發會表示，8月景氣對策信號綜合判斷分數為41分，與7月持平，燈號續呈紅燈，9項構成項目燈號均維持不變；景氣領先及同時指標續呈上升，顯示國內經濟維持穩健成長。\n國發會經濟發展處處長陳美菊說明，隨著AI與雲端產業提高資本支出，伺服器新品與自研晶片量產，加上部分傳統產業受惠AI外溢效果並進入出貨旺季，均有助於維繫出口成長動能；而國內半導體供應鏈持續投資高階製程與先進封裝產能，相關供應鏈也積極擴廠，民間投資穩健成長，成為支撐今年景氣熱絡的重要因素。\n陳美菊指出，AI需求十分強勁，拉動多項經濟指標締造亮眼紀錄，8月出口金額達824億美元，創下歷年單月新高；8月外銷訂單為1029.6億美元，同創歷年單月新高；此外，8月批發業營業額新台幣1兆8501億元，年增65.4%，也創下歷史新高紀錄。\n陳美菊直言，8月景氣燈號亮出連9紅，已經追平2021年2月至10月「連9紅」的史上最長紅燈紀錄，且9月即便分數可能略有波動，續亮紅燈機率仍高，屆時將以「連10紅」改寫1984年以來的最長紀錄，對於經濟前景態度審慎樂觀。\n陳美菊補充，觀察景氣燈號9項構成項目，9月貨幣總計數M1B變動率可能受到股市日均成交額下滑影響而走弱，使個別項目燈號有所波動，整體景氣燈號應可維持紅燈。\n媒體關切，近期市場浮現AI減速論，加上美債殖利率走揚，可能拉高企業融資成本，是否影響AI發展，進而波及台灣經濟成長。\n陳美菊表示，美債殖利率走高可能影響美國內需，不過主要雲端服務供應商（CSP）資本支出明年估持續成長，對台灣出口是正面因素；近期市場雖然浮現對AI資安等疑慮，業者仍持續加碼投資，目前看來沒有減少跡象，此外，美國總統川普也希望美國在AI領域維持領先優勢，可預期相關投資延續。\n陳美菊認為，即便AI發展過程中有些干擾因素，包含資安疑慮、AI減速論等，可能影響投資速度，但各界將持續投資AI的趨勢是確定的，這波AI熱潮帶動的景氣熱絡與2000年網路泡沫不宜一概而論。\n※ 歡迎用「轉貼」或「分享」的方式轉傳文章連結；未經授權，請勿複製轉貼文章內容",
+   "snippet": "國發會今天公布8月景氣燈號續亮紅燈，呈現連9紅，已經追平COVID-19疫情過後締造的紀錄，且因人工智慧（AI）熱潮支撐經濟成長動能，如無意外，9月也將續亮紅燈，改寫最長紅燈紀錄。 國發會 ...",
+   "source": "bing_news",
+   "title": "8月景氣燈號連9紅 9月可望續亮紅燈刷新最長紀錄",
+   "url": "https://money.udn.com/money/story/10869/9783942"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "8月景氣燈號亮紅燈 連9紅創最長紀錄 - 大纪元",
-   "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE8zd0ZEYll2d1ltR0hSVFNMS0tvOWhIZjVjUld0VTAzVFVwN1lDeGxCUjV2TWp0S3pITGJzcHZuZFJQVjVtZDl2M0RhOXdKUW52c2xTRzJpNl9kUFgtN0xxOdIBZkFVX3lxTE5SakRQTGpHYng2d29sdUpLY2U0TkIyb0pQRk9IZnRXVUhLZUtOZjJZWXlwLW1STDQ5YUxyX2hjYXgtRGpIX3VyQXdMYTlza05FeDVhRE1QTUNuT0hHcmpvZkRLeUtzdw?oc=5"
+   "snippet": "國發會昨發布八月景氣燈號，亮出連續第九顆代表熱絡的紅燈，追平史上最長紀錄。由於AI熱潮持續支撐經濟成長動能，國發會預估九月燈號可望續亮紅燈，將會寫下史上最長的「連十紅」紀錄 ...",
+   "source": "bing_news",
+   "title": "史上最長 9月景氣燈號有望連十紅",
+   "url": "https://udn.com/news/story/7238/9784507"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "8月景氣燈號「連9紅」追平史上最長！ 領先指標「連13升」 - Newtalk新聞",
-   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE8zWkVDTXhhUWFzVklvWDZtNTN2UDlFdUZOMDBXaHE1S001UC1EMkhiWGNKT1lvZkZ5ZkVUVmpQN1RieGpIS0Z3ZjIwdjd6ZlRrVzJIYWRLa2thc1E?oc=5"
+   "snippet": "國發會29日公布8月景氣對策信號綜合判斷分數為41分，與上月持平，景氣燈號續呈紅燈，亮出連續第9顆紅燈，追平2021年連9紅最長紅燈紀錄；對於下月持續亮紅燈？國發會經濟發展處長陳美菊表示，審慎樂觀，若下月亮出第10顆紅燈，將是自1984年編制景氣燈號以來創下史上最長的紅燈紀錄。",
+   "source": "bing_news",
+   "title": "8月景氣燈號連9紅！下月創史上最長紅燈？國發會：審慎樂觀",
+   "url": "https://www.chinatimes.com/realtimenews/20260929003358-260410"
   }
  ]
 }

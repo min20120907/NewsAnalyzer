@@ -9,3 +9,9 @@ factcheck.hkbu.edu.hk
 infact.press
 factcheckcenter.jp
 politifact.com
+# 2026-10-14(B1)：補國際查核源（日文真新聞八源只中 jfc 9 筆且全 partial/inaccurate）。
+# factcheck.afp.com 含 AFP 日本查核；其餘為英文圈主要查核機構。
+factcheck.afp.com
+fullfact.org
+snopes.com
+factcheck.org

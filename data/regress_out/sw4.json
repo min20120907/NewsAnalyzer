@@ -2,102 +2,149 @@
  "available_weight": 100.0,
  "clamp_reason": "",
  "clamped": false,
+ "corroboration": {
+  "count": 3,
+  "outlets": [
+   "line today",
+   "newtalk.tw",
+   "tw.news.yahoo.com"
+  ]
+ },
+ "debug": false,
  "deep_analysis": {
-  "abstain": true,
-  "analysis": "提供的查核來源 Cofacts 內容為投資詐騙手法說明，與本主張所述之政治人物拜會事件無關，屬於無關證據。由於缺乏針對此特定事件的查核判定原文，目前無法確認該新聞內容的真偽。需補充針對小笠原欣幸拜會事件的獨立查核紀錄或官方回應方可判定。",
-  "claim": "日本籍國立清華大學教授小笠原欣幸拜會新北市長藍綠候選人李四川與蘇巧慧，並討論洋流等選情議題。",
-  "credibility_score": 60,
-  "evidence_state": "unrelated_evidence",
+  "abstain": false,
+  "analysis": "根據Newtalk新聞的完整報導，小笠原欣幸確實拜會了新北市長藍綠候選人李四川與蘇巧慧，並討論了包括「洋流」在內的選情議題。內文提供了具體的時間（9月30日）、人物職稱及照片佐證，且搜尋結果顯示當地政治人物侯友宜隨後對此事件做出回應，進一步佐證了事件的真實性。證據鏈完整，主張與事實相符。",
+  "claim": "日本籍清華大學教授小笠原欣幸拜會新北市長藍綠候選人李四川與蘇巧慧，並討論洋流等選情議題。",
+  "credibility_score": 95,
+  "evidence_state": "full_body_evidence",
   "evidence_state_consistent": true,
   "evidence_state_disputed": false,
   "evidence_used": [
-   "Cofacts"
+   "Newtalk新聞報導",
+   "網路搜尋結果摘要（含侯友宜回應）"
   ],
-  "is_provisional": true,
+  "is_provisional": false,
   "key_points": [
-   "Cofacts 查核內容針對的是投資詐騙手法與社群分流風險，與本主張所述之政治人物拜會事件完全無關。",
-   "提供的查核來源未包含任何關於小笠原欣幸、李四川或蘇巧慧的資訊，無法佐證該新聞事件的真偽。",
-   "雖然新聞內文詳細描述了拜會過程與選情分析，但缺乏獨立查核機構對該特定事件的判定原文。"
+   "內文明確指出小笠原欣幸於9月30日拜會國民黨候選人李四川與民進黨候選人蘇巧慧，並提及討論由沈伯洋帶起的「洋流」議題。",
+   "內文提供小笠原欣幸的職稱為國立清華大學人文社會學院榮譽講座教授，並附有其臉書照片作為佐證。",
+   "搜尋結果顯示新北市長侯友宜於10月1日對此事件做出回應，確認了該事件在當時的真實性與關注度。",
+   "內文詳細描述了兩位候選人的背景及小笠原對選情的分析，內容具體且邏輯連貫。"
   ],
   "model": "qwen3.8-27b-fastmtp",
-  "samples": 3,
+  "samples": 1,
   "score_std": 0.0,
-  "viewpoints": "目前僅有新聞媒體報導該事件，查核機構提供的資料僅涉及投資詐騙警示，未針對此政治拜會事件提供正面或反面的查核立場，故無法呈現正反雙方依據。"
+  "title_bait": false,
+  "title_bait_reason": "",
+  "viewpoints": "報導方（Newtalk）依據小笠原欣幸的公開透露及照片佐證，確認其拜會兩位候選人並討論選情；另一方（侯友宜）透過公開回應間接證實了該事件的發生及其對選情的影響，雙方資訊相互印證。"
  },
- "evidence_state": "unrelated_evidence",
- "final_score": 75.10424953699112,
- "fusion_weight": 0.0,
- "is_provisional": true,
+ "dimensions": {
+  "evidence_verdict": {
+   "confidence": 0.0,
+   "explanation": "外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）",
+   "id": "D1",
+   "impact_pts": 0.0,
+   "key": "evidence_verdict",
+   "name": "查核證據蘊涵度",
+   "status_label": "none",
+   "value": 0.0,
+   "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞；若漏召回則 c_E=0 退回未查證路由，絕不偷送 +15 分",
+   "what_it_measures": "已核實查核庫（Cofacts / MyGoPen / Google FC 等）對「同一具體事件」之蘊涵或駁斥立場與證據信心"
+  },
+  "headline_faithfulness": {
+   "confidence": 0.9,
+   "explanation": "標題平實反映內文主旨（標題—內文一致性 64%），無誇大或斷章取義（0 扣分；忠實度不額外灌水加分）",
+   "id": "D3",
+   "impact_pts": -0.0,
+   "key": "headline_faithfulness",
+   "name": "標題內文忠實度",
+   "status_label": "faithful",
+   "value": 1.0,
+   "what_if_wrong": "誤報時僅對該文施加標題失真扣分（最高 -22 分）與黃牌提示；漏報時因 F 不提供正分，絕不會把假新聞墊高到可信帶",
+   "what_it_measures": "新聞標題之斷言是否忠實反映內文，有無誇大釣魚、懸念誘導或斷章取義"
+  },
+  "rhetorical_risk": {
+   "confidence": 0.85,
+   "explanation": "內文語氣平實、無煽動轉發或偽冒公告特徵（低風險 R=0.15，惟缺外部查核時最高停留於待查證區間）",
+   "id": "D4",
+   "impact_pts": 52.0,
+   "key": "rhetorical_risk",
+   "name": "內文修辭與可驗性風險",
+   "status_label": "low_risk",
+   "value": 0.15,
+   "what_if_wrong": "作用範圍嚴格限制在「無查核且無同報」之未查證區間 [18, 58] 內，絕不會覆寫 D1 查核證據，也不會把無證據文章推過 60 分",
+   "what_it_measures": "文本自身之情緒操弄、催促轉發動員、偏方爆料話術，以及無出處之偽冒官方公告風險"
+  },
+  "source_corroboration": {
+   "confidence": 1.0,
+   "explanation": "具名主流媒體/白名單 (newtalk.tw)｜3 家外部來源同報（line today, newtalk.tw, tw.news.yahoo.com）（佐證指數 1.00）",
+   "id": "D2",
+   "impact_pts": 86.0,
+   "key": "source_corroboration",
+   "name": "跨源報導佐證度",
+   "status_label": "corroborated",
+   "value": 1.0,
+   "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章；若漏算新興媒體則退回待查證區間（45~58分），不會誤殺為假新聞",
+   "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數，以及文章自身發布時效一致性"
+  }
+ },
+ "evidence_state": "full_body_evidence",
+ "final_score": 88.7,
+ "fusion_weight": 0.3,
+ "is_provisional": false,
  "metrics": {
   "domain": {
-   "desc": "newtalk.tw",
+   "desc": "具名主流媒體/白名單 (newtalk.tw)",
    "score": 25.0,
    "weight": 25.0
   },
   "fact_check": {
    "desc": "not_found",
-   "score": 15.0,
+   "score": 0.0,
    "weight": 30.0
   },
   "sentiment": {
-   "desc": "0.85",
-   "score": 12.0,
+   "desc": "修辭安全度 85%（風險 R=0.15）",
+   "score": 12.75,
    "weight": 15.0
   },
   "similarity": {
-   "desc": "87.36%（標題—內文一致性，非真實性）",
-   "score": 13.10424953699112,
+   "desc": "忠實度 100%（faithful）",
+   "score": 15.0,
    "weight": 15.0
   },
   "timeliness": {
-   "desc": "1691 天前",
+   "desc": "unknown",
    "score": 0.0,
    "weight": 5.0
   },
   "user_feedback": {
-   "desc": "有查核討論",
-   "score": 10.0,
+   "desc": "none",
+   "score": 0.0,
    "weight": 10.0
   }
  },
- "mode": "deep",
- "post_fusion_score": 75.10424953699112,
+ "mode": "fast",
+ "post_fusion_score": 88.7,
  "rating_text": "高度可信",
+ "regime": "CORROBORATED_REPORT",
+ "regime_desc": "路由 B（主流來源／跨源同報佐證）：具名主流媒體/白名單 (newtalk.tw)｜3 家外部來源同報（line today, newtalk.tw, tw.news.yahoo.com）（佐證指數 1.00）",
  "review_links": {
   "duckduckgo": "https://duckduckgo.com/?q=%E5%B0%8F%E7%AC%A0%E5%8E%9F%E6%AC%A3%E8%BE%9B%E6%8B%9C%E6%9C%83%E6%96%B0%E5%8C%97%E5%B8%82%E9%95%B7%E8%97%8D%E7%B6%A0%E5%80%99%E9%81%B8%E4%BA%BA%EF%BC%81+%E8%A8%8E%E8%AB%96%E3%80%8C%E6%B4%8B%E6%B5%81%E3%80%8D%E7%AD%89%E9%81%B8%E6%83%85%E8%AD%B0%E9%A1%8C%7C+%E6%94%BF%E6%B2%BB+-+Newtalk%E6%96%B0%E8%81%9E+評論+討論",
   "threads": "https://www.threads.net/search?q=%E5%B0%8F%E7%AC%A0%E5%8E%9F%E6%AC%A3%E8%BE%9B%E6%8B%9C%E6%9C%83%E6%96%B0%E5%8C%97%E5%B8%82%E9%95%B7%E8%97%8D%E7%B6%A0%E5%80%99%E9%81%B8%E4%BA%BA%EF%BC%81+%E8%A8%8E%E8%AB%96%E3%80%8C%E6%B4%8B%E6%B5%81%E3%80%8D%E7%AD%89%E9%81%B8%E6%83%85%E8%AD%B0%E9%A1%8C%7C+%E6%94%BF%E6%B2%BB+-+Newtalk%E6%96%B0%E8%81%9E"
  },
- "rule_score": 75.10424953699112,
- "scoring_basis": "命中的查核與本主張無關，已忽略該錨定（暫時分數，非查核結論）",
+ "rule_score": 88.7,
+ "scoring_basis": "路由 B（主流來源／跨源同報佐證）：具名主流媒體/白名單 (newtalk.tw)｜3 家外部來源同報（line today, newtalk.tw, tw.news.yahoo.com）（佐證指數 1.00）",
  "sources": [
   {
-   "alternatives": [],
-   "article_id": "1bx9gnebv6p01",
-   "created_at": 1644734905.616,
+   "article_id": null,
+   "created_at": null,
    "feedback_count": 0,
-   "llm_promoted": false,
-   "matched_text": "因為社群人數逐漸增加，防止訊息量爆炸漏掉重要訊息，實施社群主題分類✨✨\n❶合約會所👇🏾\n👉 https://bit.ly/3nJDKv2\n❷網格會所👇🏾\n👉 https://bit.ly/3CDmu0X\n❸礦工會所👇🏾\n👉https://bit.ly/31oj4kZ\n❹鏈遊會所👇🏾\n👉https://bit.ly/2Ye0Ykw\n\n🈲大群不用退，只是有專門特定的問題可以至小群討論發問以及交流❤️\n",
-   "needs_llm_verdict": true,
-   "reasons": [
-    {
-     "text": "這類「分流社群＋短網址＋私下加 LINE」的模式要特別提高警覺。詐騙集團很常先用投資交流、合約、網格、挖礦或鏈遊等主題吸引加入，再把成員分流到不同小群組，方便由假老師、假助理或假客服進一步建立信任，最後引導到不明交易平台、要求入金或提供個人資料。\n\n尤其文中大量使用 bit.ly 等短網址，使用者在點擊前通常無法直接確認實際導向的網站，更增加釣魚網站、惡意下載或假平台的風險。遇到這類連結，不建議直",
-     "type": "RUMOR"
-    },
-    {
-     "text": "常見詐騙手法之一是透過社交軟體詐騙。\n\n有一些不法人士會以各式各樣的假身分，在各種社交平台和群組裡尋找目標。他們一開始對你噓寒問暖，以交友名義接近你，然後向你推薦投資項目。也有一些投資社群或投資專欄裡總是有所謂的“投資大師”，他們贏錢貼圖，輸錢則不貼，以極高回報不斷吸引著followers。\n\n通常這類“投資大師”是無法出示正規的金融履歷或者職業牌照（License），比如CFA、FRM、CPA、",
-     "type": "RUMOR"
-    },
-    {
-     "text": "請小心虛擬貨幣投資廣告，將被害人拉進LINE投資群組，由投資老師示範，再將連結放上群組，讓被害人指定老師代為操盤。\n\n例如指示下載APP、上網站加會員，匯款到人頭帳戶，初期少量出金，誘使加碼投資後，以提早領回要繳違約金、系統故障等推諉出金，最後將被害人踢出群組斷絕聯繫。\n這些都是常見的詐騙手法。",
-     "type": "RUMOR"
-    }
-   ],
-   "similarity_score": 0.48203128576278687,
-   "soft_hit_sim": 0.48203128576278687,
-   "soft_hit_status": "inaccurate",
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": 0.0,
    "source": "cofacts",
    "status": "not_found",
-   "url": "https://cofacts.tw/article/1bx9gnebv6p01"
+   "url": null
   },
   {
    "article_id": null,
@@ -120,28 +167,68 @@
    "source": "mygopen",
    "status": "not_found",
    "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "rumtoast",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "hkbu",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "infact",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "jfc",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "politifact",
+   "status": "not_found",
+   "url": null
   }
  ],
- "timings": {
-  "deep_analyze": 29663.0,
-  "extract": 9038.2,
-  "fact_check": 4172.0,
-  "scoring": 29663.3,
-  "sentiment": 271.3,
-  "similarity": 454.3,
-  "total": 43145.8,
-  "web_search": 2230.2
- },
+ "timings": {},
  "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題| 政治 - Newtalk新聞",
- "total_raw_score": 75.10424953699112,
+ "total_raw_score": 88.7,
  "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE8zakJ6dGRXYlFrWWtubW9PRnlPZFZkc3VXSVRQaWxmWWdFNlZLT2lxT04zRmEzdWg3bU5uMHE3UG8tTVdOeGx5UFoxdEIzaHYwZXlJR2hQQjhrTE0?oc=5",
  "web_results": [
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題| 政治 - Newtalk新聞",
-   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE8zakJ6dGRXYlFrWWtubW9PRnlPZFZkc3VXSVRQaWxmWWdFNlZLT2lxT04zRmEzdWg3bU5uMHE3UG8tTVdOeGx5UFoxdEIzaHYwZXlJR2hQQjhrTE0?oc=5"
-  },
   {
    "snippet": "",
    "source": "google_news",
@@ -149,28 +236,23 @@
    "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxQSHNyZDQxSkNSV3pHS0xXdGlHcEpfc1k4TVQ0djZHRG00cVV6WW9kWnhCcFMzMHRMckZQU19vemZuc2dPaW42c3dESE1adFdHTWJNdXNPei1ZVGcyZmc3UnYyYjJsd2E4M1BPZjc2WWdDTXZDdkUxcmljbkY3UHVLd3lqSzY?oc=5"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "柯文哲到彰化稱不認識藍綠縣長候選人 陳素月陣營：沒私交當然不認識！ - Newtalk新聞",
-   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE1qamc3aEFLRjViWHhacE02OWFyOVVhcmpFaXdpN1dZaWl2TWpZRXRsWnZxbEZoY0NlQm1SZ2s1RS1xbFhoeDFVM2ZVMFduRm1iLXplX0Z3aTFtVzg?oc=5"
+   "body": "九合一選舉將於11月28日舉行投開票。對台灣政治有長期研究及觀察之日本籍國立清華大學人文社會學院榮譽講座教授小笠原欣幸昨（30）日透露，他已經拜會國民黨新北市長候選人李四川以及民進黨新北市長候選人蘇巧慧，就近來由民進黨台北市長候選人沈伯洋所帶起之「洋流」等有關新北選情問題就教兩位候選人。\n小笠原欣幸指出，國民黨自自2005年以來，已在新北市執政長達5屆21年（包含前身的台北縣時期）。就基本盤而言，國民黨較民進黨略占優勢，但也存在一定數量的中間選民。最近的媒體民調顯示蘇巧慧稍微領先。距離投票日還有兩個月，選舉的勝負仍未定。\n對於李四川部分，小笠原欣幸指出，李四川曾在新北市、高雄市、台北市擔任副市長，也曾在國民黨朱立倫主席時期出任黨中央秘書長。相較於站上檯面，他主要是扮演幕後角色，以穩健的行政能力作為主要特色，累積了不少實績。\n至於蘇巧慧部分，小笠原欣幸指出，蘇巧慧是在新北市第5選區三度當選的立法委員。她是曾任台北縣長、行政院長的蘇貞昌之女，雖然是政二代，不過長期以來在教育、托育、福利等領域持續耕耘，走出自己的問政路線。\n小笠原欣幸表示，此次拜會李四川與蘇巧慧是想請教新北的選情、洋流的影響、内外大環境的影響等議題。\n此前，小笠原欣幸接受《天下雜誌》專訪，並分享自己對於此次九合一選舉觀察。而小笠原欣幸認為，此次縣市長選舉，最關鍵戰場在新北市。尤其從大趨勢來看，從去年的李四川大幅領先，轉變為今年的小幅領先，蘇巧慧逐漸縮少距離，故現階段應可將其視為勢均力敵的情勢。",
+   "snippet": "九合一選舉將於11月28日舉行投開票。對台灣政治有長期研究及觀察之日本籍國立清華大學人文社會學院榮譽講座教授小笠原欣幸昨（30）日透露，他已經拜會國民黨新北市長候選人李四川以及 ...",
+   "source": "bing_news",
+   "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題",
+   "url": "https://newtalk.tw/news/view/2026-10-01/1062843"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "小笠原欣幸直言新北市長選戰藍綠勝負未定 侯友宜有最新回應！ - Newtalk新聞",
-   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBkSnljc1R6TERkVm8zOWhRZ2dTQnRlN2UyYlVmcFRicU9pNzREWGdrdFJySTJrSXR1ZFJsT1poOGI1WW1PN05jR1VNb1lnVDg1Q0hxZXJ5OGhwSTQ?oc=5"
+   "snippet": "[Newtalk新聞] 對台灣政治有長期研究及觀察之日本籍國立清華大學人文社會學院榮譽講座教授小笠原欣幸昨透露，他已經拜會國民黨新北市長候選人李四川以及民進黨新北市長候選人蘇巧慧，更直言新北市長選戰，勝負仍未定。對此，新北市長侯友宜今（1）日也有最新回應。 侯友宜今日出席位於中和區新北污水接管突破130萬戶記者會，並接受聯訪。 針對小笠原欣幸對新北市選情的觀察，侯友宜表示，李四川在基層做了很多事情 ...",
+   "source": "bing_news",
+   "title": "小笠原欣幸直言新北市長選戰藍綠勝負未定 侯友宜有最新回應！",
+   "url": "https://tw.news.yahoo.com/%E5%B0%8F%E7%AC%A0%E5%8E%9F%E6%AC%A3%E5%B9%B8%E7%9B%B4%E8%A8%80%E6%96%B0%E5%8C%97%E5%B8%82%E9%95%B7%E9%81%B8%E6%88%B0%E8%97%8D%E7%B6%A0%E5%8B%9D%E8%B2%A0%E6%9C%AA%E5%AE%9A-%E4%BE%AF%E5%8F%8B%E5%AE%9C%E6%9C%89%E6%9C%80%E6%96%B0%E5%9B%9E%E6%87%89-120725793.html"
   },
   {
-   "snippet": "",
-   "source": "google_news",
-   "title": "被張淑娟點名是幫兇江怡臻籲蘇巧慧正面回應| 政治 - Newtalk新聞",
-   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBEQmxpTGh2WE9HY2JwTmZOaVZ5UEJDT1RkejFQN0lTLW54NDhENWpQemtfMmw5UEJsQXI4NUR2b0ZoVDlTbXp4X3RBQ0g1akJ3VVVhLVJwMVZmUE0?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "小笠原欣幸拜會蘇巧慧、李四川談洋流 揭新北是年底選舉最大決戰地 - Yahoo新聞",
-   "url": "https://news.google.com/rss/articles/CBMisgNBVV95cUxQeFNkdm11WWo4eFFCMWRFUXMzYU1QVmwyY0tKb1hiSEx4LWxMRDRfT1RucVc3ZnY0RUY3R0lhM1NVYlI1V0pQQl9QVDVkTXdiQy1OUUFhOVFzS19IUmhKOWlRbXhsRkN0eXUtanpvS2pYemtkN19oNzF2YUVaaE9HS2NnaGhKODBlVnl5R1JhSVVRQU1kOTI5ektfRmJsb0VXN2J2QjEwNHhGeFdmck84aEdJZG5UZVNObGlJWHJucUE4WG9scTJPZlhQMHZXWm04dFBObjdRX1pJUlU5SndlMUxMdDl3NmJvc2lDWm1TNkltcTY3OHhmNUp1aWxwZUZseUI1RVFENjFpUDZCY08wdTY1aXRWRGlXcDE5aEdEOGJNYmJndWcxdzM0R1FkZWhrLTJ4NWtRMnBYN0s4TVlBQ0xnR0tXRlYtbS1iV0NQS2dTQzBvNmJSUkkzaW9ieEVEdnhRZVFnbV9ZWXJxanA5Um9CQXExby1PNlYyeVIzSDFmQXVtRF83aWN5YUp2OHQzSFBRYmFERHJ2elh4Q1QyOU5TVzZ5dFFJQkM1Mm5DS2hPQQ?oc=5"
+   "snippet": "[Newtalk新聞] 九合一選舉將於11月28日舉行投開票。對台灣政治有長期研究及觀察之日本籍國立清華大學人文社會學院榮譽講座教授小笠原欣幸昨（30）日透露，他已經拜會國民黨新北市長候選人李四川以及民進黨新北市長候選人蘇巧慧，就近來由民進黨台北市長候選人沈伯洋所帶起之「洋流」等有關新北選情問題就教兩位候選人。 小笠原欣幸指出，國民黨自自2005年以來，已在新北市執政長達5屆21年（包含前身的台北 ...",
+   "source": "bing_news",
+   "title": "小笠原欣辛拜會新北市長藍綠候選人！ 討論「洋流」等選情議題",
+   "url": "https://tw.news.yahoo.com/%E5%B0%8F%E7%AC%A0%E5%8E%9F%E6%AC%A3%E8%BE%9B%E6%8B%9C%E6%9C%83%E6%96%B0%E5%8C%97%E5%B8%82%E9%95%B7%E8%97%8D%E7%B6%A0%E5%80%99%E9%81%B8%E4%BA%BA-%E8%A8%8E%E8%AB%96-%E6%B4%8B%E6%B5%81-%E7%AD%89%E9%81%B8%E6%83%85%E8%AD%B0%E9%A1%8C-012928610.html"
   }
  ]
 }

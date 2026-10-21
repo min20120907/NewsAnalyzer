@@ -2,130 +2,172 @@
  "available_weight": 100.0,
  "clamp_reason": "",
  "clamped": false,
+ "corroboration": {
+  "count": 2,
+  "outlets": [
+   "健康醫療網",
+   "台灣事實查核中心"
+  ]
+ },
+ "debug": false,
  "deep_analysis": {
   "abstain": false,
-  "analysis": "根據 Cofacts 與 MyGoPen 的查核結果，該主張被判定為不準確或誤導。衛福部明確表示目前無醫學研究證實檸檬水可治療癌症，更無法取代化學治療。雖然檸檬水對健康有益，但將其宣稱為癌症治療手段屬於虛假資訊，故可信度極低。",
-  "claim": "每天喝檸檬水可以治療癌症甚至取代化學治療。",
-  "credibility_score": 25,
+  "analysis": "內文標題與內容宣稱檸檬水可治療癌症並獲醫師證實，但查核證據顯示衛福部與多位醫師明確否定此說法，指出無醫學研究支持且可能有害健康。Cofacts 查核結果亦標記相關抗癌說法為謠言或無依據。內文與權威機構及專家意見嚴重衝突，屬不實資訊。",
+  "claim": "檸檬水可以治療癌症甚至取代化學治療，且醫師證實喝檸檬水能抗癌。",
+  "credibility_score": 15,
   "evidence_state": "full_body_evidence",
   "evidence_state_consistent": true,
   "evidence_state_disputed": false,
   "evidence_used": [
    "Cofacts",
-   "MyGoPen",
-   "衛福部"
+   "衛福部",
+   "彰化秀傳紀念醫院營養科主任陳燕華",
+   "台北馬偕醫院肝膽腸胃科資深醫師王鴻源"
   ],
   "is_provisional": false,
   "key_points": [
-   "Cofacts 判定該主張為不準確，指出目前沒有任何醫學研究證實檸檬水能治療癌症。",
-   "衛福部提醒民眾，檸檬水無法取代化學治療，許多癌患者因信謠而停藥是危險行為。",
-   "MyGoPen 查核指出類似「食物殺死癌細胞」的說法多為誤導，缺乏科學依據支持其療效。",
-   "網路搜尋結果顯示，醫師與查核中心均強調檸檬水僅有預防或保健效果，無法作為癌症治療手段。"
+   "衛福部明確提醒目前沒有任何醫學研究證實檸檬水能治療癌症，直接駁斥內文主張。",
+   "Cofacts 查核結果顯示，彰化秀傳紀念醫院營養科主任陳燕華表示目前沒有任何研究證明喝熱檸檬水可以抗癌。",
+   "台北馬偕醫院醫師王鴻源指出檸檬水抗癌說法沒有學術單位或專家認同，且檸檬酸對胃刺激大，可能導致胃潰瘍。",
+   "內文標題宣稱「醫師證實：喝檸檬水就能抗癌」，與查核證據中醫師及官方機構的否定立場完全相反。"
   ],
   "model": "qwen3.8-27b-fastmtp",
-  "samples": 3,
+  "samples": 1,
   "score_std": 0.0,
-  "viewpoints": "支持方認為檸檬水具有抗癌功效甚至可取代化療，此說法主要流傳於網路社群；反對方（包括衛福部、Cofacts 及 MyGoPen）依據醫學研究指出檸檬水無治療癌症之實證，且強調其不能取代正規醫療處置。"
+  "title_bait": true,
+  "title_bait_reason": "標題宣稱「醫師證實：喝檸檬水就能抗癌」，但內文及查核證據均指出醫師與官方機構否認檸檬水有抗癌或治療癌症的效果。",
+  "viewpoints": "主張方認為檸檬水可治療癌症並取代化療，標題聲稱醫師證實此說法；反對方（衛福部、陳燕華醫師、王鴻源醫師）依據醫學研究與臨床經驗指出無證據支持抗癌效果，且強調檸檬水可能傷害胃部，該說法屬謠言。"
+ },
+ "dimensions": {
+  "evidence_verdict": {
+   "confidence": 0.78,
+   "explanation": "查核機構 (cofacts) 判定不實（相似度 82%，共 1 則查核依據），直接鎖定不實區間（基底 13.3 分）",
+   "id": "D1",
+   "impact_pts": 13.3,
+   "key": "evidence_verdict",
+   "name": "查核證據蘊涵度",
+   "status_label": "refutes",
+   "value": -1.0,
+   "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞；若漏召回則 c_E=0 退回未查證路由，絕不偷送 +15 分",
+   "what_it_measures": "已核實查核庫（Cofacts / MyGoPen / Google FC 等）對「同一具體事件」之蘊涵或駁斥立場與證據信心"
+  },
+  "headline_faithfulness": {
+   "confidence": 0.9,
+   "explanation": "AI 語義比對判定標題誇大或斷章取義（標題宣稱「醫師證實：喝檸檬水就能抗癌」，但內文及查核證據均指出醫師與官方機構否認檸檬水有抗癌或治療癌症的效果。）（標題—內文一致性 92%） ➔ 觸發標題失真扣分 (-22.0 分，不直接判假，但壓制可信度上限)",
+   "id": "D3",
+   "impact_pts": -22.0,
+   "key": "headline_faithfulness",
+   "name": "標題內文忠實度",
+   "status_label": "bait_or_unfaithful",
+   "value": 0.12,
+   "what_if_wrong": "誤報時僅對該文施加標題失真扣分（最高 -22 分）與黃牌提示；漏報時因 F 不提供正分，絕不會把假新聞墊高到可信帶",
+   "what_it_measures": "新聞標題之斷言是否忠實反映內文，有無誇大釣魚、懸念誘導或斷章取義"
+  },
+  "rhetorical_risk": {
+   "confidence": 0.85,
+   "explanation": "檢出內文風險訊號：AI 內文審視指出可疑訊號 (自評 15 分)（風險值 R=0.75）",
+   "id": "D4",
+   "impact_pts": 28.0,
+   "key": "rhetorical_risk",
+   "name": "內文修辭與可驗性風險",
+   "status_label": "high_risk",
+   "value": 0.75,
+   "what_if_wrong": "作用範圍嚴格限制在「無查核且無同報」之未查證區間 [18, 58] 內，絕不會覆寫 D1 查核證據，也不會把無證據文章推過 60 分",
+   "what_it_measures": "文本自身之情緒操弄、催促轉發動員、偏方爆料話術，以及無出處之偽冒官方公告風險"
+  },
+  "source_corroboration": {
+   "confidence": 1.0,
+   "explanation": "未提供原始新聞網域｜2 家外部來源同報（健康醫療網, 台灣事實查核中心）（佐證指數 0.54）",
+   "id": "D2",
+   "impact_pts": 0.0,
+   "key": "source_corroboration",
+   "name": "跨源報導佐證度",
+   "status_label": "uncorroborated",
+   "value": 0.54,
+   "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章；若漏算新興媒體則退回待查證區間（45~58分），不會誤殺為假新聞",
+   "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數，以及文章自身發布時效一致性"
+  }
  },
  "evidence_state": "full_body_evidence",
- "final_score": 2.5,
- "fusion_weight": 0.1,
+ "final_score": 13.55,
+ "fusion_weight": 0.15,
  "is_provisional": false,
  "metrics": {
   "domain": {
-   "desc": "google.com",
-   "score": 15.0,
+   "desc": "未提供原始新聞網域",
+   "score": 13.5,
    "weight": 25.0
   },
   "fact_check": {
-   "desc": "inaccurate",
+   "desc": "refutes",
    "score": -30.0,
    "weight": 30.0
   },
   "sentiment": {
-   "desc": "0.46（中性區間，不扣分）",
-   "score": 15.0,
+   "desc": "修辭安全度 25%（風險 R=0.75）",
+   "score": 3.75,
    "weight": 15.0
   },
   "similarity": {
-   "desc": "96.18%（標題—內文一致性，非真實性）",
-   "score": 14.426482915878296,
+   "desc": "忠實度 12%（bait_or_unfaithful）",
+   "score": 1.8,
    "weight": 15.0
   },
   "timeliness": {
-   "desc": "1282 天前",
+   "desc": "unknown",
    "score": 0.0,
    "weight": 5.0
   },
   "user_feedback": {
-   "desc": "有查核討論",
-   "score": 10.0,
+   "desc": "證據信心 78%",
+   "score": 7.8,
    "weight": 10.0
   }
  },
- "mode": "deep",
- "post_fusion_score": 2.5,
+ "mode": "fast",
+ "post_fusion_score": 13.55,
  "rating_text": "高度可疑",
+ "regime": "VERIFIED_EVIDENCE",
+ "regime_desc": "路由 A（查核證據主導）：查核機構 (cofacts) 判定不實（相似度 82%，共 1 則查核依據），直接鎖定不實區間（基底 13.3 分）",
  "review_links": {
   "duckduckgo": "https://duckduckgo.com/?q=%E6%AA%B8%E6%AA%AC%E6%B0%B4%E5%8F%AF%E4%BB%A5%E6%B2%BB%E7%99%82%E7%99%8C%E7%97%87%EF%BC%9F%E9%86%AB%E5%B8%AB%E8%AD%89%E5%AF%A6%EF%BC%9A%E5%96%9D%E6%AA%B8%E6%AA%AC%E6%B0%B4%E5%B0%B1%E8%83%BD%E6%8A%97%E7%99%8C%EF%BC%8C%E6%98%AF%E7%9C%9F%E7%9A%84%E5%97%8E+評論+討論",
   "threads": "https://www.threads.net/search?q=%E6%AA%B8%E6%AA%AC%E6%B0%B4%E5%8F%AF%E4%BB%A5%E6%B2%BB%E7%99%82%E7%99%8C%E7%97%87%EF%BC%9F%E9%86%AB%E5%B8%AB%E8%AD%89%E5%AF%A6%EF%BC%9A%E5%96%9D%E6%AA%B8%E6%AA%AC%E6%B0%B4%E5%B0%B1%E8%83%BD%E6%8A%97%E7%99%8C%EF%BC%8C%E6%98%AF%E7%9C%9F%E7%9A%84%E5%97%8E"
  },
- "rule_score": 0.0,
- "scoring_basis": "查核機構判定不實，已錨定低分",
+ "rule_score": 13.55,
+ "scoring_basis": "路由 A（查核證據主導）：查核機構 (cofacts) 判定不實（相似度 82%，共 1 則查核依據），直接鎖定不實區間（基底 13.3 分）",
  "sources": [
   {
    "alternatives": [
     {
-     "matched_text": "🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋\n麻煩—請轉發請轉發：\n 北京陸軍總醫院陳惠仁教授強調，如每個收到這份簡訊的人，能夠轉發十份給其他人，肯定至少有一條生命將會被輓救回來... 我已經做了我的部分了，希望你也能幫忙做了你的部分。感謝！ \n\n🍋熱的檸檬水可以救你一輩子\n\n🍋再忙也要看，然後告訴別人，\n    把愛傳出去！ \n\n🍋熱檸檬～只殺癌細胞！ \n\n🍋切２～３薄片檸檬放在杯子里，      加入熱水，它會變成「",
+     "matched_text": "台北馬偕醫院肝膽腸胃科資深醫師王鴻源說：檸檬酸對胃的刺激大，門診曾收治一對老夫婦，每天喝檸檬水喝到胃潰瘍，雙雙掛病號照胃鏡。所以真的不要再傳這樣的謠言了，有的長輩太過於相信反而害了自己的身體。\n檸檬水可以抗癌的說法沒有學術單位或專家認同。",
      "reasons": [
       {
-       "text": "心臟內科醫師說，目前沒有看過檸檬酸能調整高血壓、預防栓塞或降低血液凝塊等功效；此外，檸檬含有多酚，但無法直接推論為可改善血壓。",
-       "type": "RUMOR"
-      },
-      {
-       "text": "近日長輩群組間流傳「熱檸檬水可抗癌抗老」訊息，不少老人家信以為真。營養師表示，檸檬的營養素一旦遇熱就會被破壞，呼籲民眾勿聽信謠言，多運動、營養均衡更能維持健康。網友在衛生福利部國民健康署的「疑問醫答」專區對此傳聞提出疑問，彰化基督教醫院營養師陳燕華表示，檸檬的營養素一旦遇到熱水就容易受到破壞，而且食物不論是酸、是鹼，只要進入人體以後就會被體內酸鹼平衡系統中和，因此即便是「鹼性水」也無法改變體質。陳",
+       "text": "台北馬偕醫院肝膽腸胃科資深醫師王鴻源說：檸檬酸對胃的刺激大，門診曾收治一對老夫婦，每天喝檸檬水喝到胃潰瘍，雙雙掛病號照胃鏡。所以真的不要再傳這樣的謠言了，有的長輩太過於相信反而害了自己的身體。\n檸檬水可以抗癌的說法沒有學術單位或專家認同。",
        "type": "RUMOR"
       }
      ],
-     "similarity_score": 0.5041390657424927,
+     "similarity_score": 0.7798579931259155,
      "status": "inaccurate",
-     "url": "https://cofacts.tw/article/1h07jbdb5o5g1"
-    },
-    {
-     "matched_text": "轉發就是善行：   \r\n \r\n長庚醫院毒物科權威\r\n醫師\r\n已故林教授的文章稱： \r\n\n難怪有癌症的人愈來愈多，\r\n用電鍋蒸煮東西時，\r\n一定要用開水,\r\n或是過濾過的水，\r\n因為如果直接用自來水，\r\n自來水有氯，\r\n再經過加熱後，\r\n由於鍋蓋是蓋著的，\r\n氯被全部包覆在食物上。\r\n\n所以一定要用煮沸過的開水或用已過濾掉氯的水來蒸東西。\r\n因為氯有致癌的危險，\r\n\n這真的很重要！\r\n即使只是蒸饅頭",
-     "reasons": [
-      {
-       "text": "林杰樑醫師的臉書粉絲團就曾對此謠言提出澄清：「鄭重聲明此文章非林醫師言論，請勿再轉載。電鍋蒸煮過程氯會蒸發並不會殘留在食物上，大家不必多慮。」\n這個抑癌蔬菜排行大概在2003年就曾出現在北京農業信息網，接下來就一發不可收拾，流傳至今冠上醫師名字依然有很多人相信、瘋狂轉發；可想而知，這也不是某國的癌症預防研究所，另一個謠言版本說抑癌蔬菜排行是「日本國立癌症預防研究所公布」，但實際上日本國立癌症預防研",
-       "type": "RUMOR"
-      },
-      {
-       "text": "關於這則謠言，自由時報也曾報導，報導中林口長庚醫院臨床毒物科主任林杰樑、環保署毒管處處長林建輝都認為民眾不必太擔心氯的問題。\n自來水符合政府飲用水檢驗規範；目前也沒有可信的研究報告，能證明電鍋使用自來水蒸煮食物會對人體有害。\n\n香港余宗憲醫生的癌症預防研究所公布抑癌蔬菜排行也不具可信度。\n在這些數據面前，我們無法相信這個榜單的真實性。",
-       "type": "RUMOR"
-      }
-     ],
-     "similarity_score": 0.4898276925086975,
-     "status": "inaccurate",
-     "url": "https://cofacts.tw/article/5485347934299-rumor"
+     "url": "https://cofacts.tw/article/uy9W158BEY7yIwhpumFZ"
     }
    ],
-   "article_id": "2ik77dc55j3ss",
-   "created_at": 1680078550.12,
-   "feedback_count": 448,
-   "llm_promoted": true,
-   "matched_text": "*木瓜和舌頭練習。*\n\n 請轉發給大家，此信息利人利己，功德無量。\n\n  【木瓜是水果之王。】\n\n  未來治療惡性腫瘤的新方法不再是*化療、放療或手術*，而是通過改變飲食來改善新生血管。\n\n  偉大的醫學知識！ 優質的飲食是一日三次的自然化療。 下面的資料要認真對待，簡單易行，很好。\n  ‭‭\n  你可能不知道的是：*木瓜*，我們平時覺得稀奇古怪又容易獲得的水果之王！ 醫生誇獎的西紅柿跟木瓜比起來",
-   "needs_llm_verdict": true,
+   "article_id": "2i9uu0bit7kta",
+   "created_at": 1528509379.6,
+   "feedback_count": 2,
+   "gate_text": "彰化秀傳紀念醫院營養科主任陳燕華表示：目前沒有任何研究證明喝熱檸檬水可以抗癌。\n台北馬偕醫院肝膽腸胃科資深醫師王鴻源說：檸檬酸對胃的刺激大，門診曾收治一對老夫婦，每天喝檸檬水喝到胃潰瘍，雙雙掛病號照胃鏡。所以真的不要再傳這樣的謠言了，有的長輩太過於相信反而害了自己的身體。",
+   "matched_text": "彰化秀傳紀念醫院營養科主任陳燕華表示：目前沒有任何研究證明喝熱檸檬水可以抗癌。",
+   "needs_llm_verdict": false,
    "reasons": [
     {
-     "text": "假的，\n1.美國農業部（USDA）和世界衛生組織網站並沒有提供這些木瓜數據，每種水果都有自己的營養價值，比較營養素的倍數，意義不大。\n2.沒有研究證實「只動舌頭就可以預防失智症」。失智症是腦細胞損傷，導致病患在認知、情緒與行為、日常生活自理上產生不同程度的障礙。",
-     "type": "RUMOR"
+     "text": "彰化秀傳紀念醫院營養科主任陳燕華表示：目前沒有任何研究證明喝熱檸檬水可以抗癌。",
+     "type": "NOT_RUMOR"
     }
    ],
-   "similarity_score": 0.5564594268798828,
-   "soft_hit_sim": 0.5564594268798828,
-   "soft_hit_status": "inaccurate",
+   "sim_text": "彰化秀傳紀念醫院營養科主任陳燕華表示：目前沒有任何研究證明喝熱檸檬水可以抗癌。",
+   "similarity_score": 0.8221677541732788,
    "source": "cofacts",
-   "status": "inaccurate",
-   "url": "https://cofacts.tw/article/2ik77dc55j3ss"
+   "status": "accurate",
+   "url": "https://cofacts.tw/article/2i9uu0bit7kta"
   },
   {
    "article_id": null,
@@ -141,31 +183,73 @@
   {
    "article_id": null,
    "created_at": null,
-   "feedback_count": 6,
-   "matched_text": "【誤導】天天吃地瓜、茄子等食物殺死癌細胞？錯誤說法！營養師詳解相關研究",
-   "reasons": [
-    {
-     "text": "【誤導】天天吃地瓜、茄子等食物殺死癌細胞？錯誤說法！營養師詳解相關研究",
-     "type": "MYGOPEN_TITLE"
-    }
-   ],
-   "similarity_score": 0.5814,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
    "source": "mygopen",
-   "status": "inaccurate",
-   "url": "https://www.mygopen.com/2022/09/foods-cancer.html"
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "rumtoast",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "hkbu",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "infact",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "jfc",
+   "status": "not_found",
+   "url": null
+  },
+  {
+   "article_id": null,
+   "created_at": null,
+   "feedback_count": 0,
+   "matched_text": null,
+   "reasons": [],
+   "similarity_score": null,
+   "source": "politifact",
+   "status": "not_found",
+   "url": null
   }
  ],
- "timings": {
-  "deep_analyze": 26535.1,
-  "fact_check": 4442.3,
-  "scoring": 26535.7,
-  "sentiment": 262.8,
-  "similarity": 210.3,
-  "total": 31241.8,
-  "web_search": 2458.1
- },
+ "timings": {},
  "title": "檸檬水可以治療癌症？醫師證實：喝檸檬水就能抗癌，是真的嗎",
- "total_raw_score": -20.573517084121704,
+ "total_raw_score": 13.55,
  "url": "https://www.google.com/search?q=test",
  "web_results": [
   {
@@ -177,32 +261,20 @@
   {
    "snippet": "",
    "source": "google_news",
-   "title": "謠言終結站》檸檬抗癌效果高於化療1萬倍？ 查核中心：舊謠言勿信 - 自由健康網",
-   "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE1tQWVJeVgyNEgzZHg2Mk1JaDdpNmg5bzBQUmZ0Q3BGeGJGMHNkNUVCVG82SEg1Y1dEY0dMNW5aRXpzcXc4VGZvLTVFTGRpTUl0LWdZTmlaSFpvckxhNlgtbGstYnfSAWpBVV95cUxNYkxITUFqZTlCOTdpc2pvdGdHQUc4bVV4djFIM0NWcjVHaVlMRVdodnNBdUdaOGp6RllfSVozZHBXcnYzc0VYdlp3Q2cyVUpqNmpqVU9ubktNamxFeVc2NVFjN1BZcVpyUmZR?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "朱芯儀抗癌成功後養成1習慣！每天喝「排毒水」防復發 檸檬水、黑咖啡也能補水 - TVBS 健康2.0",
-   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE5udjFXdk1vcDdSY3lZY3A3YlBEMXdVNDBmWUF1QlRFdE9sQ2JUeGxDVlpTMC12b0hJcHpCMG1jeFpWaDJTY2FxXzIyTzIxNHhNWEE?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
-   "title": "喝熱檸檬水可抗癌？ 營養師曝真相：2種族群飲用需注意！ - health.udn.com",
-   "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE9JTzhDczRDY1FObFQzZW9YdV9hV2FxdGwxSTI4anRCWTJjZUl3RFJvQTBnaTVnUzJXR0dVb2ZYa0JLcjRueEF0SXR5MEFVeE56ckdPcnFTVklJY3VD0gFiQVVfeXFMT3NXTzluR0swVDNVNUhZUjNGVURXem5sd1ZBZ3oyc1g2VWNGenhPd1VaU0JvWWVnMnA5RTBVVjd2bVQxT0JfcmU5NHNnQjBvaWpaRWFnSXRBNDN3eHM5SWZBR0E?oc=5"
-  },
-  {
-   "snippet": "",
-   "source": "google_news",
    "title": "【部分錯誤】網傳「檸檬皮維生素C含量高，經證實可治癌症」？ - 台灣事實查核中心",
    "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE5iZTFTWXljU1FwU2pYTHVxOGIwZGhtdE9PRWlpZ0VTT1R4Y19DS2lGQnhBWlA1SVlxSnVNclNfYVhCbTlLN0tZR0E0YTUzNW1iLXpXTXlNcldYSEQ5aGJVZG9GUmZvVFlZT0Uwbw?oc=5"
   },
   {
    "snippet": "",
    "source": "google_news",
-   "title": "胰臟癌、膽管癌都怕它！營養師推3飲品排毒抗發炎 香菜水、奇亞籽上榜 - TVBS 健康2.0",
-   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTFBRRnBzR3l0cXVvZ2FzQTMzeC14U1VSSUh4RUJpMW80VTc2NE9FOXZCNzZ1SWdUMDJod2tXQXhEa184eldORDZOMDNZNzJtU0J6ZWc?oc=5"
+   "title": "【錯誤】網傳「 總醫院陳惠仁教授強調，熱檸檬水能救你一輩子！熱檸檬水可以殺癌細胞，冰凍檸檬水跟檸檬萃取物沒用」?​‍‌‍‌‌‍‍‍‍‌‍‌‍‍‍‍‌‍‌‍‌‌‌‌‍‍‍‍‍‌‌‌‍‍‍‌‌‍‌‍‌‌‌‌‌‍‍‌‍‍‌‍‌‌‌‌‌‌‌‍‍‌‌‍‌‌‍‌ - 台灣事實查核中心",
+   "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE9mTElHY1poLXdMeFZuYnFuLXZIQjJhOHhMMTBmRS02ZXEyRkh4OUdMQWJGYjZ0UndDOGZBYjJBdGx3MHJZMXQ1SHNXb0V6NGh3RmNYUExldnRTV3l3RlB3dmNWSmVzQ2NpY0VkRw?oc=5"
+  },
+  {
+   "snippet": "",
+   "source": "google_news",
+   "title": "起床第一杯水喝錯恐引發胃痙攣！檸檬水比白開水健康？醫揭隱藏風險 - TVBS 健康2.0",
+   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFA5UkxZOHJ3V0dFYktVV2JfVlBPb3JLOXRYNWZOenkyVnFYLU9IZVRxVXFlQ0ZXS0lLTEU3Y2RqSkZiMkExeWhMVUE0ZERHR0t6RFF3?oc=5"
   }
  ]
 }

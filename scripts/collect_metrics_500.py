@@ -5,6 +5,7 @@
 輸出：data/eval/metrics_500.jsonl（逐筆：metrics[6分項 score/weight]、rule_score、
 fusion_weight、deep_cs、sources[status/sim]、final/post、clamped、desc）。
 約 74 分鐘，背景跑；與 Exp8 latency 不可並行（都會打爆 server queue）。
+（2026-10-05 實測 web_search 時代約 188 分鐘，約 22 秒一筆）
 
 用法: .venv/bin/python scripts/collect_metrics_500.py
 """
@@ -79,6 +80,7 @@ def main():
             # 且生產線 abstain 時 fusion_weight=0（分數不進 final）。不存 abstain 欄位的話，
             # 日後重採會讓 component_ablation 把暫時分當真分融合，離線重算靜默失真。
             rec["abstain"] = bool(deep.get("abstain"))
+            rec["route"] = deep.get("route", "llm")
             rec["sources"] = [
                 {"source": s.get("source"), "status": s.get("status"),
                  "sim": s.get("similarity_score")} for s in (d.get("sources") or [])]

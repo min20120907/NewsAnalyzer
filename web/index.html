@@ -809,6 +809,7 @@ function translateExplanation(text, lang) {
       .replace(/0 扣分；忠實度不額外灌水加分/g, '0 penalty; faithfulness does not inflate score')
       .replace(/內文語氣平實、無煽動轉發或偽冒公告特徵/g, 'Objective tone, no viral coercion or fake announcement patterns')
       .replace(/低風險/g, 'Low risk')
+      .replace(/惟缺外部查核時最高停留於待查證區間/g, 'capped at unverified zone without external fact-checks')
       .replace(/路由 B（主流來源／跨源同報佐證）：/g, 'Regime B (Corroborated / Mainstream Source): ')
       .replace(/次取樣/g, ' samples')
       .replace(/AI分/g, 'AI Score')
@@ -1381,11 +1382,13 @@ function renderResult(data) {
       if (fusionW > 0) {
         const ruleWeightPct = ((1 - fusionW) * 100).toFixed(0);
         const aiWeightPct = (fusionW * 100).toFixed(0);
+        const aiLbl = currentLang === 'en' ? 'AI Weight' : (currentLang === 'ja' ? 'AI比重' : 'AI權重');
+        const ruleLbl = currentLang === 'en' ? 'Rule Weight' : (currentLang === 'ja' ? 'ルール比重' : '規則權重');
         html += `
           <div class="pipeline-card">
             <div class="pipeline-step-title">
               <span>${pt.s2_title}</span>
-              <span class="pipeline-badge badge-normal">${currentLang === 'en' ? 'AI' : 'AI權重'}: ${aiWeightPct}% ｜ ${currentLang === 'en' ? 'Rule' : '規則'}: ${ruleWeightPct}%</span>
+              <span class="pipeline-badge badge-normal">${aiLbl}: ${aiWeightPct}% ｜ ${ruleLbl}: ${ruleWeightPct}%</span>
             </div>
             <div class="pipeline-formula">
               🧠 (${ruleScore} × ${(1 - fusionW).toFixed(2)}) + (${aiCs} × ${fusionW.toFixed(2)}) = <b>${postFusion}</b>
@@ -1408,6 +1411,8 @@ function renderResult(data) {
     }
 
     // Step 3: 安全上限錨定 / 最終判定
+    const rTxt = data.rating_text || data.rating || '';
+    const ratingDisplay = (dict.ratings && dict.ratings[rTxt]) || rTxt || '—';
     html += `
       <div class="pipeline-card">
         <div class="pipeline-step-title">
@@ -1416,7 +1421,7 @@ function renderResult(data) {
         </div>
         ${data.clamped ? `<div style="color:#f87171; font-size:12.5px; margin-bottom:6px;">⚠️ ${escapeHtml(data.clamp_reason || '')}</div>` : ''}
         <div class="pipeline-formula">
-          🏁 Final Score = <b>${finalScore}</b> ➔ <b>${escapeHtml((dict.ratings && dict.ratings[data.rating_text]) || data.rating_text || '—')}</b>
+          🏁 Final Score = <b>${finalScore}</b> ➔ <b>${escapeHtml(ratingDisplay)}</b>
         </div>
       </div>
     `;

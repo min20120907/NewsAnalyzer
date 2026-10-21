@@ -1,5 +1,6 @@
-# 台灣主流媒體白名單（本地策展，無現成上游可訂閱，改此檔免重啟服務）
+# 主流媒體白名單（本地策展，無現成上游可訂閱，改此檔免重啟服務）
 # one domain per line，# 開頭為註解
+# 台灣
 cna.com.tw
 udn.com
 ltn.com.tw
@@ -34,3 +35,15 @@ feitsui.com
 gamer.com.tw
 soundofhope.org
 today.line.me
+# 海外主流（2026-10-14 加）：黑名單上游全是中文內容農場、點擊誘餌詞只有中文、
+# 查核源（Cofacts/MyGoPen）對海外新聞一律 not_found，海外主流因此在 domain 這一維
+# 只拿未知網站預設 15/25。加白名單後 25/25，sentiment 高分時也走主流分支。
+nhk.or.jp
+bbc.com
+bbc.co.uk
+asahi.com
+yomiuri.co.jp
+mainichi.jp
+reuters.com
+apnews.com
+theguardian.com

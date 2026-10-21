@@ -33,3 +33,4 @@ tools/
 
 # 回歸集輸出（每次跑都變，不進版控）
 /regress_out/
+.hermes/
