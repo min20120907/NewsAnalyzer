@@ -6,13 +6,14 @@ Run after the quota window resets.
 import json, os, subprocess, sys, time, urllib.request, urllib.error, base64
 from pathlib import Path
 
-API = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-tts:generateContent"
+API = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent"
 KEY = os.environ.get("GEMINI_API_KEY", "")
 VOICE = "Charon"
 CACHE = Path("/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/tts_cache")
 VIDEO = "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/demo/newsanalyzer_demo_1080p.mp4"
 OUT   = "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/demo/newsanalyzer_demo_1080p_narrated.mp4"
 SCRIPT = "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/demo/narration_zh_tw.json"
+VOLUME = 0.85
 
 assert KEY, "set GEMINI_API_KEY"
 lines = json.loads(Path(SCRIPT).read_text())
@@ -63,11 +64,10 @@ for i, ln in enumerate(lines):
     parts.append(f"[{i+1}:a]adelay={int(ln['t']*1000)}|{int(ln['t']*1000)}[a{i}]")
 mix = "".join(f"[a{i}]" for i in range(len(wavs)))
 f = ";".join(parts + [f"{mix}amix=inputs={len(wavs)}:duration=longest[mix]",
-                     "[mix]volume=0.85[narr]",
-                     "[0:a][narr]amix=inputs=2:duration=first[aout]"])
+                     f"[mix]volume={VOLUME}[narr]"])
 cmd = ["ffmpeg","-y","-loglevel","warning"] + inputs + [
     "-filter_complex", f,
-    "-map","0:v","-map","[aout]",
+    "-map","0:v","-map","[narr]",
     "-c:v","copy","-c:a","aac","-b:a","192k","-movflags","+faststart",OUT]
 print("\nMixing →", Path(OUT).name)
 r = subprocess.run(cmd, capture_output=True, text=True)
