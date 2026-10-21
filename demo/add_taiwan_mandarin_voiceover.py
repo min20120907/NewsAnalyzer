@@ -6,11 +6,11 @@ Adds a Taiwan Mandarin (zh-TW) voiceover to a demo MP4 using Gemini TTS.
 Each narration line is generated as WAV, then mixed over the video with ffmpeg.
 
 Usage:
-  export GEMINI_API_KEY="..."
+  export GEMINI_API_KEY="***"
   python add_taiwan_mandarin_voiceover.py \
       --video demo/newsanalyzer_demo_1080p.mp4 \
       --output demo/newsanalyzer_demo_1080p_narrated.mp4 \
-      --script narration.json
+      --script narration_zh_tw.json
 
 narration.json format:
   [
@@ -25,9 +25,18 @@ import argparse, base64, json, os, subprocess, sys, time, urllib.request, urllib
 from pathlib import Path
 
 API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-VOICE = os.environ.get("NA_TTS_VOICE", "Luna")          # default TTS voice
-MODEL = os.environ.get("NA_TTS_MODEL", "gemini-2.5-flash-preview-tts")
+VOICE = os.environ.get("NA_TTS_VOICE", "Charon")
+MODEL = os.environ.get("NA_TTS_MODEL", "gemini-3.8-flash-tts")
 CACHE_DIR = Path("tts_cache")
+
+
+def _build_req(url: str, body_json: dict, api_key: str) -> urllib.request.Request:
+    return urllib.request.Request(
+        url,
+        data=json.dumps(body_json).encode(),
+        headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
+    )
+
 
 def tts(text: str, voice: str, model: str, api_key: str, cache_key: str) -> Path:
     CACHE_DIR.mkdir(exist_ok=True)
@@ -36,7 +45,7 @@ def tts(text: str, voice: str, model: str, api_key: str, cache_key: str) -> Path
         return out
 
     url = API.format(model=model)
-    body = {
+    body_json = {
         "contents": [{"parts": [{"text": text}]}],
         "generationConfig": {
             "speechConfig": {
@@ -46,17 +55,26 @@ def tts(text: str, voice: str, model: str, api_key: str, cache_key: str) -> Path
             }
         }
     }
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(body).encode(),
-        headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            data = json.loads(resp.read())
-    except urllib.error.HTTPError as e:
-        print(f"  TTS error: {e.code} {e.read().decode()[:200]}", file=sys.stderr)
-        raise
+
+    data = None
+    for attempt in range(5):
+        req = _build_req(url, body_json, api_key)
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                data = json.loads(resp.read())
+            break
+        except urllib.error.HTTPError as e:
+            msg = e.read().decode()[:200]
+            if e.code == 429 and attempt < 4:
+                wait = 10 * (attempt + 1)
+                print(f"  [429] rate limited, waiting {wait}s...", file=sys.stderr)
+                time.sleep(wait)
+                continue
+            print(f"  TTS error {e.code}: {msg}", file=sys.stderr)
+            raise
+
+    if data is None:
+        raise RuntimeError("TTS: no response after retries")
 
     parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
     audio = None
@@ -74,12 +92,9 @@ def tts(text: str, voice: str, model: str, api_key: str, cache_key: str) -> Path
         ["ffmpeg", "-y", "-loglevel", "error", "-i", str(out_raw), "-acodec", "pcm_s16le", "-ar", "24000", str(out)],
         capture_output=True,
     )
-    if r.returncode != 0:
+    if r.returncode != 0 and not out.exists():
         # might already be WAV
-        if out.exists():
-            pass
-        else:
-            out_raw.rename(out)
+        out_raw.rename(out)
     out_raw.unlink(missing_ok=True)
     return out
 
@@ -88,7 +103,7 @@ def build_mix_filter(lines: list[dict], wavs: list[Path]) -> str:
     """Build an ffmpeg filtergraph: one audio track delayed per narration line."""
     parts = []
     for i, (w, ln) in enumerate(zip(wavs, lines)):
-        parts.append(f"[{i}:a]adelay={int(ln['t']*1000)}|{int(ln['t']*1000)}[a{i}]")
+        parts.append(f"[{i+1}:a]adelay={int(ln['t']*1000)}|{int(ln['t']*1000)}[a{i}]")
     mix_inputs = "".join(f"[a{i}]" for i in range(len(wavs)))
     parts.append(f"{mix_inputs}amix=inputs={len(wavs)}:duration=longest[mix]")
     return ";".join(parts)
@@ -115,12 +130,14 @@ def main():
     lines = json.loads(Path(args.script).read_text())
     print(f"Narration lines: {len(lines)}")
 
-    # Generate all WAVs
+    # Generate all WAVs (with 2s gap between calls to avoid 429)
     wavs = []
     for i, ln in enumerate(lines):
-        ck = f"line_{i:03d}_{abs(hash(ln['text'])):08x}"
+        cache_key = f"line_{i:03d}"
         print(f"  [{i}] t={ln['t']:.1f}s  {ln['text'][:40]}")
-        wavs.append(tts(ln["text"], args.voice, args.model, api_key, ck))
+        if i > 0:
+            time.sleep(8)
+        wavs.append(tts(ln["text"], args.voice, args.model, api_key, cache_key))
 
     # Build ffmpeg command
     out = Path(args.output or str(video) + "_narrated.mp4")
@@ -129,10 +146,9 @@ def main():
         inputs.append(str(w))
 
     filter_str = build_mix_filter(lines, wavs)
-    # Volume control on narration mix
-    filter_str += f";[mix]volume={args.volume}[vout]"
-    # Map: video from input 0, audio = original video audio (input 0) + narration
-    filter_str += f";[0:a][vout]amix=inputs=2:duration=first[aout]"
+    filter_str += f";[mix]volume={args.volume}[narr]"
+    # Mix original audio (input 0) + narration
+    filter_str += f";[0:a][narr]amix=inputs=2:duration=first[aout]"
 
     cmd = (
         ["ffmpeg", "-y", "-loglevel", "warning"]
@@ -147,7 +163,7 @@ def main():
             str(out),
         ]
     )
-    print(f"\nffmpeg: {out.name}")
+    print(f"\nffmpeg → {out.name}")
     r = subprocess.run(cmd, capture_output=True, text=True)
     if r.returncode != 0:
         print(r.stderr[-500:], file=sys.stderr)
