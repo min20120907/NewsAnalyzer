@@ -1,177 +1,101 @@
-# News Analyzer
+# NewsAnalyzer
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/min20120907/NewsAnalyzer)
+Trilingual (zh-TW / en / ja) fake-news reliability analyzer. A Flask web app that scores a headline or article across four orthogonal dimensions and produces a transparent, explainable reliability score (0–100).
 
-## Goal
+**Live demo:** https://satin-jon-etc-uncertainty.trycloudflare.com
 
-The goal is to demonstrate technologies that can be used to improve prevention of the spread of fake news on Facebook, these technologies including a simple interface to compare source news with other related articles, text recognize system such as JIEBA, and a transparent user report system that will also allow public and professionals of a variety of fields to help submit and examine reports for fake or biased news if they want to.
-
-## Installation
-### Client
- Go to chrome store with the link below and press "add to chrome" button.  
-### Server
-With server side, we have the features as following below, and all the scripts are storing inside python folder:  
- 1. CSV keywords analyzing tool (local): kw_analyzing_[algo].py
- 2. Flask keyword extracting server (HTTPS): news_extract.py  
- 3. After Release 3.3, we use HTTPS server on `news_crawler/news6.py`
-### Prequirements
-#### News Crawler
- - Python 3.10 or later
- - requests 
- - fake-useragent 
- - beautifulsoup4 
- - tldextract 
- - lxml
- - datetime
- - pymysql
- - jieba-zh_TW
- - snownlp
-#### Keyword Extractor Backend
- - Flask
- - Jieba
- - PyTorch
- - KeyBERT
-#### Prerequirements Installation
-    pip3 install -r requirements.txt
-
-
-## Extension Link
-https://chrome.google.com/webstore/detail/news-analyzer/hedmeapammhcjoelaceokinbhgjiiifk?hl=zh-TW&authuser=0
-
-## Presentation
-https://docs.google.com/presentation/d/1-9oklMaZNwUgcYp1YqPlsp5KgSeX8qrVf7_BtksuyQY/edit
-
-## IMPORTANT NOTICE!!!!
-**This application is using free licence of Google Custom Search API, please use it wisely, because there are currently 12,700 queries per day.**  
-And this project is focus on the users in Taiwan or other Mandarin speaking countries, other locale would be differ in the results, if you would like to contribute this project feel free to pull the request.
-
-## Official Webpage
-**Coming Soon...**
-
-## Platforms
-
-Open source on GitHub.
-
-Platform: Web Application, Chromium Extention
-
-Browser Client Languages: HTML, CSS, JavaScript
-
-Middle Tier Languages and Libraries: Python; Flask, BERT, JIEBA
-
-Backend Database Management System: mySQL or MariaDB, yet to be determined
-
-## Functions
-
-The functions listed here are partly logical, not necessarily physically implemented under the exact name or being made as a single physical function.
-
-**UI_Elements**    
-- `getChildNodesByClassName(DOM object, string)`: DOM array
-- `fetch_posts(void)`: DOM object   Calls getChildNodesByClassName()  
-- `FacebookLinkParse(URL)`: URL  
-- `queryOf(string)`: string   
-- `getLink(integer)`: DOM object  Calls FacebookLinkParse() and queryOf()
-
-*UI_Elements(Creates linkpost objects)：*  
-- `append_button(void)`: DOM object  Calls getLink() 
-
-*UI_Elements(Creates resultFrame and button objects):*  
-- `createElementFromHTML(string)`: DOM object  
-
-**button**
-- `onclick(void)`: void  If there exists a sibling resultFrame object,Triggers sibling resultFrame object to react,and throws exception,else creates a sibling resultFrame object 
- 
-**insert.js**  
-- `detectLoad(action)`:boolean  
-- `delay(integer)`: promise  
-- `detectScroll(action)`: DOM object  
-
-**checkFacebook.js**
-- `areYouInFacebook(string)`: boolean  
-
-**background.js**  
-- `executeScript(file)`: boolean  
-- `resultFrame(Creates a table object)`:  
-
-**resultFrmae**
-- `toggleOnOff(void)`: CSS text  If there exists a sibling table object,triggers sibling table object to react,and throws exception.  
-
-**exception.js**  
-- `TargetExistedException(string, string)`: error object  
-
-**table**  
-- `fetch_results(void)`: DOM objects  
-- `Creates an icon object`:  
-- `search_google(string, DOM object)`: string    Calls fetch_results()  
-- `keyword_extract(string, DOM object)`: string  Calls search_google()  
-
-
-
-*Database: Manipulation, Calculation and Administration Functions*  
-Weight(), Hide(), Show()  
-
-*Webpage: Interface Preperation Functions*  
-ShowReport(), ShowRating(), ShowBugs(), ShowSubmissions()  
-
-*Webpage: Interface Trigger (User Interaction) Functions*  
-Upvote(), Downvote()  
-
-
-
-## Database Attributes
-
-#### Reported_Links
-Reported_ID(INT AUTO_INCREAMENT),
-___
-Reported_URL(VARCHAR, 2048),\
-Domain(VARCHAR, 2048),
+## Architecture
 
 ```
-FakeReport(SMALLINT),
-BiasedReport(SMALLINT),
-OutdatedReport(SMALLINT)
+┌─────────────────────────────────────────────────────────────┐
+│  web/index.html  (Vanilla JS, zh/en/ja i18n)                │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ POST /analyze  /deep_analyze  /extract_media
+                       ▼
+┌──────────────────────────────────────────────────────────────┐
+│  python/fake_news_server_new.py   (Flask, :5000)            │
+│                                                              │
+│  D1  Source credibility      (domain blocklist + whitelist) │
+│  D2  Textual reliability     (SBERT similarity + sentiment) │
+│  D3  Contextual consistency  (cross-article corroboration)  │
+│  D4  Title-bait detection    (LLM classifier, Qwen3.8)      │
+│                                                              │
+│  Transparent weighted score → 0–100                         │
+└──────────────────────────────────────────────────────────────┘
 ```
-^If report number too large, automatically hidden^\
-OverallScore(SMALLINT, 0~5),\
-Rated_Pinned(SMALLINT, 0=Normal, 1=Pinned, 2=Hidden),\
-FirstReportDate(DATE)
 
-#### Contributed_Links
-_Contribution_ID(INT AUTO_INCREAMENT)_,\
-Contribution_URL(VARCHAR, 2048), \
-Pinned(TINYINT),\
-ContributedDate(DATE)
+## Quick start
 
-#### Rating
-Rating_ID(INT AUTO_INCREAMENT),
-___
-Reported_ID(INT),
-___
-Page_Reli(SMALLINT),\
-Cf_Poss(SMALLINT),\
-Phi_Poss(SMALLINT),\
-Outdated(SMALLINT),\
-Domain_Reli(SMALLINT),\
-RatedDate(DATE)
+```bash
+# 1. Python venv
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
-#### Keywords
-Keyword_ID (INT, AUTO_INCREMENT),
-___
-Title(VARCHAR,100),\
-Keyword1(VARCHAR,20),\
-Keyword2(VARCHAR,20),\
-Keyword3(VARCHAR,20)
+# 2. Environment (adjust LLM endpoint to your setup)
+export QWEN_URL=http://127.0.0.1:8088/v1/chat/completions
+export QWEN_MODEL=qwen3.8-27b-fastmtp
+# export GOOGLE_CSE_KEY=your-key   # optional; falls back to Bing / RSS
 
-#### Bug_Report
-Bug_ID(INT, AUTO_INCREMENT),
-___
-DATE(DATETIME),\
-COMMENT(VARCHAR,1000),\
-IMAGE(IMAGE)
+# 3. Run
+.venv/bin/python python/fake_news_server_new.py
+# → http://localhost:5000
+```
 
-## Contact Information
-If you have any bugs or any issues on this chrome extension feel free to establish issues or pull request on Github, or send a email to me: jefflin.je598@gmail.com, and if it is possible, giving us some donation or Google Custom Search API key will be much appreciated!  
-  
-  
-XMR:47Dt6wfBx37W3VNVFofU1cM1RmBoXfBvvNivdcc8cpWpejuubuyGqeKL45JHHJ9wVc4DN7B8zkVyM1WMctd8imMG5YXnU6d  
-ETH:0x62C8d6Dbb39141Db60C0BD60C4c2111079438E04  
-XCH:xch1uezmv85upf8geynz7qpqad37m9ju8p7ug3ucm87f64lhvjr4tdns4rwntc
+## Project layout
+
+| Path | Contents |
+|------|----------|
+| `python/fake_news_server_new.py` | Flask server — all endpoints, scoring pipeline, SBERT, LLM calls |
+| `python/orthogonal_scorer.py` | D1–D4 scoring logic |
+| `web/index.html` | Frontend (single-file Vanilla JS, zh/en/ja i18n) |
+| `demo/` | Hybrid demo — Playwright runner + cinematic overlay + scenario engine |
+| `data/domains/` | Domain blocklists, whitelist, social blocklist (hot-reloaded) |
+| `data/eval/` | Evaluation datasets & baseline results |
+| `scripts/` | Utility scripts (metrics collection, i18n verification, etc.) |
+| `fb-extension/` | Chrome extension (Facebook fake-news highlighter) |
+| `PROJECT_HANDOFF.md` | Full system documentation — single source of truth for external AI |
+
+## Scoring dimensions
+
+- **D1 — Source credibility**
+  Domain blocklist (93k+ domains), social blocklist (19 known disinfo accounts), whitelist (43 verified outlets). Hot-reloaded from `data/domains/`.
+
+- **D2 — Textual reliability**
+  SBERT semantic similarity against corroborating articles + sentiment pipeline (CPU).
+
+- **D3 — Contextual consistency**
+  Cross-article corroboration score.
+
+- **D4 — Title-bait detection**
+  LLM classifier (Qwen3.8 via FastMTP) — not regex.
+
+## Environment variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `QWEN_URL` | `http://127.0.0.1:3000/v1/chat/completions` | LLM endpoint for deep analysis |
+| `QWEN_MODEL` | `deepseek-chat` | Model name passed to LLM |
+| `QWEN_SLOTS_URL` | `http://127.0.0.1:8088/slots` | Slot availability endpoint (skip if LLM busy) |
+| `NEWSANALYZER_HOST` | `127.0.0.1` | Bind address |
+| `NEWSANALYZER_PORT` | `5000` | Bind port |
+| `NEWSANALYZER_DEBUG_USER` | `min20120907` | Debug console username |
+| `NEWSANALYZER_DEBUG_PASSWORD` | `jefflin123` | Debug console password |
+| `DEEP_ANALYZE_TIMEOUT` | `60` | Timeout (s) for LLM deep analysis |
+| `DEEP_ANALYZE_SAMPLES` | `3` | Number of LLM samples for aggregation |
+| `GOOGLE_CSE_KEY` | — | Google Custom Search API key (optional) |
+
+## Demo (Hybrid Demo Architecture)
+
+```bash
+.venv/bin/python demo/automation_runner.py --mode record \
+    --output demo/newsanalyzer_demo_1080p.mp4 --speed 1.2
+```
+
+Three modes: `live` (real LLM), `simulation` (mock results, no LLM), `record` (Playwright video, 1920×1080 h264).
+
+## Chrome extension
+
+[Chrome Web Store link](https://chrome.google.com/webstore/detail/news-analyzer/hedmeapammhcjoelaceokinbhgjiiifk)
+
+## Contact
+
+jefflin.je598@gmail.com — issues and PRs welcome.
