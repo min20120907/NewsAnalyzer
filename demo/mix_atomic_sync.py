@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 mix_atomic_sync.py
-在原始 169.8 秒未調速的影片上，將原聲神經語音徹底拆解為 20 個原子短音效，
-每個短句精確對齊至個別輸入、點擊、卡片彈出與捲動動作，達成零脫節、零搶拍。
+在 169.8 秒原版影片上，消除音訊前端靜音（silenceremove），
+並將語音時間點全面提前 0.5s~1.2s，讓聲音精確「領先/同步」動作，
+徹底解決慢半拍問題。
 """
 import subprocess
 from pathlib import Path
@@ -12,50 +13,49 @@ ROOT_DIR = BASE_DIR.parent
 VIDEO = "/home/min20120907/.hermes/cache/videos/video_b4252671ac56.mp4"
 OUT = str(BASE_DIR / "newsanalyzer_demo_1080p_narrated.mp4")
 
-ATOMIC = ROOT_DIR / "tts_cache" / "atomic"
-SFX_DIR = ROOT_DIR / "tts_cache" / "sfx_synced"
-SYNCED = ROOT_DIR / "tts_cache" / "synced"
+CACHE = ROOT_DIR / "tts_cache"
+ATOMIC = CACHE / "atomic"
+SFX_DIR = CACHE / "sfx_synced"
+SYNCED = CACHE / "synced"
+TRIMMED = CACHE / "trimmed"
+TRIMMED.mkdir(exist_ok=True)
 
-tracks = [
-  # 情境一
-  (0.5,   ATOMIC / "s1_intro.wav",    1.00, "情境一開場提要"),
-  (4.5,   ATOMIC / "s1_input.wav",    1.15, "情境一輸入花蓮報導並點擊（9.8s 點擊）"),
-  (12.2,  ATOMIC / "s1_result.wav",   1.00, "分析結果出爐 89 分（11.4s 叮咚響起）"),
-  (23.0,  ATOMIC / "s1_d1_d2.wav",    1.00, "D1 查無爭議轉 D2，跨源佐證 88%"),
-  (35.0,  ATOMIC / "s1_d3_d4.wav",    1.00, "D3 忠實度 92%，D4 安全度 92%"),
-  (45.0,  ATOMIC / "s1_pipeline.wav", 1.00, "透明計分管線融合本地 Qwen 88.5 分"),
-  # 情境二
-  (54.5,  ATOMIC / "s2_input.wav",    1.15, "情境二輸入釣魚標題並點擊（61.4s 點擊）"),
-  (67.5,  ATOMIC / "s2_card.wav",     1.00, "真實主旨還原卡片破梗（62.8s 叮咚響起）"),
-  (73.5,  ATOMIC / "s2_d3.wav",       1.00, "D3 標題黨觸發負 18 分重扣"),
-  (78.5,  ATOMIC / "s2_d2.wav",       1.00, "D2 單一農場缺乏同報，壓制為 45 分"),
-  # 情境三
-  (88.5,  SFX_DIR / "line_008.wav",   1.15, "情境三輸入被列管 X 帳號（94.5s 點擊）"),
-  (96.2,  SFX_DIR / "line_009.wav",   1.15, "命中黑名單鎖定 25 分（95.9s 叮咚響起）"),
-  (104.5, SYNCED / "seg_08.wav",      1.15, "D4 政治宣傳話術與本地 AI 判讀"),
-  # 情境四
-  (118.5, SYNCED / "seg_09.wav",      1.55, "情境四切換日語並輸入 NHK（118.9s 點擊）"),
-  (124.0, SFX_DIR / "line_010.wav",   1.15, "日文新聞獲評 91 分（127.0s 叮咚響起）"),
-  (133.0, SYNCED / "seg_10.wav",      1.15, "共同通信與時事通信同報，全日語呈現"),
-  (141.5, SYNCED / "seg_11.wav",      1.15, "切換英文模式並輸入路透社（141.2s 點擊）"),
-  (147.0, SFX_DIR / "line_011.wav",   1.15, "路透社分析完成獲評 88 分（149.3s 叮咚響起）"),
-  (155.0, SYNCED / "seg_12.wav",      1.15, "彭博與美聯社同報佐證，AI 深度分析 95 分"),
-  (163.5, SFX_DIR / "line_012.wav",   1.25, "四個情境驗證完成，總結收尾（163.4s 總結音）")
+# 零延遲校準時間軸：消除慢半拍，提前 0.5~1.2s 領先動作觸發
+calibrated_tracks = [
+  ( 0.2, ATOMIC / "s1_intro.wav",    1.00, "0.0s S1 簡報開場"),
+  ( 3.8, ATOMIC / "s1_input.wav",    1.25, "4.8s 輸入網址, 9.8s 點擊分析"),
+  (11.2, ATOMIC / "s1_result.wav",   1.00, "11.4s 叮咚 89 分出爐"),
+  (21.8, ATOMIC / "s1_d1_d2.wav",    1.00, "22.0s 畫面捲動至 D1, 28.0s 至 D2"),
+  (33.8, ATOMIC / "s1_d3_d4.wav",    1.00, "34.0s 畫面捲動至 D3/D4"),
+  (43.8, ATOMIC / "s1_pipeline.wav", 1.00, "44.0s 畫面捲動至計分管線"),
+  (54.0, ATOMIC / "s2_input.wav",    1.65, "54.0s S2 開場, 58.0s 輸入, 61.4s 點擊"),
+  (62.8, ATOMIC / "s2_card.wav",     1.00, "62.8s 叮咚黃色還原卡片出爐"),
+  (72.5, ATOMIC / "s2_d3.wav",       1.00, "73.0s 聚焦 D3 扣 18 分"),
+  (78.0, ATOMIC / "s2_d2.wav",       1.00, "79.0s 聚焦 D2/D4 農場 45 分"),
+  (88.0, SFX_DIR / "line_008.wav",   1.15, "88.0s S3 開場, 91.3s 輸入, 94.5s 點擊"),
+  (95.8, SFX_DIR / "line_009.wav",   1.15, "95.9s 叮咚黑名單 25 分出爐"),
+  (103.5, SYNCED / "seg_08.wav",     1.15, "104.0s 聚焦 D4 宣傳話術與 AI 判讀"),
+  (118.0, SYNCED / "seg_09.wav",     1.85, "118.9s 點擊切換日文"),
+  (124.0, SFX_DIR / "line_010.wav",  1.15, "125.6s 點擊分析, 127.0s 叮咚 91 分"),
+  (133.0, SYNCED / "seg_10.wav",     1.15, "134.0s 聚焦共同通信/時事通信全日語"),
+  (140.8, SYNCED / "seg_11.wav",     1.15, "141.2s 點擊切換英文"),
+  (147.0, SFX_DIR / "line_011.wav",  1.15, "147.9s 點擊分析, 149.3s 叮咚 88 分"),
+  (154.5, SYNCED / "seg_12.wav",     1.15, "156.0s 聚焦彭博/美聯社與 AI 95 分"),
+  (163.0, SFX_DIR / "line_012.wav",  1.25, "163.4s 叮咚總結畫面出爐")
 ]
 
-# 產生調速後原子音訊
 processed = []
-for i, (t, w, spd, desc) in enumerate(tracks):
-    assert w.exists(), f"Missing {w}"
-    out_w = ROOT_DIR / "tts_cache" / "atomic" / f"track_{i:02d}.wav"
-    if spd != 1.0:
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(w), "-filter:a", f"atempo={spd}", "-ar", "24000", "-ac", "1", str(out_w)], check=True)
-    else:
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(w), "-ar", "24000", "-ac", "1", str(out_w)], check=True)
+for i, (t, w, spd, desc) in enumerate(calibrated_tracks):
+    out_w = TRIMMED / f"trim_{i:02d}.wav"
+    subprocess.run([
+        "ffmpeg", "-y", "-loglevel", "error",
+        "-i", str(w),
+        "-filter:a", f"silenceremove=start_periods=1:start_threshold=-50dB,atempo={spd}",
+        "-ar", "24000", "-ac", "1", str(out_w)
+    ], check=True)
     res = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", str(out_w)], capture_output=True, text=True)
     dur = float(res.stdout.strip())
     processed.append((t, out_w, dur, desc))
-    print(f"[{i:02d}] t={t:5.1f}s | dur={dur:4.2f}s | end={t+dur:5.1f}s | {desc}")
 
 inputs = ["-i", VIDEO]
 for t, w, dur, desc in processed:
@@ -84,6 +84,6 @@ cmd = [
     OUT
 ]
 
-print("\n開始精確混音至:", OUT)
+print("\n開始依零延遲校準軸混音至:", OUT)
 subprocess.run(cmd, check=True)
 print("混音完成！")
