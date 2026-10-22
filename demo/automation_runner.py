@@ -23,8 +23,9 @@ SCRATCH_DIR = ROOT_DIR / ".hermes" / "cache" / "scratch" / "demo_recordings"
 os.makedirs(SCRATCH_DIR, exist_ok=True)
 
 
-def load_scenarios():
-    with open(SCENARIOS_FILE, "r", encoding="utf-8") as f:
+def load_scenarios(scenarios_file=None):
+    target_file = Path(scenarios_file) if scenarios_file else SCENARIOS_FILE
+    with open(target_file, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -181,12 +182,13 @@ def main():
     parser.add_argument("--mode", choices=["live", "simulation", "record"], default="live",
                         help="執行模式：live (操作真實後端), simulation (離線mock), record (錄製mp4)")
     parser.add_argument("--scenario", default="all", help="指定情境 ID 或 'all'")
+    parser.add_argument("--scenarios-file", default=None, help="指定自訂情境 JSON 檔案路徑")
     parser.add_argument("--speed", type=float, default=1.0, help="播放速度倍率 (預設: 1.0)")
     parser.add_argument("--output", default="newsanalyzer_demo.mp4", help="錄影模式輸出之 MP4 檔名")
     parser.add_argument("--url", default="http://127.0.0.1:5000", help="NewsAnalyzer 伺服器網址")
     args = parser.parse_args()
 
-    scenarios = load_scenarios()
+    scenarios = load_scenarios(args.scenarios_file)
     if args.scenario != "all":
         scenarios = [s for s in scenarios if s["id"] == args.scenario]
         if not scenarios:

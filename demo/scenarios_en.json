@@ -1,0 +1,756 @@
+[
+  {
+    "id": "scenario_tw_mainstream",
+    "title": "Scenario 1: Mainstream News Corroboration",
+    "description": "Analyzes a mainstream news report with cross-source corroboration and domain credibility weighting.",
+    "briefing_points": [
+      "Mainstream publisher domain reputation weighting",
+      "Cross-source multi-outlet corroboration verification (CNA / UDN)",
+      "Rhetorical risk evaluation and transparent scoring pipeline"
+    ],
+    "lang": "en",
+    "initial": {
+      "lang": "en",
+      "clear_input": true
+    },
+    "steps": [
+      {
+        "action": "spotlight",
+        "target": "#input",
+        "hint": "Step 1: Enter mainstream news report URL",
+        "delay": 600
+      },
+      {
+        "action": "type",
+        "target": "#input",
+        "value": "【公視新聞網】花蓮震後重建進度 內政部：中繼屋預計11月前完工。內政部官員表示，花蓮地震重建工程正積極展開，中繼屋預計11月如期完成交付受災戶入住。https://news.pts.org.tw/article/690000",
+        "hint": "輸入具名主流媒體報導與完整內文",
+        "char_delay": 15
+      },
+      {
+        "action": "spotlight",
+        "target": "#analyzeBtn",
+        "hint": "Step 2: Click Start Analysis to initiate multi-modal pipeline",
+        "delay": 500
+      },
+      {
+        "action": "click",
+        "target": "#analyzeBtn",
+        "hint": "觸發分析請求",
+        "delay": 800
+      },
+      {
+        "action": "wait_for",
+        "target": "#resultCard.show",
+        "timeout": 30000,
+        "hint": "管線運算中：抽取正文、查核檢索與模型判讀"
+      },
+      {
+        "action": "explainer",
+        "target": "#resultCard",
+        "html": "<b>🏁 最終評分 (Final Score)：88.5 / 100</b><br>評級：<b>高度可信</b><br>系統融合規則引擎與本地 LLM 模型之加權分數，判定為高信賴度新聞。",
+        "delay": 4500
+      },
+      {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "Step 3: Review D1-D4 orthogonal dimension matrix",
+        "delay": 1200
+      },
+      {
+        "action": "explainer",
+        "html": "<b>D1 查核證據蘊涵度：0%</b><br>查無 Cofacts/MyGoPen 等查核庫命中紀錄。此為正常現象，未查證不代表假新聞，交由 D2 跨源佐證路由。",
+        "delay": 4500
+      },
+      {
+        "action": "explainer",
+        "html": "<b>D2 跨源報導佐證度：88%</b><br>檢索到公視 (pts.org.tw) 原文，並偵測到中央社與聯合報同步報導，佐證指數極高 (0.88)。",
+        "delay": 4500
+      },
+      {
+        "action": "scroll_to",
+        "target": "#scorePipeline",
+        "hint": "Step 4: Review transparent scoring pipeline",
+        "delay": 1200
+      },
+      {
+        "action": "explainer",
+        "target": "#scorePipeline",
+        "html": "<b>📐 透明計分管線 (Score Pipeline)：</b><br>1. 規則分數 (85.0) × 70% + 本地 AI 分數 (95.0) × 30% = <b>88.5</b><br>2. 查核安全上限檢查：無外部查核紀錄，不受 60 分封頂限制。",
+        "delay": 5000
+      }
+    ],
+    "expected": {
+      "selector": "#resultCard.show",
+      "check": "element_visible"
+    },
+    "mock_result": {
+      "url": "https://news.pts.org.tw/article/745678",
+      "title": "花蓮震後重建進度 內政部：中繼屋預計11月前完工",
+      "final_score": 88.5,
+      "rating": "高度可信",
+      "rule_score": 85.0,
+      "fusion_weight": 0.3,
+      "post_fusion_score": 88.5,
+      "scoring_basis": "路由 B（主流來源／跨源同報佐證）：具名公廣主流媒體 (pts.org.tw)＋內文具名出處核實｜2 家外部來源同報（cna.com.tw, ltn.com.tw）｜近期發布 (佐證指數 0.88)",
+      "dimensions": {
+        "evidence_verdict": {
+          "id": "D1",
+          "key": "evidence_verdict",
+          "name": "查核證據蘊涵度",
+          "value": 0.0,
+          "confidence": 0.0,
+          "status_label": "none",
+          "impact_pts": 0.0,
+          "explanation": "外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）",
+          "what_it_measures": "已核實查核庫對「同一具體事件」之蘊涵或駁斥立場與證據信心",
+          "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞"
+        },
+        "source_corroboration": {
+          "id": "D2",
+          "key": "source_corroboration",
+          "name": "跨源報導佐證度",
+          "value": 0.88,
+          "confidence": 1.0,
+          "status_label": "corroborated",
+          "impact_pts": 85.0,
+          "explanation": "具名公廣主流媒體 (pts.org.tw)＋內文具名出處核實｜2 家外部來源同報（cna.com.tw, ltn.com.tw）｜近期發布 (佐證指數 0.88)",
+          "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數",
+          "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章"
+        },
+        "headline_faithfulness": {
+          "id": "D3",
+          "key": "headline_faithfulness",
+          "name": "標題內文忠實度",
+          "value": 0.95,
+          "confidence": 0.9,
+          "status_label": "faithful",
+          "impact_pts": 0.0,
+          "explanation": "標題平實反映內文主旨（標題—內文一致性 92%），無誇大或斷章取義（0 扣分）",
+          "what_it_measures": "新聞標題之斷言是否忠實反映內文",
+          "what_if_wrong": "誤報時僅對該文施加標題失真扣分"
+        },
+        "rhetorical_risk": {
+          "id": "D4",
+          "key": "rhetorical_risk",
+          "name": "內文修辭與可驗性風險",
+          "value": 0.08,
+          "confidence": 0.9,
+          "status_label": "low_risk",
+          "impact_pts": 0.0,
+          "explanation": "內文語氣客觀平實，具官方與工程進度具體數據（低風險 R=0.08）",
+          "what_it_measures": "文本自身之情緒操弄、催促轉發動員",
+          "what_if_wrong": "作用範圍嚴格限制在未查證區間內"
+        }
+      },
+      "metrics": {
+        "sentiment": {
+          "score": 14.0,
+          "desc": "修辭安全度 92%（風險 R=0.08）",
+          "weight": 15
+        },
+        "domain": {
+          "score": 24.0,
+          "desc": "具名公廣主流媒體 (pts.org.tw)",
+          "weight": 25
+        },
+        "similarity": {
+          "score": 15.0,
+          "desc": "忠實度 100%（faithful）",
+          "weight": 15
+        },
+        "fact_check": {
+          "score": 0.0,
+          "desc": "not_found",
+          "weight": 30
+        },
+        "user_feedback": {
+          "score": 0.0,
+          "desc": "none",
+          "weight": 10
+        },
+        "timeliness": {
+          "score": 5.0,
+          "desc": "近期發布",
+          "weight": 5
+        }
+      },
+      "deep_analysis": {
+        "claim": "內政部說明花蓮震後重建中繼屋預計11月前完工",
+        "key_points": [
+          "內政部官員赴花蓮視察中繼屋基地",
+          "預估11月可如期提供受災戶入住安置"
+        ],
+        "viewpoints": "客觀事實：官方具名受訪說明公共工程進度。",
+        "analysis": "中央社與公視等多家媒體同步核實，內容翔實具體，屬高度可信新聞。",
+        "credibility_score": 95,
+        "model": "qwen3.8-27b-fastmtp"
+      }
+    }
+  },
+  {
+    "id": "scenario_clickbait_intercept",
+    "title": "Scenario 2: Clickbait Title Suppression & Claim Restoration",
+    "description": "Detects suspense-driven clickbait headlines, penalizes deception, and extracts objective claims.",
+    "briefing_points": [
+      "High-suspense and clickbait headline detection",
+      "Automated factual objective claim restoration via local LLM",
+      "Dimension 3 fidelity penalty enforcement"
+    ],
+    "lang": "en",
+    "initial": {
+      "lang": "en",
+      "clear_input": true
+    },
+    "steps": [
+      {
+        "action": "spotlight",
+        "target": "#input",
+        "hint": "Step 1: Enter typical sensational clickbait title",
+        "delay": 600
+      },
+      {
+        "action": "type",
+        "target": "#input",
+        "value": "天天喝這杯竟會致命？名醫大揭驚人真相！網全嚇傻：再也不敢碰了",
+        "hint": "鍵入帶有資訊遮蔽與驚嘆情緒的釣魚文案",
+        "char_delay": 20
+      },
+      {
+        "action": "spotlight",
+        "target": "#analyzeBtn",
+        "hint": "Step 2: Click Start Analysis",
+        "delay": 500
+      },
+      {
+        "action": "click",
+        "target": "#analyzeBtn",
+        "hint": "觸發分析請求",
+        "delay": 800
+      },
+      {
+        "action": "wait_for",
+        "target": "#restoredTitle",
+        "timeout": 30000,
+        "hint": "D3 模組與 LLM 正在進行懸念解析與真實主旨還原"
+      },
+      {
+        "action": "scroll_to",
+        "target": "#restoredTitle",
+        "hint": "Step 3: Inspect Restored Claim card & penalty rationale",
+        "delay": 1200
+      },
+      {
+        "action": "spotlight",
+        "target": "#restoredTitle",
+        "hint": "高亮標題還原區塊",
+        "delay": 800
+      },
+      {
+        "action": "explainer",
+        "target": "#restoredTitle",
+        "html": "<b>🛡 釣魚標題攔截與還原：</b><br>偵測到典型懸念誘餌（大揭真相 / 致命反差）。<br>LLM 提煉真實主旨：<b>「過量飲用含糖高果糖漿飲料恐增加代謝症候群風險」</b><br>標題隱瞞具體前提，啟動防護降級。",
+        "delay": 5500
+      },
+      {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "Step 4: Verify D3 headline fidelity penalty",
+        "delay": 1200
+      },
+      {
+        "action": "spotlight",
+        "target": "#dimensions",
+        "hint": "D3 維度扣除 18 分",
+        "delay": 800
+      },
+      {
+        "action": "explainer",
+        "target": "#dimensions",
+        "html": "<b>🎯 D3 標題內文忠實度扣分 (-18 pts)：</b><br>判定為 <b>clickbait</b>，忠實度降為 32%。<br>扣除 18 分以壓制最終評分，避免聳動釣魚標題取得高信任度。",
+        "delay": 5500
+      }
+    ],
+    "expected": {
+      "selector": "#restoredTitle",
+      "check": "element_visible"
+    },
+    "mock_result": {
+      "title": "天天喝這杯竟會致命？名醫大揭驚人真相！網全嚇傻：再也不敢碰了",
+      "final_score": 45.0,
+      "rating": "待查證",
+      "rule_score": 42.0,
+      "dimensions": {
+        "evidence_verdict": {
+          "id": "D1",
+          "key": "evidence_verdict",
+          "name": "查核證據蘊涵度",
+          "value": 0.0,
+          "confidence": 0.0,
+          "status_label": "none",
+          "impact_pts": 0.0,
+          "explanation": "外部事實查核庫無此具體事件之核實紀錄",
+          "what_it_measures": "已核實查核庫對「同一具體事件」之蘊涵或駁斥立場與證據信心",
+          "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞"
+        },
+        "source_corroboration": {
+          "id": "D2",
+          "key": "source_corroboration",
+          "name": "跨源報導佐證度",
+          "value": 0.45,
+          "confidence": 0.7,
+          "status_label": "single_source",
+          "impact_pts": 42.0,
+          "explanation": "單一農場轉載來源｜未見具名獨立主流媒體交叉核實",
+          "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數",
+          "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章"
+        },
+        "headline_faithfulness": {
+          "id": "D3",
+          "key": "headline_faithfulness",
+          "name": "標題內文忠實度",
+          "value": 0.32,
+          "confidence": 0.85,
+          "status_label": "clickbait",
+          "impact_pts": -18.0,
+          "explanation": "偵測到典型懸念式誘餌標題（醫揭真相/致命反差），扣除 18 分並啟動客觀主旨還原",
+          "what_it_measures": "新聞標題之斷言是否忠實反映內文，有無誇大釣魚",
+          "what_if_wrong": "誤報時僅對該文施加標題失真扣分"
+        },
+        "rhetorical_risk": {
+          "id": "D4",
+          "key": "rhetorical_risk",
+          "name": "內文修辭與可驗性風險",
+          "value": 0.35,
+          "confidence": 0.8,
+          "status_label": "low_risk",
+          "impact_pts": 0.0,
+          "explanation": "修辭帶有輕度誇張驚悚（網全嚇傻/致命），但未達系統性謠言等級",
+          "what_it_measures": "文本自身之情緒操弄、催促轉發動員",
+          "what_if_wrong": "作用範圍嚴格限制在未查證區間內"
+        }
+      },
+      "metrics": {
+        "sentiment": {
+          "score": 9.0,
+          "desc": "輕度煽動修辭",
+          "weight": 15
+        },
+        "domain": {
+          "score": 10.0,
+          "desc": "社群轉載來源",
+          "weight": 25
+        },
+        "similarity": {
+          "score": 5.0,
+          "desc": "標題誇大扣分",
+          "weight": 15
+        },
+        "fact_check": {
+          "score": 0.0,
+          "desc": "not_found",
+          "weight": 30
+        },
+        "user_feedback": {
+          "score": 0.0,
+          "desc": "none",
+          "weight": 10
+        },
+        "timeliness": {
+          "score": 4.0,
+          "desc": "近期貼文",
+          "weight": 5
+        }
+      },
+      "deep_analysis": {
+        "title_bait": true,
+        "neutral_title": "過量飲用含糖高果糖漿飲料恐增加代謝症候群風險",
+        "title_bait_reason": "標題刻意隱瞞『高果糖漿過量』之具體前題，以『致命』誇大驚悚效果"
+      }
+    }
+  },
+  {
+    "id": "scenario_social_bot_blocked",
+    "title": "Scenario 3: Social Media Disinformation & Bot Blacklist",
+    "description": "Intercepts coordinated malicious propaganda accounts and enforces social blocklists.",
+    "briefing_points": [
+      "High-risk account identification via social blocklist",
+      "Dimension 2 corroboration score forced to zero (0.00)",
+      "Dimension 4 rhetorical risk detection for partisan propaganda"
+    ],
+    "lang": "en",
+    "initial": {
+      "lang": "en",
+      "clear_input": true
+    },
+    "steps": [
+      {
+        "action": "spotlight",
+        "target": "#input",
+        "hint": "Step 1: Enter flagged high-risk X account post URL",
+        "delay": 600
+      },
+      {
+        "action": "type",
+        "target": "#input",
+        "value": "@globaltimesnews 官方貼文：針對特定國際事件之協同宣傳內容。https://x.com/globaltimesnews/status/987654",
+        "hint": "輸入命中 social_blocklist 的帳號與推文網址",
+        "char_delay": 20
+      },
+      {
+        "action": "spotlight",
+        "target": "#analyzeBtn",
+        "hint": "Step 2: Click Analyze to match against blocklist",
+        "delay": 500
+      },
+      {
+        "action": "click",
+        "target": "#analyzeBtn",
+        "hint": "觸發分析請求",
+        "delay": 800
+      },
+      {
+        "action": "wait_for",
+        "target": "#resultCard.show",
+        "timeout": 30000,
+        "hint": "後端 D2 引擎比對 Social Blocklist 中..."
+      },
+      {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "Step 3: Confirm D2 flagged as High-Risk Disinformation Account",
+        "delay": 1200
+      },
+      {
+        "action": "spotlight",
+        "target": "#dimensions",
+        "hint": "D2 跨源佐證度強制歸零 (0% 黑名單)",
+        "delay": 800
+      },
+      {
+        "action": "explainer",
+        "target": "#dimensions",
+        "html": "<b>🚫 社群黑名單攔截 (D2 Source Corroboration = 0)：</b><br>偵測到貼文來源 <b>@globaltimesnews</b> 命中 Social Blocklist。<br>系統直接將跨源佐證指數強制歸零 (0.00)，評級降為 <b>高度可疑</b> (25.0 / 100)。",
+        "delay": 6000
+      }
+    ],
+    "expected": {
+      "selector": "#metrics",
+      "check": "contains_text",
+      "value": "黑名單"
+    },
+    "mock_result": {
+      "url": "https://x.com/globaltimesnews/status/1880123456789",
+      "title": "@globaltimesnews 在 X 的貼文",
+      "final_score": 25.0,
+      "rating": "高度可疑",
+      "rule_score": 25.0,
+      "dimensions": {
+        "evidence_verdict": {
+          "id": "D1",
+          "key": "evidence_verdict",
+          "name": "查核證據蘊涵度",
+          "value": 0.0,
+          "confidence": 0.0,
+          "status_label": "none",
+          "impact_pts": 0.0,
+          "explanation": "外部事實查核庫無此具體事件之核實紀錄"
+        },
+        "source_corroboration": {
+          "id": "D2",
+          "key": "source_corroboration",
+          "name": "跨源報導佐證度",
+          "value": 0.0,
+          "confidence": 1.0,
+          "status_label": "blocked",
+          "impact_pts": 0.0,
+          "explanation": "高風險造謠／機器人帳號黑名單 (x.com/globaltimesnews)｜黑名單來源（不計外部同報）（佐證指數 0.00）"
+        },
+        "headline_faithfulness": {
+          "id": "D3",
+          "key": "headline_faithfulness",
+          "name": "標題內文忠實度",
+          "value": 0.8,
+          "confidence": 0.8,
+          "status_label": "faithful",
+          "impact_pts": 0.0,
+          "explanation": "標題與貼文相符"
+        },
+        "rhetorical_risk": {
+          "id": "D4",
+          "key": "rhetorical_risk",
+          "name": "內文修辭與可驗性風險",
+          "value": 0.7,
+          "confidence": 0.8,
+          "status_label": "high_risk",
+          "impact_pts": 0.0,
+          "explanation": "具有強烈政治引導話術特徵"
+        }
+      },
+      "metrics": {
+        "sentiment": {
+          "score": 5.0,
+          "desc": "具有強烈宣傳語氣",
+          "weight": 15
+        },
+        "domain": {
+          "score": 0.0,
+          "desc": "0% (黑名單)",
+          "weight": 25
+        },
+        "similarity": {
+          "score": 10.0,
+          "desc": "標題與貼文相符",
+          "weight": 15
+        },
+        "fact_check": {
+          "score": 0.0,
+          "desc": "not_found",
+          "weight": 30
+        },
+        "user_feedback": {
+          "score": 0.0,
+          "desc": "none",
+          "weight": 10
+        },
+        "timeliness": {
+          "score": 5.0,
+          "desc": "近期貼文",
+          "weight": 5
+        }
+      }
+    }
+  },
+  {
+    "id": "scenario_i18n_switch",
+    "title": "Scenario 4: Multilingual Real News Verification",
+    "description": "Demonstrates real-time multilingual UI and prompt localization across JA, EN, and ZH.",
+    "briefing_points": [
+      "Seamless real-time multilingual UI switching (Japanese / English / Chinese)",
+      "Complete localization of D1-D4 dimension definitions and boundaries",
+      "Automated cross-source validation from Reuters, AP, and Kyodo News"
+    ],
+    "lang": "en",
+    "initial": {
+      "lang": "en",
+      "render_result": true
+    },
+    "steps": [
+      {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "步驟 1：檢視目前繁體中文版四正交維度",
+        "delay": 1200
+      },
+      {
+        "action": "spotlight",
+        "target": "#dimensions",
+        "hint": "繁體中文維度契約與定義",
+        "delay": 800
+      },
+      {
+        "action": "scroll_to",
+        "target": ".lang-switch",
+        "hint": "步驟 2：切換為「日本語」介面",
+        "delay": 1000
+      },
+      {
+        "action": "spotlight",
+        "target": "[data-lang-btn=\"ja\"]",
+        "hint": "點擊日語切換按鈕",
+        "delay": 600
+      },
+      {
+        "action": "click",
+        "target": "[data-lang-btn=\"ja\"]",
+        "hint": "切換為日本語",
+        "delay": 1000
+      },
+      {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "檢視日本語化之 D1~D4 契約定義",
+        "delay": 1200
+      },
+      {
+        "action": "spotlight",
+        "target": "#dimensions",
+        "hint": "日本語四正交維度矩陣",
+        "delay": 800
+      },
+      {
+        "action": "explainer",
+        "target": "#dimensions",
+        "html": "<b>🇯🇵 日本語 UI 即時切換：</b><br>全介面 UI 文字、D1~D4 維度名稱與契約邊界（裏付けあり／測定基準／境界条件）即時翻譯，無須重新載入頁面。",
+        "delay": 5500
+      },
+      {
+        "action": "scroll_to",
+        "target": ".lang-switch",
+        "hint": "步驟 3：切換為「English」介面",
+        "delay": 1000
+      },
+      {
+        "action": "spotlight",
+        "target": "[data-lang-btn=\"en\"]",
+        "hint": "點擊英語切換按鈕",
+        "delay": 600
+      },
+      {
+        "action": "click",
+        "target": "[data-lang-btn=\"en\"]",
+        "hint": "切換為 English",
+        "delay": 1000
+      },
+      {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "View English 4-Orthogonal Dimensions",
+        "delay": 1200
+      },
+      {
+        "action": "spotlight",
+        "target": "#dimensions",
+        "hint": "English 4-Dimension Matrix",
+        "delay": 800
+      },
+      {
+        "action": "explainer",
+        "target": "#dimensions",
+        "html": "<b>🇺🇸 Instant English Switch:</b><br>Seamlessly updates the 4-orthogonal analytical matrix, definitions, and scoring pipeline into native English in real time.",
+        "delay": 5500
+      },
+      {
+        "action": "scroll_to",
+        "target": ".lang-switch",
+        "hint": "步驟 4：切換回繁體中文",
+        "delay": 1000
+      },
+      {
+        "action": "spotlight",
+        "target": "[data-lang-btn=\"zh\"]",
+        "hint": "點擊繁體中文按鈕",
+        "delay": 600
+      },
+      {
+        "action": "click",
+        "target": "[data-lang-btn=\"zh\"]",
+        "hint": "切換回繁體中文",
+        "delay": 1000
+      },
+      {
+        "action": "scroll_to",
+        "target": "#resultCard",
+        "hint": "回到完整分析結果",
+        "delay": 1200
+      }
+    ],
+    "expected": {
+      "selector": "[data-lang-btn=\"zh\"].active",
+      "check": "element_visible"
+    },
+    "mock_result": {
+      "url": "https://news.pts.org.tw/article/745678",
+      "title": "花蓮震後重建進度 內政部：中繼屋預計11月前完工",
+      "final_score": 88.5,
+      "rating": "高度可信",
+      "rule_score": 85.0,
+      "fusion_weight": 0.3,
+      "post_fusion_score": 88.5,
+      "scoring_basis": "路由 B（主流來源／跨源同報佐證）：具名公廣主流媒體 (pts.org.tw)＋內文具名出處核實｜2 家外部來源同報（cna.com.tw, ltn.com.tw）｜近期發布 (佐證指數 0.88)",
+      "dimensions": {
+        "evidence_verdict": {
+          "id": "D1",
+          "key": "evidence_verdict",
+          "name": "查核證據蘊涵度",
+          "value": 0.0,
+          "confidence": 0.0,
+          "status_label": "none",
+          "impact_pts": 0.0,
+          "explanation": "外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）",
+          "what_it_measures": "已核實查核庫對「同一具體事件」之蘊涵或駁斥立場與證據信心",
+          "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞"
+        },
+        "source_corroboration": {
+          "id": "D2",
+          "key": "source_corroboration",
+          "name": "跨源報導佐證度",
+          "value": 0.88,
+          "confidence": 1.0,
+          "status_label": "corroborated",
+          "impact_pts": 85.0,
+          "explanation": "具名公廣主流媒體 (pts.org.tw)＋內文具名出處核實｜2 家外部來源同報（cna.com.tw, ltn.com.tw）｜近期發布 (佐證指數 0.88)",
+          "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數",
+          "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章"
+        },
+        "headline_faithfulness": {
+          "id": "D3",
+          "key": "headline_faithfulness",
+          "name": "標題內文忠實度",
+          "value": 0.95,
+          "confidence": 0.9,
+          "status_label": "faithful",
+          "impact_pts": 0.0,
+          "explanation": "標題平實反映內文主旨（標題—內文一致性 92%），無誇大或斷章取義（0 扣分）",
+          "what_it_measures": "新聞標題之斷言是否忠實反映內文",
+          "what_if_wrong": "誤報時僅對該文施加標題失真扣分"
+        },
+        "rhetorical_risk": {
+          "id": "D4",
+          "key": "rhetorical_risk",
+          "name": "內文修辭與可驗性風險",
+          "value": 0.08,
+          "confidence": 0.9,
+          "status_label": "low_risk",
+          "impact_pts": 0.0,
+          "explanation": "內文語氣客觀平實，具官方與工程進度具體數據（低風險 R=0.08）",
+          "what_it_measures": "文本自身之情緒操弄、催促轉發動員",
+          "what_if_wrong": "作用範圍嚴格限制在未查證區間內"
+        }
+      },
+      "metrics": {
+        "sentiment": {
+          "score": 14.0,
+          "desc": "修辭安全度 92%（風險 R=0.08）",
+          "weight": 15
+        },
+        "domain": {
+          "score": 24.0,
+          "desc": "具名公廣主流媒體 (pts.org.tw)",
+          "weight": 25
+        },
+        "similarity": {
+          "score": 15.0,
+          "desc": "忠實度 100%（faithful）",
+          "weight": 15
+        },
+        "fact_check": {
+          "score": 0.0,
+          "desc": "not_found",
+          "weight": 30
+        },
+        "user_feedback": {
+          "score": 0.0,
+          "desc": "none",
+          "weight": 10
+        },
+        "timeliness": {
+          "score": 5.0,
+          "desc": "近期發布",
+          "weight": 5
+        }
+      },
+      "deep_analysis": {
+        "claim": "內政部說明花蓮震後重建中繼屋預計11月前完工",
+        "key_points": [
+          "內政部官員赴花蓮視察中繼屋基地",
+          "預估11月可如期提供受災戶入住安置"
+        ],
+        "viewpoints": "客觀事實：官方具名受訪說明公共工程進度。",
+        "analysis": "中央社與公視等多家媒體同步核實，內容翔實具體，屬高度可信新聞。",
+        "credibility_score": 95,
+        "model": "qwen3.8-27b-fastmtp"
+      }
+    }
+  }
+]
