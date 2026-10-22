@@ -1,4 +1,4 @@
-# auto-pulled 2026-10-20T19:30:05Z UTC, 75733 domains
+# auto-pulled 2026-10-22T19:30:05Z UTC, 75733 domains
 # src: https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social/hosts
 0-act.channel.facebook.com
 0-edge-chat.facebook.com

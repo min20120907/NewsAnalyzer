@@ -1,4 +1,4 @@
-# auto-pulled 2026-10-20T19:30:04Z UTC, 93789 domains
+# auto-pulled 2026-10-22T19:30:04Z UTC, 93789 domains
 # src: https://danny0838.github.io/content-farm-terminator/files/blocklist/content-farms.txt
 # src: https://raw.githubusercontent.com/cobaltdisco/Google-Chinese-Results-Blocklist/master/uBlacklist_subscription.txt
 # src: https://raw.githubusercontent.com/cobaltdisco/Google-Chinese-Results-Blocklist/master/uBlacklist_subscription_extra.txt

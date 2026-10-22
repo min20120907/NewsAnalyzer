@@ -1170,7 +1170,7 @@ function hideError() { errorBox.classList.remove('show'); }
 function renderResult(data) {
   lastAnalysisData = data;
   const score = Math.round(data.final_score);
-  const rating = data.rating_text;
+  const rating = data.rating_text || data.rating || '';
   const dict = I18N[currentLang] || I18N.zh;
   const dt = dict.dim_titles || I18N.zh.dim_titles;
   const mn = dict.metric_names || I18N.zh.metric_names;
