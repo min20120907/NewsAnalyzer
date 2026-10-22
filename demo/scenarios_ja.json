@@ -4,9 +4,9 @@
     "title": "シナリオ1：主要メディアによる報道の分析 (Mainstream Corroboration)",
     "description": "公共放送や通信社のニュースを入力し、複数メディアの相互検証とドメイン信頼性を計算します。",
     "briefing_points": [
-      "主要メディアドメイン (pts.org.tw / nhk.or.jp) の信頼性スコアリング",
-      "通信社・独立メディアによる相互検証 (CNA / 共同通信) の一致確認",
-      "修辞リスク D4 の評価と透明性の高いスコアリングパイプライン"
+      "主要公共放送（NHK）の報道URLを入力",
+      "ファクトチェック照合・複数メディア相互検証の実行",
+      "ローカルQwenモデルによる95点の高信頼性判定"
     ],
     "lang": "ja",
     "initial": {
@@ -23,32 +23,32 @@
       {
         "action": "type",
         "target": "#input",
-        "value": "【公視新聞網】花蓮震後重建進度 內政部：中繼屋預計11月前完工。內政部官員表示，花蓮地震重建工程正積極展開，中繼屋預計11月如期完成交付受災戶入住。https://news.pts.org.tw/article/690000",
-        "hint": "輸入具名主流媒體報導與完整內文",
+        "value": "【NHKニュース】能登半島地震の復旧進捗 内閣府：仮設住宅の建設は11月までに完了予定。内閣府の担当者は、復旧工事が順調に進んでおり、被災者の入居を予定通り進めると述べた。https://www3.nhk.or.jp/news/article/20240901.html",
+        "hint": "公共放送メディアの公式報道URLを入力",
         "char_delay": 15
       },
       {
         "action": "spotlight",
         "target": "#analyzeBtn",
-        "hint": "ステップ 2：「分析開始」をクリックしてマルチモーダル検証を起動",
+        "hint": "ステップ 2：「分析開始」をクリックして検証を起動",
         "delay": 500
       },
       {
         "action": "click",
         "target": "#analyzeBtn",
-        "hint": "觸發分析請求",
+        "hint": "分析リクエストを送信",
         "delay": 800
       },
       {
         "action": "wait_for",
         "target": "#resultCard.show",
         "timeout": 30000,
-        "hint": "管線運算中：抽取正文、查核檢索與模型判讀"
+        "hint": "パイプライン処理中：本文抽出・ファクト照合・相互検証・AI分析"
       },
       {
         "action": "explainer",
         "target": "#resultCard",
-        "html": "<b>🏁 最終評分 (Final Score)：88.5 / 100</b><br>評級：<b>高度可信</b><br>系統融合規則引擎與本地 LLM 模型之加權分數，判定為高信賴度新聞。",
+        "html": "<b>🏁 総合スコア (Final Score)：88.5 / 100</b><br>判定：<b>高信頼性</b><br>ルールエンジンとローカルAIモデルの判定を統合し、高信頼性と認定。",
         "delay": 4500
       },
       {
@@ -64,7 +64,7 @@
       },
       {
         "action": "explainer",
-        "html": "<b>D2 跨源報導佐證度：88%</b><br>檢索到公視 (pts.org.tw) 原文，並偵測到中央社與聯合報同步報導，佐證指數極高 (0.88)。",
+        "html": "<b>D2 複数メディア相互検証：88%</b><br>公共放送 (nhk.or.jp) 報道を検知し、共同通信・時事通信による同時報道を確認（裏付けスコア 0.88）。",
         "delay": 4500
       },
       {
@@ -76,7 +76,7 @@
       {
         "action": "explainer",
         "target": "#scorePipeline",
-        "html": "<b>📐 透明計分管線 (Score Pipeline)：</b><br>1. 規則分數 (85.0) × 70% + 本地 AI 分數 (95.0) × 30% = <b>88.5</b><br>2. 查核安全上限檢查：無外部查核紀錄，不受 60 分封頂限制。",
+        "html": "<b>🧮 透明な計算パイプライン</b><br>ルールスコア 85点 (70%) ＋ 本地AI 95点 (30%) ＝ 総合 88.5点",
         "delay": 5000
       }
     ],
@@ -85,78 +85,75 @@
       "check": "element_visible"
     },
     "mock_result": {
-      "url": "https://news.pts.org.tw/article/745678",
-      "title": "花蓮震後重建進度 內政部：中繼屋預計11月前完工",
+      "title": "能登半島地震の復旧進捗 内閣府：仮設住宅の建設は11月までに完了予定",
       "final_score": 88.5,
       "rating": "高度可信",
       "rule_score": 85.0,
-      "fusion_weight": 0.3,
-      "post_fusion_score": 88.5,
-      "scoring_basis": "路由 B（主流來源／跨源同報佐證）：具名公廣主流媒體 (pts.org.tw)＋內文具名出處核實｜2 家外部來源同報（cna.com.tw, ltn.com.tw）｜近期發布 (佐證指數 0.88)",
+      "url": "https://www3.nhk.or.jp/news/article/20240901.html",
       "dimensions": {
         "evidence_verdict": {
           "id": "D1",
           "key": "evidence_verdict",
-          "name": "查核證據蘊涵度",
+          "name": "ファクトチェック照合",
           "value": 0.0,
           "confidence": 0.0,
           "status_label": "none",
           "impact_pts": 0.0,
-          "explanation": "外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）",
-          "what_it_measures": "已核實查核庫對「同一具體事件」之蘊涵或駁斥立場與證據信心",
-          "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞"
+          "explanation": "外部ファクトチェックDBに本件の検証記録なし（クロスソース裏付けD2および本文リスクD4にルーティング）",
+          "what_it_measures": "外部ファクトチェック機関による同一事象の真偽判定",
+          "what_if_wrong": "無関係なファクトチェックを誤適用すると正規ニュースを不当に下げます"
         },
         "source_corroboration": {
           "id": "D2",
           "key": "source_corroboration",
-          "name": "跨源報導佐證度",
+          "name": "複数メディア相互検証",
           "value": 0.88,
-          "confidence": 1.0,
+          "confidence": 0.9,
           "status_label": "corroborated",
-          "impact_pts": 85.0,
-          "explanation": "具名公廣主流媒體 (pts.org.tw)＋內文具名出處核實｜2 家外部來源同報（cna.com.tw, ltn.com.tw）｜近期發布 (佐證指數 0.88)",
-          "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數",
-          "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章"
+          "impact_pts": 30.5,
+          "explanation": "公共放送メディア (nhk.or.jp) ＋ 共同通信・時事通信による同時報道を確認",
+          "what_it_measures": "報道機関のドメイン信憑性および独立メディア間の一致確認",
+          "what_if_wrong": "まとめサイトの相互コピーを一致と判定すると未検証情報を過大評価します"
         },
         "headline_faithfulness": {
           "id": "D3",
           "key": "headline_faithfulness",
-          "name": "標題內文忠實度",
-          "value": 0.95,
-          "confidence": 0.9,
-          "status_label": "faithful",
+          "name": "見出し忠実度",
+          "value": 0.92,
+          "confidence": 0.95,
+          "status_label": "supported",
           "impact_pts": 0.0,
-          "explanation": "標題平實反映內文主旨（標題—內文一致性 92%），無誇大或斷章取義（0 扣分）",
-          "what_it_measures": "新聞標題之斷言是否忠實反映內文",
-          "what_if_wrong": "誤報時僅對該文施加標題失真扣分"
+          "explanation": "見出しは本文の主旨を客観的に反映しており、誇張やミスリードなし",
+          "what_it_measures": "見出しと本文内容の一致度・誇張度",
+          "what_if_wrong": "誤判定時は見出し忠実度のみが減点されます"
         },
         "rhetorical_risk": {
           "id": "D4",
           "key": "rhetorical_risk",
-          "name": "內文修辭與可驗性風險",
+          "name": "修辞リスク評価",
           "value": 0.08,
-          "confidence": 0.9,
+          "confidence": 0.95,
           "status_label": "low_risk",
           "impact_pts": 0.0,
-          "explanation": "內文語氣客觀平實，具官方與工程進度具體數據（低風險 R=0.08）",
-          "what_it_measures": "文本自身之情緒操弄、催促轉發動員",
-          "what_if_wrong": "作用範圍嚴格限制在未查證區間內"
+          "explanation": "本文は平易で客観的な表現であり、扇動や偽装の特徴なし",
+          "what_it_measures": "感情的扇動・拡散誘導のリスク度",
+          "what_if_wrong": "適用範囲は未検証帯に厳格に限定されます"
         }
       },
       "metrics": {
         "sentiment": {
           "score": 14.0,
-          "desc": "修辭安全度 92%（風險 R=0.08）",
+          "desc": "修辞安全性 92%（リスク R=0.08）",
           "weight": 15
         },
         "domain": {
           "score": 24.0,
-          "desc": "具名公廣主流媒體 (pts.org.tw)",
+          "desc": "主要報道機関ドメイン nhk.or.jp",
           "weight": 25
         },
         "similarity": {
           "score": 15.0,
-          "desc": "忠實度 100%（faithful）",
+          "desc": "見出し整合性完全一致",
           "weight": 15
         },
         "fact_check": {
@@ -171,20 +168,22 @@
         },
         "timeliness": {
           "score": 5.0,
-          "desc": "近期發布",
+          "desc": "最近の配信",
           "weight": 5
         }
       },
       "deep_analysis": {
-        "claim": "內政部說明花蓮震後重建中繼屋預計11月前完工",
+        "title_bait": false,
+        "llm_score": 95,
+        "claim": "内閣府が能登半島地震の仮設住宅を11月までに完成予定と発表",
         "key_points": [
-          "內政部官員赴花蓮視察中繼屋基地",
-          "預估11月可如期提供受災戶入住安置"
+          "内閣府担当者が被災地を視察",
+          "予定通り11月に被災者へ引き渡し予定"
         ],
-        "viewpoints": "客觀事實：官方具名受訪說明公共工程進度。",
-        "analysis": "中央社與公視等多家媒體同步核實，內容翔實具體，屬高度可信新聞。",
-        "credibility_score": 95,
-        "model": "qwen3.8-27b-fastmtp"
+        "viewpoints": [
+          "行政による公式発表と復旧スケジュールの確認"
+        ],
+        "summary": "主要メディアによる公式発表の取材報道であり、論理構成および客観性に優れ、高い信頼性が担保されています。"
       }
     }
   },
@@ -212,8 +211,8 @@
       {
         "action": "type",
         "target": "#input",
-        "value": "天天喝這杯竟會致命？名醫大揭驚人真相！網全嚇傻：再也不敢碰了",
-        "hint": "鍵入帶有資訊遮蔽與驚嘆情緒的釣魚文案",
+        "value": "毎日これを飲むと命の危機！？名医が明かす驚きの真相！ネット騒然：もう二度と飲めない…健康情報まとめブログ https://health-buzz-summary.jp/archives/12345",
+        "hint": "ステップ 1：典型的な煽り釣り見出しを入力",
         "char_delay": 20
       },
       {
@@ -225,14 +224,14 @@
       {
         "action": "click",
         "target": "#analyzeBtn",
-        "hint": "觸發分析請求",
+        "hint": "分析リクエストを送信",
         "delay": 800
       },
       {
         "action": "wait_for",
         "target": "#restoredTitle",
         "timeout": 30000,
-        "hint": "D3 模組與 LLM 正在進行懸念解析與真實主旨還原"
+        "hint": "D3モジュールとLLMがサスペンス解析と真の主旨復元を実行中"
       },
       {
         "action": "scroll_to",
@@ -243,13 +242,13 @@
       {
         "action": "spotlight",
         "target": "#restoredTitle",
-        "hint": "高亮標題還原區塊",
+        "hint": "真の主張復元エリアをハイライト",
         "delay": 800
       },
       {
         "action": "explainer",
         "target": "#restoredTitle",
-        "html": "<b>🛡 釣魚標題攔截與還原：</b><br>偵測到典型懸念誘餌（大揭真相 / 致命反差）。<br>LLM 提煉真實主旨：<b>「過量飲用含糖高果糖漿飲料恐增加代謝症候群風險」</b><br>標題隱瞞具體前提，啟動防護降級。",
+        "html": "<b>💡 釣魚見出しの遮断と復元：</b><br>典型的な煽りサスペンス（真相公開／致命的リスク）を検知。<br>LLMが客観的主旨を抽出：<b>「過度なカフェイン摂取に関する注意喚起」</b><br>前提隠蔽に対し防御減点を適用。",
         "delay": 5500
       },
       {
@@ -261,13 +260,13 @@
       {
         "action": "spotlight",
         "target": "#dimensions",
-        "hint": "D3 維度扣除 18 分",
+        "hint": "D3指標で18点を減点",
         "delay": 800
       },
       {
         "action": "explainer",
         "target": "#dimensions",
-        "html": "<b>🎯 D3 標題內文忠實度扣分 (-18 pts)：</b><br>判定為 <b>clickbait</b>，忠實度降為 32%。<br>扣除 18 分以壓制最終評分，避免聳動釣魚標題取得高信任度。",
+        "html": "<b>⚠️ D3見出し忠実度のペナルティ (-18点)</b><br>見出しと本文の重大な乖離（D3=0.32）を検出し、45点（要検証）へ抑制。",
         "delay": 5500
       }
     ],
@@ -276,74 +275,75 @@
       "check": "element_visible"
     },
     "mock_result": {
-      "title": "天天喝這杯竟會致命？名醫大揭驚人真相！網全嚇傻：再也不敢碰了",
+      "title": "毎日これを飲むと命の危機！？名医が明かす驚きの真相！ネット騒然：もう二度と飲めない",
       "final_score": 45.0,
       "rating": "待查證",
       "rule_score": 42.0,
+      "url": "https://health-buzz-summary.jp/archives/12345",
       "dimensions": {
         "evidence_verdict": {
           "id": "D1",
           "key": "evidence_verdict",
-          "name": "查核證據蘊涵度",
+          "name": "ファクトチェック照合",
           "value": 0.0,
           "confidence": 0.0,
           "status_label": "none",
           "impact_pts": 0.0,
-          "explanation": "外部事實查核庫無此具體事件之核實紀錄",
-          "what_it_measures": "已核實查核庫對「同一具體事件」之蘊涵或駁斥立場與證據信心",
-          "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞"
+          "explanation": "外部ファクトチェックDBに本件の検証記録なし",
+          "what_it_measures": "外部ファクトチェック機関による検証有無",
+          "what_if_wrong": "誤判定時は未検証帯に留まります"
         },
         "source_corroboration": {
           "id": "D2",
           "key": "source_corroboration",
-          "name": "跨源報導佐證度",
+          "name": "複数メディア相互検証",
           "value": 0.45,
           "confidence": 0.7,
           "status_label": "single_source",
           "impact_pts": 42.0,
-          "explanation": "單一農場轉載來源｜未見具名獨立主流媒體交叉核實",
-          "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數",
-          "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章"
+          "explanation": "まとめサイト転載ソース｜独立主要メディアによる裏付けなし",
+          "what_it_measures": "発信元の信憑性および独立報道の一致度",
+          "what_if_wrong": "まとめサイトの相互コピーを裏付けと誤認するリスク"
         },
         "headline_faithfulness": {
           "id": "D3",
           "key": "headline_faithfulness",
-          "name": "標題內文忠實度",
+          "name": "見出し忠実度",
           "value": 0.32,
           "confidence": 0.85,
           "status_label": "clickbait",
           "impact_pts": -18.0,
-          "explanation": "偵測到典型懸念式誘餌標題（醫揭真相/致命反差），扣除 18 分並啟動客觀主旨還原",
-          "what_it_measures": "新聞標題之斷言是否忠實反映內文，有無誇大釣魚",
-          "what_if_wrong": "誤報時僅對該文施加標題失真扣分"
+          "explanation": "典型的な煽り見出しを検知。18点減点ペナルティを適用し客観的真の主旨を復元",
+          "what_it_measures": "見出しの断言が本文を忠実に反映しているか",
+          "what_if_wrong": "誤報時は見出し失真減点のみ適用されます"
         },
         "rhetorical_risk": {
           "id": "D4",
           "key": "rhetorical_risk",
-          "name": "內文修辭與可驗性風險",
+          "name": "修辞リスク評価",
           "value": 0.35,
           "confidence": 0.8,
           "status_label": "low_risk",
           "impact_pts": 0.0,
-          "explanation": "修辭帶有輕度誇張驚悚（網全嚇傻/致命），但未達系統性謠言等級",
-          "what_it_measures": "文本自身之情緒操弄、催促轉發動員",
-          "what_if_wrong": "作用範圍嚴格限制在未查證區間內"
+          "explanation": "修辞に軽度の誇張が含まれるが、系統的デマレベルではない",
+          "what_it_measures": "感情的扇動・拡散誘導のリスク度",
+          "what_if_wrong": "適用範囲は要検証帯に限定されます"
         }
       },
       "metrics": {
         "sentiment": {
           "score": 9.0,
-          "desc": "輕度煽動修辭",
+          "desc": "軽度の扇動修辞",
           "weight": 15
         },
         "domain": {
           "score": 10.0,
-          "desc": "社群轉載來源",
+          "desc": "SNS転載・まとめサイト",
           "weight": 25
         },
         "similarity": {
           "score": 5.0,
-          "desc": "標題誇大扣分",
+          "desc": "見出し誇張による減点",
           "weight": 15
         },
         "fact_check": {
@@ -358,14 +358,14 @@
         },
         "timeliness": {
           "score": 4.0,
-          "desc": "近期貼文",
+          "desc": "最近の投稿",
           "weight": 5
         }
       },
       "deep_analysis": {
         "title_bait": true,
-        "neutral_title": "過量飲用含糖高果糖漿飲料恐增加代謝症候群風險",
-        "title_bait_reason": "標題刻意隱瞞『高果糖漿過量』之具體前題，以『致命』誇大驚悚效果"
+        "neutral_title": "過度なカフェイン摂取に関する注意喚起と健康への影響解説",
+        "title_bait_reason": "日常的摂取と極端な過剰摂取を混同させ、『命の危機』と過度に誇張した煽り見出し"
       }
     }
   },
@@ -393,20 +393,20 @@
       {
         "action": "type",
         "target": "#input",
-        "value": "@globaltimesnews 官方貼文：針對特定國際事件之協同宣傳內容。https://x.com/globaltimesnews/status/987654",
-        "hint": "輸入命中 social_blocklist 的帳號與推文網址",
+        "value": "https://x.com/suspicious_disinfo_bot/status/987654321098",
+        "hint": "ステップ 1：警戒リストに登録されたX投稿URLを入力",
         "char_delay": 20
       },
       {
         "action": "spotlight",
         "target": "#analyzeBtn",
-        "hint": "ステップ 2：分析をクリックしブラックリストと照合",
+        "hint": "ステップ 2：分析をクリックし警戒リストと照合",
         "delay": 500
       },
       {
         "action": "click",
         "target": "#analyzeBtn",
-        "hint": "觸發分析請求",
+        "hint": "分析リクエストを送信",
         "delay": 800
       },
       {
@@ -430,77 +430,84 @@
       {
         "action": "explainer",
         "target": "#dimensions",
-        "html": "<b>🚫 社群黑名單攔截 (D2 Source Corroboration = 0)：</b><br>偵測到貼文來源 <b>@globaltimesnews</b> 命中 Social Blocklist。<br>系統直接將跨源佐證指數強制歸零 (0.00)，評級降為 <b>高度可疑</b> (25.0 / 100)。",
+        "html": "<b>🛑 D2強制ゼロ ＆ D4修辞リスク急上昇 (0.70)</b><br>裏付けスコアはゼロ、煽動的世論操作の特徴を検知。",
         "delay": 6000
       }
     ],
     "expected": {
-      "selector": "#metrics",
-      "check": "contains_text",
-      "value": "黑名單"
+      "selector": "#resultCard.show",
+      "check": "element_visible"
     },
     "mock_result": {
-      "url": "https://x.com/globaltimesnews/status/1880123456789",
-      "title": "@globaltimesnews 在 X 的貼文",
+      "title": "@suspicious_disinfo_bot による X (Twitter) 投稿",
       "final_score": 25.0,
       "rating": "高度可疑",
       "rule_score": 25.0,
+      "url": "https://x.com/suspicious_disinfo_bot/status/987654321098",
       "dimensions": {
         "evidence_verdict": {
           "id": "D1",
           "key": "evidence_verdict",
-          "name": "查核證據蘊涵度",
+          "name": "ファクトチェック照合",
           "value": 0.0,
           "confidence": 0.0,
           "status_label": "none",
           "impact_pts": 0.0,
-          "explanation": "外部事實查核庫無此具體事件之核實紀錄"
+          "explanation": "外部ファクトチェックDBに本件の検証記録なし",
+          "what_it_measures": "外部検証の有無",
+          "what_if_wrong": "適用外"
         },
         "source_corroboration": {
           "id": "D2",
           "key": "source_corroboration",
-          "name": "跨源報導佐證度",
+          "name": "複数メディア相互検証",
           "value": 0.0,
-          "confidence": 1.0,
-          "status_label": "blocked",
+          "confidence": 0.99,
+          "status_label": "blacklisted",
           "impact_pts": 0.0,
-          "explanation": "高風險造謠／機器人帳號黑名單 (x.com/globaltimesnews)｜黑名單來源（不計外部同報）（佐證指數 0.00）"
+          "explanation": "警戒アカウントブラックリストに一致（スコア強制 0.00 固定）",
+          "what_it_measures": "アカウント信頼性",
+          "what_if_wrong": "誤登録時はブラックリストから除外"
         },
         "headline_faithfulness": {
           "id": "D3",
           "key": "headline_faithfulness",
-          "name": "標題內文忠實度",
-          "value": 0.8,
-          "confidence": 0.8,
-          "status_label": "faithful",
+          "name": "見出し忠実度",
+          "value": 0.7,
+          "confidence": 0.7,
+          "status_label": "supported",
           "impact_pts": 0.0,
-          "explanation": "標題與貼文相符"
+          "explanation": "見出しと投稿内容はおおむね一致",
+          "what_it_measures": "見出し整合性",
+          "what_if_wrong": "影響なし"
         },
         "rhetorical_risk": {
           "id": "D4",
           "key": "rhetorical_risk",
-          "name": "內文修辭與可驗性風險",
+          "name": "修辞リスク評価",
           "value": 0.7,
           "confidence": 0.8,
           "status_label": "high_risk",
           "impact_pts": 0.0,
-          "explanation": "具有強烈政治引導話術特徵"
+          "explanation": "強い政治的扇動・世論操作の言説特徴を検出",
+          "what_it_measures": "感情的扇動・拡散誘導のリスク度",
+          "what_if_wrong": "厳格に適用"
         }
       },
       "metrics": {
         "sentiment": {
           "score": 5.0,
-          "desc": "具有強烈宣傳語氣",
+          "desc": "強いプロパガンダ語調",
           "weight": 15
         },
         "domain": {
           "score": 0.0,
-          "desc": "0% (黑名單)",
+          "desc": "0% (警戒リスト)",
           "weight": 25
         },
         "similarity": {
           "score": 10.0,
-          "desc": "標題與貼文相符",
+          "desc": "見出しと投稿一致",
           "weight": 15
         },
         "fact_check": {
@@ -515,7 +522,7 @@
         },
         "timeliness": {
           "score": 5.0,
-          "desc": "近期貼文",
+          "desc": "最近の投稿",
           "weight": 5
         }
       }
@@ -524,11 +531,11 @@
   {
     "id": "scenario_i18n_switch",
     "title": "シナリオ4：多言語による実ニュースの検証 (Multilingual Real News)",
-    "description": "日本語、英語、繁体字中国語の完全ローカライズと即時UI切り替えを実証します。",
+    "description": "日本語、英語の完全ローカライズと即時UI切り替えを実証します。",
     "briefing_points": [
-      "リアルタイム多言語UI切り替え (日本語 / English / 繁中)",
+      "リアルタイム多言語UI切り替え (日本語 / English)",
       "D1〜D4の定義・判定境界の完全現地語化",
-      "国際通信社 (ロイター・共同通信・AP) の自動裏付け検証"
+      "国際通信社 (ロイター・AP) の自動裏付け検証"
     ],
     "lang": "ja",
     "initial": {
@@ -539,189 +546,150 @@
       {
         "action": "scroll_to",
         "target": "#dimensions",
-        "hint": "步驟 1：檢視目前繁體中文版四正交維度",
+        "hint": "ステップ 1：日本語版の四直交指標を確認",
         "delay": 1200
       },
       {
         "action": "spotlight",
         "target": "#dimensions",
-        "hint": "繁體中文維度契約與定義",
+        "hint": "日本語四直交指標マトリクス",
         "delay": 800
       },
       {
         "action": "scroll_to",
         "target": ".lang-switch",
-        "hint": "步驟 2：切換為「日本語」介面",
-        "delay": 1000
-      },
-      {
-        "action": "spotlight",
-        "target": "[data-lang-btn=\"ja\"]",
-        "hint": "點擊日語切換按鈕",
-        "delay": 600
-      },
-      {
-        "action": "click",
-        "target": "[data-lang-btn=\"ja\"]",
-        "hint": "切換為日本語",
-        "delay": 1000
-      },
-      {
-        "action": "scroll_to",
-        "target": "#dimensions",
-        "hint": "檢視日本語化之 D1~D4 契約定義",
-        "delay": 1200
-      },
-      {
-        "action": "spotlight",
-        "target": "#dimensions",
-        "hint": "日本語四正交維度矩陣",
-        "delay": 800
-      },
-      {
-        "action": "explainer",
-        "target": "#dimensions",
-        "html": "<b>🇯🇵 日本語 UI 即時切換：</b><br>全介面 UI 文字、D1~D4 維度名稱與契約邊界（裏付けあり／測定基準／境界条件）即時翻譯，無須重新載入頁面。",
-        "delay": 5500
-      },
-      {
-        "action": "scroll_to",
-        "target": ".lang-switch",
-        "hint": "步驟 3：切換為「English」介面",
+        "hint": "ステップ 2：一時的に「English」UIへ切り替え",
         "delay": 1000
       },
       {
         "action": "spotlight",
         "target": "[data-lang-btn=\"en\"]",
-        "hint": "點擊英語切換按鈕",
+        "hint": "Englishボタンをクリック",
         "delay": 600
       },
       {
         "action": "click",
         "target": "[data-lang-btn=\"en\"]",
-        "hint": "切換為 English",
+        "hint": "Englishへ切り替え",
         "delay": 1000
       },
       {
         "action": "scroll_to",
         "target": "#dimensions",
-        "hint": "View English 4-Orthogonal Dimensions",
+        "hint": "View English Dimensions",
         "delay": 1200
       },
       {
         "action": "spotlight",
         "target": "#dimensions",
-        "hint": "English 4-Dimension Matrix",
+        "hint": "English Matrix",
         "delay": 800
       },
       {
         "action": "explainer",
         "target": "#dimensions",
-        "html": "<b>🇺🇸 Instant English Switch:</b><br>Seamlessly updates the 4-orthogonal analytical matrix, definitions, and scoring pipeline into native English in real time.",
-        "delay": 5500
+        "html": "<b>🇺🇸 Real-time Localization:</b><br>Instant seamless switching across dimensions, contracts, and scoring pipelines.",
+        "delay": 4000
       },
       {
         "action": "scroll_to",
         "target": ".lang-switch",
-        "hint": "步驟 4：切換回繁體中文",
+        "hint": "ステップ 3：「日本語」UIへ復帰",
         "delay": 1000
       },
       {
         "action": "spotlight",
-        "target": "[data-lang-btn=\"zh\"]",
-        "hint": "點擊繁體中文按鈕",
+        "target": "[data-lang-btn=\"ja\"]",
+        "hint": "日本語ボタンをクリック",
         "delay": 600
       },
       {
         "action": "click",
-        "target": "[data-lang-btn=\"zh\"]",
-        "hint": "切換回繁體中文",
+        "target": "[data-lang-btn=\"ja\"]",
+        "hint": "日本語へ復帰",
         "delay": 1000
       },
       {
         "action": "scroll_to",
         "target": "#resultCard",
-        "hint": "回到完整分析結果",
+        "hint": "完全な日本語分析結果へ戻る",
         "delay": 1200
       }
     ],
     "expected": {
-      "selector": "[data-lang-btn=\"zh\"].active",
+      "selector": "[data-lang-btn=\"ja\"].active",
       "check": "element_visible"
     },
     "mock_result": {
-      "url": "https://news.pts.org.tw/article/745678",
-      "title": "花蓮震後重建進度 內政部：中繼屋預計11月前完工",
+      "title": "能登半島地震の復旧進捗 内閣府：仮設住宅の建設は11月までに完了予定",
       "final_score": 88.5,
       "rating": "高度可信",
       "rule_score": 85.0,
-      "fusion_weight": 0.3,
-      "post_fusion_score": 88.5,
-      "scoring_basis": "路由 B（主流來源／跨源同報佐證）：具名公廣主流媒體 (pts.org.tw)＋內文具名出處核實｜2 家外部來源同報（cna.com.tw, ltn.com.tw）｜近期發布 (佐證指數 0.88)",
+      "url": "https://www3.nhk.or.jp/news/article/20240901.html",
       "dimensions": {
         "evidence_verdict": {
           "id": "D1",
           "key": "evidence_verdict",
-          "name": "查核證據蘊涵度",
+          "name": "ファクトチェック照合",
           "value": 0.0,
           "confidence": 0.0,
           "status_label": "none",
           "impact_pts": 0.0,
-          "explanation": "外部事實查核庫無此具體事件之核實紀錄（交由跨源佐證 D2 與內文風險 D4 路由）",
-          "what_it_measures": "已核實查核庫對「同一具體事件」之蘊涵或駁斥立場與證據信心",
-          "what_if_wrong": "若誤將無關查核當命中會直接壓低真新聞"
+          "explanation": "外部ファクトチェックDBに本件の検証記録なし（クロスソース裏付けD2および本文リスクD4にルーティング）",
+          "what_it_measures": "外部ファクトチェック機関による同一事象の真偽判定",
+          "what_if_wrong": "無関係なファクトチェックを誤適用すると正規ニュースを不当に下げます"
         },
         "source_corroboration": {
           "id": "D2",
           "key": "source_corroboration",
-          "name": "跨源報導佐證度",
+          "name": "複数メディア相互検証",
           "value": 0.88,
-          "confidence": 1.0,
+          "confidence": 0.9,
           "status_label": "corroborated",
-          "impact_pts": 85.0,
-          "explanation": "具名公廣主流媒體 (pts.org.tw)＋內文具名出處核實｜2 家外部來源同報（cna.com.tw, ltn.com.tw）｜近期發布 (佐證指數 0.88)",
-          "what_it_measures": "新聞原始發布機構之信譽等級、獨立媒體交叉同報家數",
-          "what_if_wrong": "若把內容農場互抄算成同報會高估未查證文章"
+          "impact_pts": 30.5,
+          "explanation": "公共放送メディア (nhk.or.jp) ＋ 共同通信・時事通信による同時報道を確認",
+          "what_it_measures": "報道機関のドメイン信憑性および独立メディア間の一致確認",
+          "what_if_wrong": "まとめサイトの相互コピーを一致と判定すると未検証情報を過大評価します"
         },
         "headline_faithfulness": {
           "id": "D3",
           "key": "headline_faithfulness",
-          "name": "標題內文忠實度",
-          "value": 0.95,
-          "confidence": 0.9,
-          "status_label": "faithful",
+          "name": "見出し忠実度",
+          "value": 0.92,
+          "confidence": 0.95,
+          "status_label": "supported",
           "impact_pts": 0.0,
-          "explanation": "標題平實反映內文主旨（標題—內文一致性 92%），無誇大或斷章取義（0 扣分）",
-          "what_it_measures": "新聞標題之斷言是否忠實反映內文",
-          "what_if_wrong": "誤報時僅對該文施加標題失真扣分"
+          "explanation": "見出しは本文の主旨を客観的に反映しており、誇張やミスリードなし",
+          "what_it_measures": "見出しと本文内容の一致度・誇張度",
+          "what_if_wrong": "誤判定時は見出し忠実度のみが減点されます"
         },
         "rhetorical_risk": {
           "id": "D4",
           "key": "rhetorical_risk",
-          "name": "內文修辭與可驗性風險",
+          "name": "修辞リスク評価",
           "value": 0.08,
-          "confidence": 0.9,
+          "confidence": 0.95,
           "status_label": "low_risk",
           "impact_pts": 0.0,
-          "explanation": "內文語氣客觀平實，具官方與工程進度具體數據（低風險 R=0.08）",
-          "what_it_measures": "文本自身之情緒操弄、催促轉發動員",
-          "what_if_wrong": "作用範圍嚴格限制在未查證區間內"
+          "explanation": "本文は平易で客観的な表現であり、扇動や偽装の特徴なし",
+          "what_it_measures": "感情的扇動・拡散誘導のリスク度",
+          "what_if_wrong": "適用範囲は未検証帯に厳格に限定されます"
         }
       },
       "metrics": {
         "sentiment": {
           "score": 14.0,
-          "desc": "修辭安全度 92%（風險 R=0.08）",
+          "desc": "修辞安全性 92%（リスク R=0.08）",
           "weight": 15
         },
         "domain": {
           "score": 24.0,
-          "desc": "具名公廣主流媒體 (pts.org.tw)",
+          "desc": "主要報道機関ドメイン nhk.or.jp",
           "weight": 25
         },
         "similarity": {
           "score": 15.0,
-          "desc": "忠實度 100%（faithful）",
+          "desc": "見出し整合性完全一致",
           "weight": 15
         },
         "fact_check": {
@@ -736,20 +704,22 @@
         },
         "timeliness": {
           "score": 5.0,
-          "desc": "近期發布",
+          "desc": "最近の配信",
           "weight": 5
         }
       },
       "deep_analysis": {
-        "claim": "內政部說明花蓮震後重建中繼屋預計11月前完工",
+        "title_bait": false,
+        "llm_score": 95,
+        "claim": "内閣府が能登半島地震の仮設住宅を11月までに完成予定と発表",
         "key_points": [
-          "內政部官員赴花蓮視察中繼屋基地",
-          "預估11月可如期提供受災戶入住安置"
+          "内閣府担当者が被災地を視察",
+          "予定通り11月に被災者へ引き渡し予定"
         ],
-        "viewpoints": "客觀事實：官方具名受訪說明公共工程進度。",
-        "analysis": "中央社與公視等多家媒體同步核實，內容翔實具體，屬高度可信新聞。",
-        "credibility_score": 95,
-        "model": "qwen3.8-27b-fastmtp"
+        "viewpoints": [
+          "行政による公式発表と復旧スケジュールの確認"
+        ],
+        "summary": "主要メディアによる公式発表の取材報道であり、論理構成および客観性に優れ、高い信頼性が担保されています。"
       }
     }
   }
