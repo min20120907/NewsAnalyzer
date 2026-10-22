@@ -15,7 +15,6 @@ OUT   = "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/demo/n
 SCRIPT = "/home/min20120907/Documents/Web_and_App_Development/NewsAnalyzer/demo/narration_zh_tw.json"
 VOLUME = 0.85
 
-assert KEY, "set GEMINI_API_KEY"
 lines = json.loads(Path(SCRIPT).read_text())
 CACHE.mkdir(exist_ok=True)
 
@@ -24,6 +23,7 @@ def gen(i, text):
     if wav.exists():
         print(f"  [{i}] cached")
         return wav
+    assert KEY, "set GEMINI_API_KEY"
     body = {"contents":[{"parts":[{"text":text}]}],
             "generationConfig":{"speechConfig":{"voiceConfig":{"prebuiltVoiceConfig":{"voiceName":VOICE}}}}}
     for attempt in range(12):
@@ -55,10 +55,11 @@ wavs = []
 for i, ln in enumerate(lines):
     print(f"  [{i}] t={ln['t']:.1f}s  {ln['text'][:40]}")
     wavs.append(gen(i, ln["text"]))
-    time.sleep(15)
 
 # Mix
-inputs = [VIDEO] + [str(w) for w in wavs]
+inputs = ["-i", VIDEO]
+for w in wavs:
+    inputs += ["-i", str(w)]
 parts = []
 for i, ln in enumerate(lines):
     parts.append(f"[{i+1}:a]adelay={int(ln['t']*1000)}|{int(ln['t']*1000)}[a{i}]")
