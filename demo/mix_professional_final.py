@@ -45,8 +45,8 @@ tracks = [
   ("s4_03",   140.5, "141.2s 點擊英文, 147.9s 點擊分析"),
   ("s4_04",   149.0, "149.3s 叮咚路透社 88 分 + AI 95 分"),
 
-  # 結尾
-  ("end_01",  162.8, "163.4s 總結提示音收尾")
+  # 結尾：往前挪到 02:38 (158.0s)，填補英文新聞後的 6.8s 空白
+  ("end_01",  158.0, "158.0s (02:38) 提前切入結語，消除 6.8s 空白，銜接 163.4s 總結畫面")
 ]
 
 voice_files = []
@@ -75,7 +75,9 @@ parts.append(f"{narr_mix}amix=inputs={len(voice_files)}:duration=longest:normali
 parts.append("[0:a]volume=0.35[sfx]")
 parts.append("[1:a]volume=0.45[bgm]")
 parts.append("[voice_bus]volume=1.05[voice]")
-parts.append("[sfx][bgm][voice]amix=inputs=3:duration=first:normalize=0[aout]")
+parts.append("[sfx][bgm][voice]amix=inputs=3:duration=first:normalize=0[amixed]")
+parts.append("[amixed]afade=t=out:st=168.3:d=1.5[aout]")
+parts.append("[0:v]fade=t=out:st=168.3:d=1.5[vout]")
 
 filter_complex = ";".join(parts)
 
@@ -83,8 +85,8 @@ cmd = [
     "ffmpeg", "-y", "-loglevel", "warning",
     *inputs,
     "-filter_complex", filter_complex,
-    "-map", "0:v", "-map", "[aout]",
-    "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart",
+    "-map", "[vout]", "-map", "[aout]",
+    "-c:v", "libx264", "-preset", "fast", "-crf", "19", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart",
     OUT
 ]
 
