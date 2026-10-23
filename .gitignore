@@ -34,3 +34,16 @@ tools/
 # 回歸集輸出（每次跑都變，不進版控）
 /regress_out/
 .hermes/
+
+# 多語系影片輸出與 TTS 快取
+demo/NewsAnalyzer_Video_*.mp4
+demo/NewsAnalyzer_Demo_EN.mp4
+demo/NewsAnalyzer_Demo_JA.mp4
+demo/newsanalyzer_demo_1080p_narrated.mp4
+demo/NewsAnalyzer_Demo_100Percent_Master.mp4
+demo/NewsAnalyzer_Demo_1080p_Final_Master_v4.mp4
+tts_cache/
+tts_cache_en/
+tts_cache_gemini_en/
+tts_cache_gemini_ja/
+tts_cache_ja/
