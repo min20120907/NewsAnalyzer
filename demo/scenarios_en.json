@@ -49,7 +49,7 @@
         "action": "explainer",
         "target": "#resultCard",
         "html": "<b>🏁 Final Score: 88.5 / 100</b><br>Rating: <b>Highly Credible</b><br>Combines rule metrics (85 @ 70%) with local AI (95 @ 30%) for an overall 88.5 rating.",
-        "delay": 4500
+        "delay": 7500
       },
       {
         "action": "scroll_to",
@@ -59,13 +59,13 @@
       },
       {
         "action": "explainer",
-        "html": "<b>D1 查核證據蘊涵度：0%</b><br>查無 Cofacts/MyGoPen 等查核庫命中紀錄。此為正常現象，未查證不代表假新聞，交由 D2 跨源佐證路由。",
-        "delay": 4500
+        "html": "<b>D1 Fact-Check Entailment: 0%</b><br>No matching records in external fact-check databases. Routed to D2 cross-source corroboration and D4 risk evaluation.",
+        "delay": 7500
       },
       {
         "action": "explainer",
         "html": "<b>D2 Cross-Source Corroboration: 88%</b><br>Named public broadcaster (pbs.org) confirmed with simultaneous reporting across AP and Reuters (Score 0.88).",
-        "delay": 4500
+        "delay": 7500
       },
       {
         "action": "scroll_to",
@@ -77,7 +77,7 @@
         "action": "explainer",
         "target": "#scorePipeline",
         "html": "<b>🧮 Transparent Scoring Pipeline</b><br>Rules 85 (70%) + Local AI 95 (30%) = 88.5 Final Score",
-        "delay": 5000
+        "delay": 8500
       }
     ],
     "expected": {
@@ -87,7 +87,7 @@
     "mock_result": {
       "title": "Infrastructure Rebuild Progress: Modular Housing on Track for November",
       "final_score": 88.5,
-      "rating": "高度可信",
+      "rating": "Highly Credible",
       "rule_score": 85.0,
       "url": "https://www.pbs.org/newshour/nation/infrastructure-rebuild-update-2024",
       "dimensions": {
@@ -185,7 +185,8 @@
         ],
         "summary": "Direct factual reporting with official named sources and strong multi-agency cross-corroboration."
       }
-    }
+    },
+    "briefing_duration": 6500
   },
   {
     "id": "scenario_clickbait_intercept",
@@ -249,7 +250,7 @@
         "action": "explainer",
         "target": "#restoredTitle",
         "html": "<b>💡 Clickbait Interception & Restored Claim:</b><br>Detected sensational suspense pattern.<br>LLM distills objective claim: <b>'Excessive intake of high-fructose syrup increases metabolic risks'</b><br>Distortion penalty enforced.",
-        "delay": 5500
+        "delay": 8500
       },
       {
         "action": "scroll_to",
@@ -267,7 +268,7 @@
         "action": "explainer",
         "target": "#dimensions",
         "html": "<b>⚠️ D3 Headline Distortion Penalty (-18 Pts)</b><br>Severe discrepancy between headline and body suppresses score to 45 (Unverified).",
-        "delay": 5500
+        "delay": 9500
       }
     ],
     "expected": {
@@ -277,7 +278,7 @@
     "mock_result": {
       "title": "Drinking this everyday is DEADLY?! Doctor reveals shocking truth! Netizens horrified: Never touching it again!",
       "final_score": 45.0,
-      "rating": "待查證",
+      "rating": "Unverified",
       "rule_score": 42.0,
       "url": "https://viral-buzz-health.com/articles/deadly-drink-shocking",
       "dimensions": {
@@ -367,7 +368,8 @@
         "neutral_title": "Physician Guidelines on Excessive Sugar and Caffeine Intake Risks",
         "title_bait_reason": "Headline deliberately conceals high dosage premise, exaggerating lethal risk"
       }
-    }
+    },
+    "briefing_duration": 6500
   },
   {
     "id": "scenario_social_bot_blocked",
@@ -413,7 +415,19 @@
         "action": "wait_for",
         "target": "#resultCard.show",
         "timeout": 30000,
-        "hint": "後端 D2 引擎比對 Social Blocklist 中..."
+        "hint": "Backend D2 engine matching against Social Blocklist..."
+      },
+      {
+        "action": "spotlight",
+        "target": "#resultCard",
+        "hint": "Detected Blacklisted Account (Social Blocklist)",
+        "delay": 800
+      },
+      {
+        "action": "explainer",
+        "target": "#resultCard",
+        "html": "<b>🚨 Social Blocklist Hit</b><br>Matches known bot disinformation registry. D2 corroboration score is unconditionally locked to 0 (25 / 100 Highly Suspicious).",
+        "delay": 4500
       },
       {
         "action": "scroll_to",
@@ -424,14 +438,14 @@
       {
         "action": "spotlight",
         "target": "#dimensions",
-        "hint": "D2 跨源佐證度強制歸零 (0% 黑名單)",
+        "hint": "D2 Cross-Source Corroboration forced to 0 (0% Blacklist)",
         "delay": 800
       },
       {
         "action": "explainer",
         "target": "#dimensions",
         "html": "<b>🛑 D2 Locked to 0 & D4 Rhetoric Risk (0.70)</b><br>Overall credibility locked at 25 (Highly Suspicious).",
-        "delay": 6000
+        "delay": 8500
       }
     ],
     "expected": {
@@ -441,7 +455,7 @@
     "mock_result": {
       "title": "Post on X (Twitter) by @suspicious_disinfo_bot",
       "final_score": 25.0,
-      "rating": "高度可疑",
+      "rating": "Highly Suspicious",
       "rule_score": 25.0,
       "url": "https://x.com/suspicious_disinfo_bot/status/987654321098",
       "dimensions": {
@@ -477,7 +491,7 @@
           "confidence": 0.7,
           "status_label": "supported",
           "impact_pts": 0.0,
-          "explanation": "Text generally consistent",
+          "explanation": "Matches post content",
           "what_it_measures": "Fidelity",
           "what_if_wrong": "None"
         },
@@ -526,7 +540,8 @@
           "weight": 5
         }
       }
-    }
+    },
+    "briefing_duration": 6500
   },
   {
     "id": "scenario_i18n_switch",
@@ -553,7 +568,7 @@
         "action": "spotlight",
         "target": "#dimensions",
         "hint": "English 4-Dimension Matrix",
-        "delay": 800
+        "delay": 3500
       },
       {
         "action": "scroll_to",
@@ -565,31 +580,31 @@
         "action": "spotlight",
         "target": "[data-lang-btn=\"ja\"]",
         "hint": "Click Japanese Button",
-        "delay": 600
+        "delay": 800
       },
       {
         "action": "click",
         "target": "[data-lang-btn=\"ja\"]",
         "hint": "Switch to Japanese",
-        "delay": 1000
+        "delay": 3000
       },
       {
         "action": "scroll_to",
         "target": "#dimensions",
-        "hint": "日本語四直交指標マトリクス",
-        "delay": 1200
+        "hint": "Review Japanese 4-Orthogonal Dimensions Matrix",
+        "delay": 1500
       },
       {
         "action": "spotlight",
         "target": "#dimensions",
         "hint": "Japanese Dimensions",
-        "delay": 800
+        "delay": 1500
       },
       {
         "action": "explainer",
         "target": "#dimensions",
         "html": "<b>🇯🇵 Instant Multilingual Localization:</b><br>Instant seamless switching across dimensions, contracts, and scoring pipelines.",
-        "delay": 4000
+        "delay": 7000
       },
       {
         "action": "scroll_to",
@@ -601,19 +616,25 @@
         "action": "spotlight",
         "target": "[data-lang-btn=\"en\"]",
         "hint": "Click English Button",
-        "delay": 600
+        "delay": 800
       },
       {
         "action": "click",
         "target": "[data-lang-btn=\"en\"]",
         "hint": "Return to English",
-        "delay": 1000
+        "delay": 1500
       },
       {
         "action": "scroll_to",
         "target": "#resultCard",
         "hint": "Return to full English analysis",
-        "delay": 1200
+        "delay": 1500
+      },
+      {
+        "action": "spotlight",
+        "target": "#resultCard",
+        "hint": "NewsAnalyzer Multilingual Verification",
+        "delay": 11000
       }
     ],
     "expected": {
@@ -623,7 +644,7 @@
     "mock_result": {
       "title": "Infrastructure Rebuild Progress: Modular Housing on Track for November",
       "final_score": 88.5,
-      "rating": "高度可信",
+      "rating": "Highly Credible",
       "rule_score": 85.0,
       "url": "https://www.pbs.org/newshour/nation/infrastructure-rebuild-update-2024",
       "dimensions": {
@@ -721,6 +742,7 @@
         ],
         "summary": "Direct factual reporting with official named sources and strong multi-agency cross-corroboration."
       }
-    }
+    },
+    "briefing_duration": 6500
   }
 ]

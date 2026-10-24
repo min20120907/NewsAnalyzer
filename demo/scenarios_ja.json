@@ -49,7 +49,7 @@
         "action": "explainer",
         "target": "#resultCard",
         "html": "<b>🏁 総合スコア (Final Score)：88.5 / 100</b><br>判定：<b>高信頼性</b><br>ルールエンジンとローカルAIモデルの判定を統合し、高信頼性と認定。",
-        "delay": 4500
+        "delay": 7500
       },
       {
         "action": "scroll_to",
@@ -59,13 +59,13 @@
       },
       {
         "action": "explainer",
-        "html": "<b>D1 查核證據蘊涵度：0%</b><br>查無 Cofacts/MyGoPen 等查核庫命中紀錄。此為正常現象，未查證不代表假新聞，交由 D2 跨源佐證路由。",
-        "delay": 4500
+        "html": "<b>D1 ファクトチェック照合：0%</b><br>外部ファクトチェックDBに本件の検証記録なし。正常な現象であり、D2クロスソース裏付けとD4リスク評価へルーティング。",
+        "delay": 7500
       },
       {
         "action": "explainer",
         "html": "<b>D2 複数メディア相互検証：88%</b><br>公共放送 (nhk.or.jp) 報道を検知し、共同通信・時事通信による同時報道を確認（裏付けスコア 0.88）。",
-        "delay": 4500
+        "delay": 7500
       },
       {
         "action": "scroll_to",
@@ -76,8 +76,8 @@
       {
         "action": "explainer",
         "target": "#scorePipeline",
-        "html": "<b>🧮 透明な計算パイプライン</b><br>ルールスコア 85点 (70%) ＋ 本地AI 95点 (30%) ＝ 総合 88.5点",
-        "delay": 5000
+        "html": "<b>🧮 透明な計算パイプライン</b><br>ルールスコア 85点 (70%) ＋ ローカルAI 95点 (30%) ＝ 総合 88.5点",
+        "delay": 8500
       }
     ],
     "expected": {
@@ -87,7 +87,7 @@
     "mock_result": {
       "title": "能登半島地震の復旧進捗 内閣府：仮設住宅の建設は11月までに完了予定",
       "final_score": 88.5,
-      "rating": "高度可信",
+      "rating": "高信頼性",
       "rule_score": 85.0,
       "url": "https://www3.nhk.or.jp/news/article/20240901.html",
       "dimensions": {
@@ -185,7 +185,8 @@
         ],
         "summary": "主要メディアによる公式発表の取材報道であり、論理構成および客観性に優れ、高い信頼性が担保されています。"
       }
-    }
+    },
+    "briefing_duration": 6500
   },
   {
     "id": "scenario_clickbait_intercept",
@@ -218,7 +219,7 @@
       {
         "action": "spotlight",
         "target": "#analyzeBtn",
-        "hint": "ステップ 2：分析開始をクリック",
+        "hint": "ステップ 2：點擊開始分析",
         "delay": 500
       },
       {
@@ -248,8 +249,8 @@
       {
         "action": "explainer",
         "target": "#restoredTitle",
-        "html": "<b>💡 釣魚見出しの遮断と復元：</b><br>典型的な煽りサスペンス（真相公開／致命的リスク）を検知。<br>LLMが客観的主旨を抽出：<b>「過度なカフェイン摂取に関する注意喚起」</b><br>前提隠蔽に対し防御減点を適用。",
-        "delay": 5500
+        "html": "<b>💡 釣り見出しの遮断と復元：</b><br>典型的な煽りサスペンス（真相公開／致命的リスク）を検知。<br>LLMが客観的主旨を抽出：<b>「過度なカフェイン摂取に関する注意喚起」</b><br>前提隠蔽に対し防御減点を適用。",
+        "delay": 8500
       },
       {
         "action": "scroll_to",
@@ -267,7 +268,7 @@
         "action": "explainer",
         "target": "#dimensions",
         "html": "<b>⚠️ D3見出し忠実度のペナルティ (-18点)</b><br>見出しと本文の重大な乖離（D3=0.32）を検出し、45点（要検証）へ抑制。",
-        "delay": 5500
+        "delay": 9500
       }
     ],
     "expected": {
@@ -277,7 +278,7 @@
     "mock_result": {
       "title": "毎日これを飲むと命の危機！？名医が明かす驚きの真相！ネット騒然：もう二度と飲めない",
       "final_score": 45.0,
-      "rating": "待查證",
+      "rating": "要検証",
       "rule_score": 42.0,
       "url": "https://health-buzz-summary.jp/archives/12345",
       "dimensions": {
@@ -367,7 +368,8 @@
         "neutral_title": "過度なカフェイン摂取に関する注意喚起と健康への影響解説",
         "title_bait_reason": "日常的摂取と極端な過剰摂取を混同させ、『命の危機』と過度に誇張した煽り見出し"
       }
-    }
+    },
+    "briefing_duration": 6500
   },
   {
     "id": "scenario_social_bot_blocked",
@@ -413,7 +415,19 @@
         "action": "wait_for",
         "target": "#resultCard.show",
         "timeout": 30000,
-        "hint": "後端 D2 引擎比對 Social Blocklist 中..."
+        "hint": "バックエンド D2 エンジンが Social Blocklist と照合中..."
+      },
+      {
+        "action": "spotlight",
+        "target": "#resultCard",
+        "hint": "🚨 警戒アカウントを検出 (Social Blocklist)",
+        "delay": 800
+      },
+      {
+        "action": "explainer",
+        "target": "#resultCard",
+        "html": "<b>🚨 ソーシャルブラックリスト検知</b><br>監視対象アカウントに一致。D2裏付けスコアは無条件で 0 に固定され、25点（極めて疑わしい）へ抑え込まれます。",
+        "delay": 4500
       },
       {
         "action": "scroll_to",
@@ -424,14 +438,14 @@
       {
         "action": "spotlight",
         "target": "#dimensions",
-        "hint": "D2 跨源佐證度強制歸零 (0% 黑名單)",
+        "hint": "D2 相互検証スコア強制ゼロ (0% ブラックリスト)",
         "delay": 800
       },
       {
         "action": "explainer",
         "target": "#dimensions",
         "html": "<b>🛑 D2強制ゼロ ＆ D4修辞リスク急上昇 (0.70)</b><br>裏付けスコアはゼロ、煽動的世論操作の特徴を検知。",
-        "delay": 6000
+        "delay": 8500
       }
     ],
     "expected": {
@@ -441,7 +455,7 @@
     "mock_result": {
       "title": "@suspicious_disinfo_bot による X (Twitter) 投稿",
       "final_score": 25.0,
-      "rating": "高度可疑",
+      "rating": "極めて疑わしい",
       "rule_score": 25.0,
       "url": "https://x.com/suspicious_disinfo_bot/status/987654321098",
       "dimensions": {
@@ -526,7 +540,8 @@
           "weight": 5
         }
       }
-    }
+    },
+    "briefing_duration": 6500
   },
   {
     "id": "scenario_i18n_switch",
@@ -553,7 +568,7 @@
         "action": "spotlight",
         "target": "#dimensions",
         "hint": "日本語四直交指標マトリクス",
-        "delay": 800
+        "delay": 3500
       },
       {
         "action": "scroll_to",
@@ -565,31 +580,31 @@
         "action": "spotlight",
         "target": "[data-lang-btn=\"en\"]",
         "hint": "Englishボタンをクリック",
-        "delay": 600
+        "delay": 800
       },
       {
         "action": "click",
         "target": "[data-lang-btn=\"en\"]",
         "hint": "Englishへ切り替え",
-        "delay": 1000
+        "delay": 3000
       },
       {
         "action": "scroll_to",
         "target": "#dimensions",
         "hint": "View English Dimensions",
-        "delay": 1200
+        "delay": 1500
       },
       {
         "action": "spotlight",
         "target": "#dimensions",
         "hint": "English Matrix",
-        "delay": 800
+        "delay": 1500
       },
       {
         "action": "explainer",
         "target": "#dimensions",
         "html": "<b>🇺🇸 Real-time Localization:</b><br>Instant seamless switching across dimensions, contracts, and scoring pipelines.",
-        "delay": 4000
+        "delay": 7000
       },
       {
         "action": "scroll_to",
@@ -601,19 +616,25 @@
         "action": "spotlight",
         "target": "[data-lang-btn=\"ja\"]",
         "hint": "日本語ボタンをクリック",
-        "delay": 600
+        "delay": 800
       },
       {
         "action": "click",
         "target": "[data-lang-btn=\"ja\"]",
         "hint": "日本語へ復帰",
-        "delay": 1000
+        "delay": 1500
       },
       {
         "action": "scroll_to",
         "target": "#resultCard",
         "hint": "完全な日本語分析結果へ戻る",
-        "delay": 1200
+        "delay": 1500
+      },
+      {
+        "action": "spotlight",
+        "target": "#resultCard",
+        "hint": "NewsAnalyzer 多言語・多次元分析",
+        "delay": 11000
       }
     ],
     "expected": {
@@ -623,7 +644,7 @@
     "mock_result": {
       "title": "能登半島地震の復旧進捗 内閣府：仮設住宅の建設は11月までに完了予定",
       "final_score": 88.5,
-      "rating": "高度可信",
+      "rating": "高信頼性",
       "rule_score": 85.0,
       "url": "https://www3.nhk.or.jp/news/article/20240901.html",
       "dimensions": {
@@ -721,6 +742,7 @@
         ],
         "summary": "主要メディアによる公式発表の取材報道であり、論理構成および客観性に優れ、高い信頼性が担保されています。"
       }
-    }
+    },
+    "briefing_duration": 6500
   }
 ]

@@ -1,3 +1,18 @@
+#!/usr/bin/env python3
+"""
+build_multilingual_scenarios.py
+由 scenarios.json 派生出 100% 全日語 (scenarios_ja.json) 與 100% 全英語 (scenarios_en.json)。
+徹底根除所有中文新聞網址、中文標題、中文維度、中文評級、中文 AI 分析與切換回繁中的步驟。
+【特化節奏配置】
+- 各圖卡 (Explainer) 與展示視窗給予充分時間 (7.5s~9.5s)，確保觀眾清晰閱讀圖卡資訊。
+- 語音時長與視窗達成 1:1 完美契合，語速維持 1.00x 原速廣播腔調，零急促、零加速。
+"""
+import copy
+import json
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent.parent / "demo"
+src = json.loads((BASE / "scenarios.json").read_text(encoding="utf-8"))
 
 zh2ja = {
     '步驟 1：輸入欲分析的主流新聞網址': 'ステップ 1：分析対象の主要ニュースURLを入力',
@@ -33,7 +48,9 @@ zh2ja = {
     '切換回繁體中文': '日本語へ復帰',
     '回到完整分析結果': '完全な分析結果へ戻る',
     '輸入具名主流媒體報導與完整內文': '公式報道URLを入力',
-    '管線運算中：抽取正文、查核檢索與模型判讀': 'パイプライン処理中：本文抽出・ファクト照合・相互検証・AI分析'
+    '管線運算中：抽取正文、查核檢索與模型判讀': 'パイプライン処理中：本文抽出・ファクト照合・相互検証・AI分析',
+    '後端 D2 引擎比對 Social Blocklist 中...': 'バックエンド D2 エンジンが Social Blocklist と照合中...',
+    'D2 跨源佐證度強制歸零 (0% 黑名單)': 'D2 相互検証スコア強制ゼロ (0% ブラックリスト)'
 }
 
 zh2en = {
@@ -70,7 +87,9 @@ zh2en = {
     '切換回繁體中文': 'Return to English',
     '回到完整分析結果': 'Return to full analysis results',
     '輸入具名主流媒體報導與完整內文': 'Enter named public broadcaster URL and body',
-    '管線運算中：抽取正文、查核檢索與模型判讀': 'Pipeline running: text extraction, fact-check retrieval, multi-source corroboration'
+    '管線運算中：抽取正文、查核檢索與模型判讀': 'Pipeline running: text extraction, fact-check retrieval, multi-source corroboration',
+    '後端 D2 引擎比對 Social Blocklist 中...': 'Backend D2 engine matching against Social Blocklist...',
+    'D2 跨源佐證度強制歸零 (0% 黑名單)': 'D2 Cross-Source Corroboration forced to 0 (0% Blacklist)'
 }
 
 def translate_obj(obj, mapping):
@@ -83,18 +102,6 @@ def translate_obj(obj, mapping):
     elif isinstance(obj, dict):
         return {k: translate_obj(v, mapping) for k, v in obj.items()}
     return obj
-#!/usr/bin/env python3
-"""
-build_multilingual_scenarios.py
-由 scenarios.json 派生出 100% 全日語 (scenarios_ja.json) 與 100% 全英語 (scenarios_en.json)。
-徹底根除所有中文新聞網址、中文標題、中文維度、中文評級、中文 AI 分析與切換回繁中的步驟。
-"""
-import copy
-import json
-from pathlib import Path
-
-BASE = Path(__file__).resolve().parent.parent / "demo"
-src = json.loads((BASE / "scenarios.json").read_text(encoding="utf-8"))
 
 # ==============================================================================
 # 1. 日本語版 (scenarios_ja.json)
@@ -103,6 +110,7 @@ ja = copy.deepcopy(src)
 
 # --- 情境 1 ---
 ja[0]["lang"] = "ja"
+ja[0]["briefing_duration"] = 6500
 ja[0]["initial"] = {"lang": "ja", "clear_input": True}
 ja[0]["title"] = "シナリオ1：主要メディアによる報道の分析 (Mainstream Corroboration)"
 ja[0]["description"] = "公共放送や通信社のニュースを入力し、複数メディアの相互検証とドメイン信頼性を計算します。"
@@ -111,41 +119,78 @@ ja[0]["briefing_points"] = [
     "ファクトチェック照合・複数メディア相互検証の実行",
     "ローカルQwenモデルによる95点の高信頼性判定"
 ]
-for st in ja[0]["steps"]:
-    act = st.get("action")
-    tgt = st.get("target")
-    if act == "spotlight" and tgt == "#input":
-        st["hint"] = "ステップ 1：分析対象の主要ニュースURLを入力"
-    elif act == "type":
-        st["value"] = "【NHKニュース】能登半島地震の復旧進捗 内閣府：仮設住宅の建設は11月までに完了予定。内閣府の担当者は、復旧工事が順調に進んでおり、被災者の入居を予定通り進めると述べた。https://www3.nhk.or.jp/news/article/20240901.html"
-        st["hint"] = "公共放送メディアの公式報道URLを入力"
-    elif act == "spotlight" and tgt == "#analyzeBtn":
-        st["hint"] = "ステップ 2：「分析開始」をクリックして検証を起動"
-    elif act == "wait_for":
-        st["target"] = "#resultCard.show"
-        st["hint"] = "パイプライン処理中：本文抽出・ファクト照合・相互検証・AI分析"
-    elif act == "explainer" and tgt == "#resultCard":
-        st["html"] = "<b>🏁 総合スコア (Final Score)：88.5 / 100</b><br>判定：<b>高信頼性</b><br>ルールエンジンとローカルAIモデルの判定を統合し、高信頼性と認定。"
-    elif act == "scroll_to" and tgt == "#dimensions":
-        st["hint"] = "ステップ 3：D1〜D4の4つの直交指標マトリクスを確認"
-    elif act == "explainer" and "D2 跨源報導佐證度" in st.get("html", ""):
-        st["html"] = "<b>D2 複数メディア相互検証：88%</b><br>公共放送 (nhk.or.jp) 報道を検知し、共同通信・時事通信による同時報道を確認（裏付けスコア 0.88）。"
-    elif act == "explainer" and tgt == "#dimensions":
-        st["html"] = "<b>📊 4つの直交指標 (Orthogonal Dimensions)</b><br>D1：虚偽報告なし (0.00)<br>D2：他社一致報道あり (0.88)<br>D3：見出し忠実度完全一致 (0.92)<br>D4：修辞リスク極小 (0.08)"
-    elif act == "scroll_to" and tgt == "#scorePipeline":
-        st["hint"] = "ステップ 4：透明なスコアリングパイプラインを確認"
-    elif act == "explainer" and tgt == "#scorePipeline":
-        st["html"] = "<b>🧮 透明な計算パイプライン</b><br>ルールスコア 85点 (70%) ＋ 本地AI 95点 (30%) ＝ 総合 88.5点"
-    elif act == "scroll_to" and tgt == "#deepAnalysis":
-        st["hint"] = "ステップ 5：ローカルQwenモデルの深度分析結果を確認"
-    elif act == "explainer" and tgt == "#deepAnalysis":
-        st["html"] = "<b>🧠 本地Qwenモデル深度推論：95点</b><br>客観的事実報道であり、論理構成に誤謬はなく、高い信憑性を担保。"
-
+ja[0]["steps"] = [
+    {
+        "action": "spotlight",
+        "target": "#input",
+        "hint": "ステップ 1：分析対象の主要ニュースURLを入力",
+        "delay": 600
+    },
+    {
+        "action": "type",
+        "target": "#input",
+        "value": "【NHKニュース】能登半島地震の復旧進捗 内閣府：仮設住宅の建設は11月までに完了予定。内閣府の担当者は、復旧工事が順調に進んでおり、被災者の入居を予定通り進めると述べた。https://www3.nhk.or.jp/news/article/20240901.html",
+        "hint": "公共放送メディアの公式報道URLを入力",
+        "char_delay": 15
+    },
+    {
+        "action": "spotlight",
+        "target": "#analyzeBtn",
+        "hint": "ステップ 2：「分析開始」をクリックして検証を起動",
+        "delay": 500
+    },
+    {
+        "action": "click",
+        "target": "#analyzeBtn",
+        "hint": "分析リクエストを送信",
+        "delay": 800
+    },
+    {
+        "action": "wait_for",
+        "target": "#resultCard.show",
+        "timeout": 30000,
+        "hint": "パイプライン処理中：本文抽出・ファクト照合・相互検証・AI分析"
+    },
+    {
+        "action": "explainer",
+        "target": "#resultCard",
+        "html": "<b>🏁 総合スコア (Final Score)：88.5 / 100</b><br>判定：<b>高信頼性</b><br>ルールエンジンとローカルAIモデルの判定を統合し、高信頼性と認定。",
+        "delay": 7500
+    },
+    {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "ステップ 3：D1〜D4の4つの直交指標マトリクスを確認",
+        "delay": 1200
+    },
+    {
+        "action": "explainer",
+        "html": "<b>D1 ファクトチェック照合：0%</b><br>外部ファクトチェックDBに本件の検証記録なし。正常な現象であり、D2クロスソース裏付けとD4リスク評価へルーティング。",
+        "delay": 7500
+    },
+    {
+        "action": "explainer",
+        "html": "<b>D2 複数メディア相互検証：88%</b><br>公共放送 (nhk.or.jp) 報道を検知し、共同通信・時事通信による同時報道を確認（裏付けスコア 0.88）。",
+        "delay": 7500
+    },
+    {
+        "action": "scroll_to",
+        "target": "#scorePipeline",
+        "hint": "ステップ 4：透明なスコアリングパイプラインを確認",
+        "delay": 1200
+    },
+    {
+        "action": "explainer",
+        "target": "#scorePipeline",
+        "html": "<b>🧮 透明な計算パイプライン</b><br>ルールスコア 85点 (70%) ＋ ローカルAI 95点 (30%) ＝ 総合 88.5点",
+        "delay": 8500
+    }
+]
 ja[0]["expected"] = {"selector": "#resultCard.show", "check": "element_visible"}
 ja[0]["mock_result"] = {
     "title": "能登半島地震の復旧進捗 内閣府：仮設住宅の建設は11月までに完了予定",
     "final_score": 88.5,
-    "rating": "高度可信",
+    "rating": "高信頼性",
     "rule_score": 85.0,
     "url": "https://www3.nhk.or.jp/news/article/20240901.html",
     "dimensions": {
@@ -201,6 +246,7 @@ ja[0]["mock_result"] = {
 
 # --- 情境 2 ---
 ja[1]["lang"] = "ja"
+ja[1]["briefing_duration"] = 6500
 ja[1]["initial"] = {"lang": "ja", "clear_input": True}
 ja[1]["title"] = "シナリオ2：クリックベイト見出しの抑制とファクト復元 (Clickbait Interception)"
 ja[1]["description"] = "煽り・情報隠蔽型の釣り見出しを検知し、自動で減点して客観的な事実主張を復元します。"
@@ -209,22 +255,80 @@ ja[1]["briefing_points"] = [
     "LLM による客観的で中立な真の主張の自動復元",
     "D3 減点ペナルティによる過度な高信頼性の抑制"
 ]
-for st in ja[1]["steps"]:
-    act = st.get("action")
-    tgt = st.get("target")
-    if act == "type":
-        st["value"] = "毎日これを飲むと命の危機！？名医が明かす驚きの真相！ネット騒然：もう二度と飲めない…健康情報まとめブログ https://health-buzz-summary.jp/archives/12345"
-        st["hint"] = "ステップ 1：典型的な煽り釣り見出しを入力"
-    elif act == "explainer" and tgt == "#restoredTitle":
-        st["html"] = "<b>💡 釣魚見出しの遮断と復元：</b><br>典型的な煽りサスペンス（真相公開／致命的リスク）を検知。<br>LLMが客観的主旨を抽出：<b>「過度なカフェイン摂取に関する注意喚起」</b><br>前提隠蔽に対し防御減点を適用。"
-    elif act == "explainer" and tgt == "#dimensions":
-        st["html"] = "<b>⚠️ D3見出し忠実度のペナルティ (-18点)</b><br>見出しと本文の重大な乖離（D3=0.32）を検出し、45点（要検証）へ抑制。"
-
+ja[1]["steps"] = [
+    {
+        "action": "spotlight",
+        "target": "#input",
+        "hint": "ステップ 1：典型的な煽り釣り見出しを入力",
+        "delay": 600
+    },
+    {
+        "action": "type",
+        "target": "#input",
+        "value": "毎日これを飲むと命の危機！？名医が明かす驚きの真相！ネット騒然：もう二度と飲めない…健康情報まとめブログ https://health-buzz-summary.jp/archives/12345",
+        "hint": "ステップ 1：典型的な煽り釣り見出しを入力",
+        "char_delay": 20
+    },
+    {
+        "action": "spotlight",
+        "target": "#analyzeBtn",
+        "hint": "ステップ 2：點擊開始分析",
+        "delay": 500
+    },
+    {
+        "action": "click",
+        "target": "#analyzeBtn",
+        "hint": "分析リクエストを送信",
+        "delay": 800
+    },
+    {
+        "action": "wait_for",
+        "target": "#restoredTitle",
+        "timeout": 30000,
+        "hint": "D3モジュールとLLMがサスペンス解析と真の主旨復元を実行中"
+    },
+    {
+        "action": "scroll_to",
+        "target": "#restoredTitle",
+        "hint": "ステップ 3：「真の主張復元カード」と減点理由を確認",
+        "delay": 1200
+    },
+    {
+        "action": "spotlight",
+        "target": "#restoredTitle",
+        "hint": "真の主張復元エリアをハイライト",
+        "delay": 800
+    },
+    {
+        "action": "explainer",
+        "target": "#restoredTitle",
+        "html": "<b>💡 釣り見出しの遮断と復元：</b><br>典型的な煽りサスペンス（真相公開／致命的リスク）を検知。<br>LLMが客観的主旨を抽出：<b>「過度なカフェイン摂取に関する注意喚起」</b><br>前提隠蔽に対し防御減点を適用。",
+        "delay": 8500
+    },
+    {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "ステップ 4：D3見出し忠実度の減点を確認",
+        "delay": 1200
+    },
+    {
+        "action": "spotlight",
+        "target": "#dimensions",
+        "hint": "D3指標で18点を減点",
+        "delay": 800
+    },
+    {
+        "action": "explainer",
+        "target": "#dimensions",
+        "html": "<b>⚠️ D3見出し忠実度のペナルティ (-18点)</b><br>見出しと本文の重大な乖離（D3=0.32）を検出し、45点（要検証）へ抑制。",
+        "delay": 9500
+    }
+]
 ja[1]["expected"] = {"selector": "#restoredTitle", "check": "element_visible"}
 ja[1]["mock_result"] = {
     "title": "毎日これを飲むと命の危機！？名医が明かす驚きの真相！ネット騒然：もう二度と飲めない",
     "final_score": 45.0,
-    "rating": "待查證",
+    "rating": "要検証",
     "rule_score": 42.0,
     "url": "https://health-buzz-summary.jp/archives/12345",
     "dimensions": {
@@ -274,6 +378,7 @@ ja[1]["mock_result"] = {
 
 # --- 情境 3 ---
 ja[2]["lang"] = "ja"
+ja[2]["briefing_duration"] = 6500
 ja[2]["initial"] = {"lang": "ja", "clear_input": True}
 ja[2]["title"] = "シナリオ3：SNSの偽情報とBotアカウントのフィルタリング (Social Disinformation Routing)"
 ja[2]["description"] = "警戒リストに登録されたアカウントによる組織的プロパガンダを検知し、裏付けスコアを強制的に無効化します。"
@@ -282,22 +387,74 @@ ja[2]["briefing_points"] = [
     "D2 相互検証スコアの強制ゼロ化（0.00 固定）",
     "D4 修辞リスクによる扇動的プロパガンダ検知"
 ]
-for st in ja[2]["steps"]:
-    act = st.get("action")
-    tgt = st.get("target")
-    if act == "type":
-        st["value"] = "https://x.com/suspicious_disinfo_bot/status/987654321098"
-        st["hint"] = "ステップ 1：警戒リストに登録されたX投稿URLを入力"
-    elif act == "explainer" and tgt == "#resultCard":
-        st["html"] = "<b>🚨 ソーシャルブラックリスト検知</b><br>監視対象アカウントに一致。D2裏付けスコアは無条件で 0 に固定され、25点（極めて疑わしい）へ抑え込まれます。"
-    elif act == "explainer" and tgt == "#dimensions":
-        st["html"] = "<b>🛑 D2強制ゼロ ＆ D4修辞リスク急上昇 (0.70)</b><br>裏付けスコアはゼロ、煽動的世論操作の特徴を検知。"
-
+ja[2]["steps"] = [
+    {
+        "action": "spotlight",
+        "target": "#input",
+        "hint": "ステップ 1：警戒リストに登録されたX投稿URLを入力",
+        "delay": 600
+    },
+    {
+        "action": "type",
+        "target": "#input",
+        "value": "https://x.com/suspicious_disinfo_bot/status/987654321098",
+        "hint": "ステップ 1：警戒リストに登録されたX投稿URLを入力",
+        "char_delay": 20
+    },
+    {
+        "action": "spotlight",
+        "target": "#analyzeBtn",
+        "hint": "ステップ 2：分析をクリックし警戒リストと照合",
+        "delay": 500
+    },
+    {
+        "action": "click",
+        "target": "#analyzeBtn",
+        "hint": "分析リクエストを送信",
+        "delay": 800
+    },
+    {
+        "action": "wait_for",
+        "target": "#resultCard.show",
+        "timeout": 30000,
+        "hint": "バックエンド D2 エンジンが Social Blocklist と照合中..."
+    },
+    {
+        "action": "spotlight",
+        "target": "#resultCard",
+        "hint": "🚨 警戒アカウントを検出 (Social Blocklist)",
+        "delay": 800
+    },
+    {
+        "action": "explainer",
+        "target": "#resultCard",
+        "html": "<b>🚨 ソーシャルブラックリスト検知</b><br>監視対象アカウントに一致。D2裏付けスコアは無条件で 0 に固定され、25点（極めて疑わしい）へ抑え込まれます。",
+        "delay": 4500
+    },
+    {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "ステップ 3：D2「高リスク・Botアカウント警戒リスト」判定を確認",
+        "delay": 1200
+    },
+    {
+        "action": "spotlight",
+        "target": "#dimensions",
+        "hint": "D2 相互検証スコア強制ゼロ (0% ブラックリスト)",
+        "delay": 800
+    },
+    {
+        "action": "explainer",
+        "target": "#dimensions",
+        "html": "<b>🛑 D2強制ゼロ ＆ D4修辞リスク急上昇 (0.70)</b><br>裏付けスコアはゼロ、煽動的世論操作の特徴を検知。",
+        "delay": 8500
+    }
+]
 ja[2]["expected"] = {"selector": "#resultCard.show", "check": "element_visible"}
 ja[2]["mock_result"] = {
     "title": "@suspicious_disinfo_bot による X (Twitter) 投稿",
     "final_score": 25.0,
-    "rating": "高度可疑",
+    "rating": "極めて疑わしい",
     "rule_score": 25.0,
     "url": "https://x.com/suspicious_disinfo_bot/status/987654321098",
     "dimensions": {
@@ -342,6 +499,7 @@ ja[2]["mock_result"] = {
 
 # --- 情境 4 (多言語検証 - 日本語版では英語に切り替え後、日本語に戻す) ---
 ja[3]["lang"] = "ja"
+ja[3]["briefing_duration"] = 6500
 ja[3]["initial"] = {"lang": "ja", "render_result": True}
 ja[3]["mock_result"] = ja[0]["mock_result"]
 ja[3]["title"] = "シナリオ4：多言語による実ニュースの検証 (Multilingual Real News)"
@@ -353,17 +511,18 @@ ja[3]["briefing_points"] = [
 ]
 ja[3]["steps"] = [
     {"action": "scroll_to", "target": "#dimensions", "hint": "ステップ 1：日本語版の四直交指標を確認", "delay": 1200},
-    {"action": "spotlight", "target": "#dimensions", "hint": "日本語四直交指標マトリクス", "delay": 800},
+    {"action": "spotlight", "target": "#dimensions", "hint": "日本語四直交指標マトリクス", "delay": 3500},
     {"action": "scroll_to", "target": ".lang-switch", "hint": "ステップ 2：一時的に「English」UIへ切り替え", "delay": 1000},
-    {"action": "spotlight", "target": '[data-lang-btn="en"]', "hint": "Englishボタンをクリック", "delay": 600},
-    {"action": "click", "target": '[data-lang-btn="en"]', "hint": "Englishへ切り替え", "delay": 1000},
-    {"action": "scroll_to", "target": "#dimensions", "hint": "View English Dimensions", "delay": 1200},
-    {"action": "spotlight", "target": "#dimensions", "hint": "English Matrix", "delay": 800},
-    {"action": "explainer", "target": "#dimensions", "html": "<b>🇺🇸 Real-time Localization:</b><br>Instant seamless switching across dimensions, contracts, and scoring pipelines.", "delay": 4000},
+    {"action": "spotlight", "target": '[data-lang-btn="en"]', "hint": "Englishボタンをクリック", "delay": 800},
+    {"action": "click", "target": '[data-lang-btn="en"]', "hint": "Englishへ切り替え", "delay": 3000},
+    {"action": "scroll_to", "target": "#dimensions", "hint": "View English Dimensions", "delay": 1500},
+    {"action": "spotlight", "target": "#dimensions", "hint": "English Matrix", "delay": 1500},
+    {"action": "explainer", "target": "#dimensions", "html": "<b>🇺🇸 Real-time Localization:</b><br>Instant seamless switching across dimensions, contracts, and scoring pipelines.", "delay": 7000},
     {"action": "scroll_to", "target": ".lang-switch", "hint": "ステップ 3：「日本語」UIへ復帰", "delay": 1000},
-    {"action": "spotlight", "target": '[data-lang-btn="ja"]', "hint": "日本語ボタンをクリック", "delay": 600},
-    {"action": "click", "target": '[data-lang-btn="ja"]', "hint": "日本語へ復帰", "delay": 1000},
-    {"action": "scroll_to", "target": "#resultCard", "hint": "完全な日本語分析結果へ戻る", "delay": 1200}
+    {"action": "spotlight", "target": '[data-lang-btn="ja"]', "hint": "日本語ボタンをクリック", "delay": 800},
+    {"action": "click", "target": '[data-lang-btn="ja"]', "hint": "日本語へ復帰", "delay": 1500},
+    {"action": "scroll_to", "target": "#resultCard", "hint": "完全な日本語分析結果へ戻る", "delay": 1500},
+    {"action": "spotlight", "target": "#resultCard", "hint": "NewsAnalyzer 多言語・多次元分析", "delay": 11000}
 ]
 ja[3]["expected"] = {"selector": '[data-lang-btn="ja"].active', "check": "element_visible"}
 
@@ -378,6 +537,7 @@ en = copy.deepcopy(src)
 
 # --- Scenario 1 ---
 en[0]["lang"] = "en"
+en[0]["briefing_duration"] = 6500
 en[0]["initial"] = {"lang": "en", "clear_input": True}
 en[0]["title"] = "Scenario 1: Mainstream News Corroboration"
 en[0]["description"] = "Analyzes a mainstream news report with cross-source corroboration and domain credibility weighting."
@@ -386,41 +546,78 @@ en[0]["briefing_points"] = [
     "Cross-source multi-outlet corroboration verification (AP / Reuters)",
     "Rhetorical risk evaluation and transparent scoring pipeline"
 ]
-for st in en[0]["steps"]:
-    act = st.get("action")
-    tgt = st.get("target")
-    if act == "spotlight" and tgt == "#input":
-        st["hint"] = "Step 1: Enter mainstream news report URL"
-    elif act == "type":
-        st["value"] = "【PBS NewsHour】Infrastructure Rebuild Progress: Officials announce modular housing completed by November. Federal authorities report smooth progress with disaster relief efforts proceeding on schedule. https://www.pbs.org/newshour/nation/infrastructure-rebuild-update-2024"
-        st["hint"] = "Enter named public broadcaster URL and body"
-    elif act == "spotlight" and tgt == "#analyzeBtn":
-        st["hint"] = "Step 2: Click Start Analysis to initiate multi-modal pipeline"
-    elif act == "wait_for":
-        st["target"] = "#resultCard.show"
-        st["hint"] = "Pipeline running: text extraction, fact-check retrieval, multi-source corroboration"
-    elif act == "explainer" and tgt == "#resultCard":
-        st["html"] = "<b>🏁 Final Score: 88.5 / 100</b><br>Rating: <b>Highly Credible</b><br>Combines rule metrics (85 @ 70%) with local AI (95 @ 30%) for an overall 88.5 rating."
-    elif act == "scroll_to" and tgt == "#dimensions":
-        st["hint"] = "Step 3: Review D1-D4 orthogonal dimension matrix"
-    elif act == "explainer" and "D2 跨源報導佐證度" in st.get("html", ""):
-        st["html"] = "<b>D2 Cross-Source Corroboration: 88%</b><br>Named public broadcaster (pbs.org) confirmed with simultaneous reporting across AP and Reuters (Score 0.88)."
-    elif act == "explainer" and tgt == "#dimensions":
-        st["html"] = "<b>📊 Four Orthogonal Dimensions</b><br>D1: Zero Disputes (0.00)<br>D2: Corroborated Across Independent Outlets (0.88)<br>D3: Headline Fidelity (0.92)<br>D4: Low Rhetorical Risk (0.08)"
-    elif act == "scroll_to" and tgt == "#scorePipeline":
-        st["hint"] = "Step 4: Review transparent scoring pipeline"
-    elif act == "explainer" and tgt == "#scorePipeline":
-        st["html"] = "<b>🧮 Transparent Scoring Pipeline</b><br>Rules 85 (70%) + Local AI 95 (30%) = 88.5 Final Score"
-    elif act == "scroll_to" and tgt == "#deepAnalysis":
-        st["hint"] = "Step 5: Review on-device Qwen model deep reasoning"
-    elif act == "explainer" and tgt == "#deepAnalysis":
-        st["html"] = "<b>🧠 On-Device Qwen Deep Reasoning: 95 Points</b><br>Objective factual reporting with no logical fallacies and robust corroboration."
-
+en[0]["steps"] = [
+    {
+        "action": "spotlight",
+        "target": "#input",
+        "hint": "Step 1: Enter mainstream news report URL",
+        "delay": 600
+    },
+    {
+        "action": "type",
+        "target": "#input",
+        "value": "【PBS NewsHour】Infrastructure Rebuild Progress: Officials announce modular housing completed by November. Federal authorities report smooth progress with disaster relief efforts proceeding on schedule. https://www.pbs.org/newshour/nation/infrastructure-rebuild-update-2024",
+        "hint": "Enter named public broadcaster URL and body",
+        "char_delay": 15
+    },
+    {
+        "action": "spotlight",
+        "target": "#analyzeBtn",
+        "hint": "Step 2: Click Start Analysis to initiate multi-modal pipeline",
+        "delay": 500
+    },
+    {
+        "action": "click",
+        "target": "#analyzeBtn",
+        "hint": "Trigger analysis request",
+        "delay": 800
+    },
+    {
+        "action": "wait_for",
+        "target": "#resultCard.show",
+        "timeout": 30000,
+        "hint": "Pipeline running: text extraction, fact-check retrieval, multi-source corroboration"
+    },
+    {
+        "action": "explainer",
+        "target": "#resultCard",
+        "html": "<b>🏁 Final Score: 88.5 / 100</b><br>Rating: <b>Highly Credible</b><br>Combines rule metrics (85 @ 70%) with local AI (95 @ 30%) for an overall 88.5 rating.",
+        "delay": 7500
+    },
+    {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "Step 3: Review D1-D4 orthogonal dimension matrix",
+        "delay": 1200
+    },
+    {
+        "action": "explainer",
+        "html": "<b>D1 Fact-Check Entailment: 0%</b><br>No matching records in external fact-check databases. Routed to D2 cross-source corroboration and D4 risk evaluation.",
+        "delay": 7500
+    },
+    {
+        "action": "explainer",
+        "html": "<b>D2 Cross-Source Corroboration: 88%</b><br>Named public broadcaster (pbs.org) confirmed with simultaneous reporting across AP and Reuters (Score 0.88).",
+        "delay": 7500
+    },
+    {
+        "action": "scroll_to",
+        "target": "#scorePipeline",
+        "hint": "Step 4: Review transparent scoring pipeline",
+        "delay": 1200
+    },
+    {
+        "action": "explainer",
+        "target": "#scorePipeline",
+        "html": "<b>🧮 Transparent Scoring Pipeline</b><br>Rules 85 (70%) + Local AI 95 (30%) = 88.5 Final Score",
+        "delay": 8500
+    }
+]
 en[0]["expected"] = {"selector": "#resultCard.show", "check": "element_visible"}
 en[0]["mock_result"] = {
     "title": "Infrastructure Rebuild Progress: Modular Housing on Track for November",
     "final_score": 88.5,
-    "rating": "高度可信",
+    "rating": "Highly Credible",
     "rule_score": 85.0,
     "url": "https://www.pbs.org/newshour/nation/infrastructure-rebuild-update-2024",
     "dimensions": {
@@ -476,6 +673,7 @@ en[0]["mock_result"] = {
 
 # --- Scenario 2 ---
 en[1]["lang"] = "en"
+en[1]["briefing_duration"] = 6500
 en[1]["initial"] = {"lang": "en", "clear_input": True}
 en[1]["title"] = "Scenario 2: Clickbait Title Suppression & Claim Restoration"
 en[1]["description"] = "Detects suspense-driven clickbait headlines, penalizes deception, and extracts objective claims."
@@ -484,22 +682,80 @@ en[1]["briefing_points"] = [
     "Automated factual objective claim restoration via local LLM",
     "Dimension 3 fidelity penalty enforcement"
 ]
-for st in en[1]["steps"]:
-    act = st.get("action")
-    tgt = st.get("target")
-    if act == "type":
-        st["value"] = "Drinking this everyday is DEADLY?! Doctor reveals shocking truth! Netizens horrified: Never touching it again! https://viral-buzz-health.com/articles/deadly-drink-shocking"
-        st["hint"] = "Step 1: Enter typical sensational clickbait title"
-    elif act == "explainer" and tgt == "#restoredTitle":
-        st["html"] = "<b>💡 Clickbait Interception & Restored Claim:</b><br>Detected sensational suspense pattern.<br>LLM distills objective claim: <b>'Excessive intake of high-fructose syrup increases metabolic risks'</b><br>Distortion penalty enforced."
-    elif act == "explainer" and tgt == "#dimensions":
-        st["html"] = "<b>⚠️ D3 Headline Distortion Penalty (-18 Pts)</b><br>Severe discrepancy between headline and body suppresses score to 45 (Unverified)."
-
+en[1]["steps"] = [
+    {
+        "action": "spotlight",
+        "target": "#input",
+        "hint": "Step 1: Enter typical sensational clickbait title",
+        "delay": 600
+    },
+    {
+        "action": "type",
+        "target": "#input",
+        "value": "Drinking this everyday is DEADLY?! Doctor reveals shocking truth! Netizens horrified: Never touching it again! https://viral-buzz-health.com/articles/deadly-drink-shocking",
+        "hint": "Step 1: Enter typical sensational clickbait title",
+        "char_delay": 20
+    },
+    {
+        "action": "spotlight",
+        "target": "#analyzeBtn",
+        "hint": "Step 2: Click Start Analysis",
+        "delay": 500
+    },
+    {
+        "action": "click",
+        "target": "#analyzeBtn",
+        "hint": "Trigger analysis request",
+        "delay": 800
+    },
+    {
+        "action": "wait_for",
+        "target": "#restoredTitle",
+        "timeout": 30000,
+        "hint": "D3 module & LLM executing suspense analysis & claim restoration"
+    },
+    {
+        "action": "scroll_to",
+        "target": "#restoredTitle",
+        "hint": "Step 3: Inspect Restored Claim card & penalty rationale",
+        "delay": 1200
+    },
+    {
+        "action": "spotlight",
+        "target": "#restoredTitle",
+        "hint": "Highlight restored claim area",
+        "delay": 800
+    },
+    {
+        "action": "explainer",
+        "target": "#restoredTitle",
+        "html": "<b>💡 Clickbait Interception & Restored Claim:</b><br>Detected sensational suspense pattern.<br>LLM distills objective claim: <b>'Excessive intake of high-fructose syrup increases metabolic risks'</b><br>Distortion penalty enforced.",
+        "delay": 8500
+    },
+    {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "Step 4: Verify D3 headline fidelity penalty",
+        "delay": 1200
+    },
+    {
+        "action": "spotlight",
+        "target": "#dimensions",
+        "hint": "Dimension 3 18-point penalty enforced",
+        "delay": 800
+    },
+    {
+        "action": "explainer",
+        "target": "#dimensions",
+        "html": "<b>⚠️ D3 Headline Distortion Penalty (-18 Pts)</b><br>Severe discrepancy between headline and body suppresses score to 45 (Unverified).",
+        "delay": 9500
+    }
+]
 en[1]["expected"] = {"selector": "#restoredTitle", "check": "element_visible"}
 en[1]["mock_result"] = {
     "title": "Drinking this everyday is DEADLY?! Doctor reveals shocking truth! Netizens horrified: Never touching it again!",
     "final_score": 45.0,
-    "rating": "待查證",
+    "rating": "Unverified",
     "rule_score": 42.0,
     "url": "https://viral-buzz-health.com/articles/deadly-drink-shocking",
     "dimensions": {
@@ -549,6 +805,7 @@ en[1]["mock_result"] = {
 
 # --- Scenario 3 ---
 en[2]["lang"] = "en"
+en[2]["briefing_duration"] = 6500
 en[2]["initial"] = {"lang": "en", "clear_input": True}
 en[2]["title"] = "Scenario 3: Social Media Disinformation & Bot Blacklist"
 en[2]["description"] = "Intercepts coordinated malicious propaganda accounts and enforces social blocklists."
@@ -557,22 +814,74 @@ en[2]["briefing_points"] = [
     "Dimension 2 corroboration score forced to zero (0.00)",
     "Dimension 4 rhetorical risk detection for partisan propaganda"
 ]
-for st in en[2]["steps"]:
-    act = st.get("action")
-    tgt = st.get("target")
-    if act == "type":
-        st["value"] = "https://x.com/suspicious_disinfo_bot/status/987654321098"
-        st["hint"] = "Step 1: Enter flagged bot account post URL on X"
-    elif act == "explainer" and tgt == "#resultCard":
-        st["html"] = "<b>🚨 Social Blocklist Hit</b><br>Matches known bot disinformation registry. D2 corroboration score is unconditionally locked to 0."
-    elif act == "explainer" and tgt == "#dimensions":
-        st["html"] = "<b>🛑 D2 Locked to 0 & D4 Rhetoric Risk (0.70)</b><br>Overall credibility locked at 25 (Highly Suspicious)."
-
+en[2]["steps"] = [
+    {
+        "action": "spotlight",
+        "target": "#input",
+        "hint": "Step 1: Enter flagged bot account post URL on X",
+        "delay": 600
+    },
+    {
+        "action": "type",
+        "target": "#input",
+        "value": "https://x.com/suspicious_disinfo_bot/status/987654321098",
+        "hint": "Step 1: Enter flagged bot account post URL on X",
+        "char_delay": 20
+    },
+    {
+        "action": "spotlight",
+        "target": "#analyzeBtn",
+        "hint": "Step 2: Click Analyze to match against blocklist",
+        "delay": 500
+    },
+    {
+        "action": "click",
+        "target": "#analyzeBtn",
+        "hint": "Trigger analysis request",
+        "delay": 800
+    },
+    {
+        "action": "wait_for",
+        "target": "#resultCard.show",
+        "timeout": 30000,
+        "hint": "Backend D2 engine matching against Social Blocklist..."
+    },
+    {
+        "action": "spotlight",
+        "target": "#resultCard",
+        "hint": "Detected Blacklisted Account (Social Blocklist)",
+        "delay": 800
+    },
+    {
+        "action": "explainer",
+        "target": "#resultCard",
+        "html": "<b>🚨 Social Blocklist Hit</b><br>Matches known bot disinformation registry. D2 corroboration score is unconditionally locked to 0 (25 / 100 Highly Suspicious).",
+        "delay": 4500
+    },
+    {
+        "action": "scroll_to",
+        "target": "#dimensions",
+        "hint": "Step 3: Confirm D2 flagged as High-Risk Disinformation Account",
+        "delay": 1200
+    },
+    {
+        "action": "spotlight",
+        "target": "#dimensions",
+        "hint": "D2 Cross-Source Corroboration forced to 0 (0% Blacklist)",
+        "delay": 800
+    },
+    {
+        "action": "explainer",
+        "target": "#dimensions",
+        "html": "<b>🛑 D2 Locked to 0 & D4 Rhetoric Risk (0.70)</b><br>Overall credibility locked at 25 (Highly Suspicious).",
+        "delay": 8500
+    }
+]
 en[2]["expected"] = {"selector": "#resultCard.show", "check": "element_visible"}
 en[2]["mock_result"] = {
     "title": "Post on X (Twitter) by @suspicious_disinfo_bot",
     "final_score": 25.0,
-    "rating": "高度可疑",
+    "rating": "Highly Suspicious",
     "rule_score": 25.0,
     "url": "https://x.com/suspicious_disinfo_bot/status/987654321098",
     "dimensions": {
@@ -593,7 +902,7 @@ en[2]["mock_result"] = {
         "headline_faithfulness": {
             "id": "D3", "key": "headline_faithfulness", "name": "Headline Fidelity", "value": 0.7, "confidence": 0.7,
             "status_label": "supported", "impact_pts": 0.0,
-            "explanation": "Text generally consistent",
+            "explanation": "Matches post content",
             "what_it_measures": "Fidelity",
             "what_if_wrong": "None"
         },
@@ -617,6 +926,7 @@ en[2]["mock_result"] = {
 
 # --- Scenario 4 (English demo switches briefly to Japanese then back to English) ---
 en[3]["lang"] = "en"
+en[3]["briefing_duration"] = 6500
 en[3]["initial"] = {"lang": "en", "render_result": True}
 en[3]["mock_result"] = en[0]["mock_result"]
 en[3]["title"] = "Scenario 4: Multilingual Real News Verification"
@@ -628,17 +938,18 @@ en[3]["briefing_points"] = [
 ]
 en[3]["steps"] = [
     {"action": "scroll_to", "target": "#dimensions", "hint": "Step 1: Review English 4-Orthogonal Dimensions", "delay": 1200},
-    {"action": "spotlight", "target": "#dimensions", "hint": "English 4-Dimension Matrix", "delay": 800},
+    {"action": "spotlight", "target": "#dimensions", "hint": "English 4-Dimension Matrix", "delay": 3500},
     {"action": "scroll_to", "target": ".lang-switch", "hint": "Step 2: Switch to Japanese UI", "delay": 1000},
-    {"action": "spotlight", "target": '[data-lang-btn="ja"]', "hint": "Click Japanese Button", "delay": 600},
-    {"action": "click", "target": '[data-lang-btn="ja"]', "hint": "Switch to Japanese", "delay": 1000},
-    {"action": "scroll_to", "target": "#dimensions", "hint": "日本語四直交指標マトリクス", "delay": 1200},
-    {"action": "spotlight", "target": "#dimensions", "hint": "Japanese Dimensions", "delay": 800},
-    {"action": "explainer", "target": "#dimensions", "html": "<b>🇯🇵 Instant Multilingual Localization:</b><br>Instant seamless switching across dimensions, contracts, and scoring pipelines.", "delay": 4000},
+    {"action": "spotlight", "target": '[data-lang-btn="ja"]', "hint": "Click Japanese Button", "delay": 800},
+    {"action": "click", "target": '[data-lang-btn="ja"]', "hint": "Switch to Japanese", "delay": 3000},
+    {"action": "scroll_to", "target": "#dimensions", "hint": "Review Japanese 4-Orthogonal Dimensions Matrix", "delay": 1500},
+    {"action": "spotlight", "target": "#dimensions", "hint": "Japanese Dimensions", "delay": 1500},
+    {"action": "explainer", "target": "#dimensions", "html": "<b>🇯🇵 Instant Multilingual Localization:</b><br>Instant seamless switching across dimensions, contracts, and scoring pipelines.", "delay": 7000},
     {"action": "scroll_to", "target": ".lang-switch", "hint": "Step 3: Return to English UI", "delay": 1000},
-    {"action": "spotlight", "target": '[data-lang-btn="en"]', "hint": "Click English Button", "delay": 600},
-    {"action": "click", "target": '[data-lang-btn="en"]', "hint": "Return to English", "delay": 1000},
-    {"action": "scroll_to", "target": "#resultCard", "hint": "Return to full English analysis", "delay": 1200}
+    {"action": "spotlight", "target": '[data-lang-btn="en"]', "hint": "Click English Button", "delay": 800},
+    {"action": "click", "target": '[data-lang-btn="en"]', "hint": "Return to English", "delay": 1500},
+    {"action": "scroll_to", "target": "#resultCard", "hint": "Return to full English analysis", "delay": 1500},
+    {"action": "spotlight", "target": "#resultCard", "hint": "NewsAnalyzer Multilingual Verification", "delay": 11000}
 ]
 en[3]["expected"] = {"selector": '[data-lang-btn="en"].active', "check": "element_visible"}
 

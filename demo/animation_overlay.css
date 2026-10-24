@@ -289,3 +289,8 @@
   color: #94a3b8;
   margin-left: 6px;
 }
+
+/* 演示動畫專用：隱藏後台開發調試列，呈現乾淨專業的使用者介面 */
+#debugBar, #debugLogsWrap, #modelPicker {
+  display: none !important;
+}

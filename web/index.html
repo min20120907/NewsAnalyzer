@@ -393,11 +393,11 @@
     <!-- Debug 登入：登入後才露出模型選擇（2026-10-05） -->
     <div class="debug-bar" id="debugBar">
       <span>🛠️</span>
-      <input id="debugAccount" placeholder="Debug 帳號" autocomplete="username">
-      <input id="debugPassword" type="password" placeholder="Debug 密碼" autocomplete="current-password">
-      <button id="debugLoginBtn" type="button">進入 Debug</button>
+      <input id="debugAccount" data-i18n-ph="debug_account" placeholder="Debug 帳號" autocomplete="username">
+      <input id="debugPassword" type="password" data-i18n-ph="debug_password" placeholder="Debug 密碼" autocomplete="current-password">
+      <button id="debugLoginBtn" type="button" data-i18n="debug_login">進入 Debug</button>
       <span id="debugMsg"></span>
-      <button id="debugLogsToggleBtn" type="button" style="display:none;">📜 日誌</button>
+      <button id="debugLogsToggleBtn" type="button" style="display:none;" data-i18n="debug_logs">📜 日誌</button>
     </div>
 
     <!-- Debug 日誌：預設收起，按「📜 日誌」才展開（2026-10-06） -->
@@ -512,6 +512,7 @@
 <script>
 const I18N = {
   zh: {
+    title: "NewsAnalyzer · 新聞可靠度分析",
     badge: "AI 可靠度分析",
     subtitle: "貼上 Facebook 貼文或新聞連結，立即分析內容可靠度",
     input_placeholder: "貼上新聞連結或 Facebook 貼文內容…\n\n例如：https://www.ettoday.net/news/...\n或直接貼上貼文文字內容",
@@ -534,6 +535,12 @@ const I18N = {
     bait_title: "🎣 偵測到點擊誘餌標題（已扣分壓制）",
     bait_label: "💡 還原真實核心主旨：",
     bait_reason_pfx: "原因：",
+    debug_account: "Debug 帳號",
+    debug_password: "Debug 密碼",
+    debug_login: "進入 Debug",
+    debug_logout: "登出 Debug",
+    debug_logs: "📜 日誌",
+    debug_mode_on: "✅ Debug 模式",
     dim_titles: {
       evidence_verdict: 'D1 查核證據蘊涵度',
       source_corroboration: 'D2 跨源報導佐證度',
@@ -589,10 +596,13 @@ const I18N = {
       clamped_badge: '🚨 觸發硬規則扣分', no_clamp: '無強制錨定',
     },
     ratings: {
-      "高度可信": "高度可信", "大致可信": "大致可信", "待查證": "待查證", "疑似不實": "疑似不實", "高度可疑": "高度可疑"
+      "高度可信": "高度可信", "大致可信": "大致可信", "待查證": "待查證", "疑似不實": "疑似不實", "高度可疑": "高度可疑",
+      "高信頼性": "高度可信", "極めて高信頼": "高度可信", "概ね高信頼": "大致可信", "要検証": "待查證", "要確認・未検証": "待查證", "不審・虚偽の疑い": "疑似不實", "極めて低信頼": "高度可疑", "極めて疑わしい": "高度可疑",
+      "Highly Credible": "高度可信", "Mostly Credible": "大致可信", "Unverified": "待查證", "Suspicious": "疑似不實", "Highly Questionable": "高度可疑", "Highly Suspicious": "高度可疑"
     }
   },
   en: {
+    title: "NewsAnalyzer · News Reliability Analyzer",
     badge: "AI Reliability Analysis",
     subtitle: "Paste a news link, Facebook post, or text to evaluate reliability instantly",
     input_placeholder: "Paste news URL or social post content…\n\ne.g.: https://www.reuters.com/...\nor paste text content directly",
@@ -615,6 +625,12 @@ const I18N = {
     bait_title: "🎣 Clickbait Headline Detected (Penalized & Capped)",
     bait_label: "💡 Restored Objective Core Subject: ",
     bait_reason_pfx: "Reason: ",
+    debug_account: "Debug Account",
+    debug_password: "Debug Password",
+    debug_login: "Debug Login",
+    debug_logout: "Debug Logout",
+    debug_logs: "📜 Logs",
+    debug_mode_on: "✅ Debug Mode",
     dim_titles: {
       evidence_verdict: 'D1 Evidence Entailment',
       source_corroboration: 'D2 Cross-Source Corroboration',
@@ -670,10 +686,13 @@ const I18N = {
       clamped_badge: '🚨 Hard Rule Penalty Triggered', no_clamp: 'No Forced Clamping',
     },
     ratings: {
-      "高度可信": "Highly Credible", "大致可信": "Mostly Credible", "待查證": "Unverified", "疑似不實": "Suspicious", "高度可疑": "Highly Questionable"
+      "高度可信": "Highly Credible", "大致可信": "Mostly Credible", "待查證": "Unverified", "疑似不實": "Suspicious", "高度可疑": "Highly Questionable",
+      "高信頼性": "Highly Credible", "極めて高信頼": "Highly Credible", "概ね高信頼": "Mostly Credible", "要検証": "Unverified", "要確認・未検証": "Unverified", "不審・虚偽の疑い": "Suspicious", "極めて低信頼": "Highly Questionable", "極めて疑わしい": "Highly Suspicious",
+      "Highly Credible": "Highly Credible", "Mostly Credible": "Mostly Credible", "Unverified": "Unverified", "Suspicious": "Suspicious", "Highly Questionable": "Highly Questionable", "Highly Suspicious": "Highly Suspicious"
     }
   },
   ja: {
+    title: "NewsAnalyzer · ニュース信頼性分析",
     badge: "AI 信頼性分析",
     subtitle: "ニュースURLやFacebook投稿を貼り付けて、信頼性を即座に分析",
     input_placeholder: "ニュースのリンクや投稿内容を貼り付けてください…\n\n例：https://www3.nhk.or.jp/news/...\nまたは本文を直接入力",
@@ -696,6 +715,12 @@ const I18N = {
     bait_title: "🎣 釣り見出し（クリックベイト）を検出（減点・上限固定適用）",
     bait_label: "💡 客観的な本来の見出し：",
     bait_reason_pfx: "理由：",
+    debug_account: "Debug アカウント",
+    debug_password: "Debug パスワード",
+    debug_login: "Debug ログイン",
+    debug_logout: "Debug ログアウト",
+    debug_logs: "📜 ログ",
+    debug_mode_on: "✅ Debug モード",
     dim_titles: {
       evidence_verdict: 'D1 検証証拠の含意度',
       source_corroboration: 'D2 複数メディアの裏付け度',
@@ -751,7 +776,9 @@ const I18N = {
       clamped_badge: '🚨 安全ルール減点発動', no_clamp: '上限固定なし',
     },
     ratings: {
-      "高度可信": "極めて高信頼", "大致可信": "概ね高信頼", "待查證": "要確認・未検証", "疑似不實": "不審・虚偽の疑い", "高度可疑": "極めて低信頼"
+      "高度可信": "高信頼性", "大致可信": "概ね高信頼", "待查證": "要検証", "疑似不實": "不審・虚偽の疑い", "高度可疑": "極めて疑わしい",
+      "高信頼性": "高信頼性", "極めて高信頼": "高信頼性", "概ね高信頼": "概ね高信頼", "要検証": "要検証", "要確認・未検証": "要検証", "不審・虚偽の疑い": "不審・虚偽の疑い", "極めて低信頼": "極めて疑わしい", "極めて疑わしい": "極めて疑わしい",
+      "Highly Credible": "高信頼性", "Mostly Credible": "概ね高信頼", "Unverified": "要検証", "Suspicious": "不審・虚偽の疑い", "Highly Questionable": "極めて疑わしい", "Highly Suspicious": "極めて疑わしい"
     }
   }
 };
@@ -842,6 +869,7 @@ function setLanguage(lang) {
   });
 
   const dict = I18N[lang];
+  if (dict.title) document.title = dict.title;
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (dict[key]) el.textContent = dict[key];
@@ -959,8 +987,9 @@ function setDebug(on) {
   modelPicker.style.display = on ? 'block' : 'none';
   $('debugAccount').style.display = on ? 'none' : 'block';
   $('debugPassword').style.display = on ? 'none' : 'block';
-  $('debugLoginBtn').textContent = on ? '登出 Debug' : '進入 Debug';
-  debugMsg.textContent = on ? '✅ Debug 模式' : '';
+  const dict = I18N[currentLang] || I18N.zh;
+  $('debugLoginBtn').textContent = on ? (dict.debug_logout || '登出 Debug') : (dict.debug_login || '進入 Debug');
+  debugMsg.textContent = on ? (dict.debug_mode_on || '✅ Debug 模式') : '';
   debugMsg.className = on ? 'ok' : '';
   // 日誌面板預設收起（2026-10-06）：只在按下「📜 日誌」時才展開＋輪詢
   $('debugLogsToggleBtn').style.display = on ? 'block' : 'none';

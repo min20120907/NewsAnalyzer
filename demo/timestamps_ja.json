@@ -1,0 +1,86 @@
+{
+  "timestamps": {
+    "s1_01_intro": 1.25,
+    "s1_02_input": 17.06,
+    "s1_03_result": 26.34,
+    "s1_scroll_dimensions": 34.34,
+    "s1_04_d1_d2": 36.14,
+    "s1_05_d3_d4": 43.64,
+    "s1_06_pipeline": 51.15,
+    "s2_01_intro": 65.99,
+    "s2_02_input": 81.77,
+    "s2_02_card": 90.71,
+    "s2_scroll_dimensions": 103.18,
+    "s2_03_d3_d2": 105.79,
+    "s3_01_intro": 118.91,
+    "s3_02_input": 134.69,
+    "s3_03_result": 141.94,
+    "s3_scroll_dimensions": 148.15,
+    "s3_03_d4": 150.76,
+    "s4_01_intro": 162.89,
+    "s4_scroll_dimensions": 178.22,
+    "s4_03_matrix": 194.18
+  },
+  "sfx": [
+    {
+      "type": "shutter",
+      "t": 0.85,
+      "desc": "S1 Briefing Shutter"
+    },
+    {
+      "type": "click",
+      "t": 23.65,
+      "desc": "Click #analyzeBtn"
+    },
+    {
+      "type": "ding",
+      "t": 26.34,
+      "desc": "S1 Result Ding"
+    },
+    {
+      "type": "shutter",
+      "t": 65.59,
+      "desc": "S2 Briefing Shutter"
+    },
+    {
+      "type": "click",
+      "t": 88.2,
+      "desc": "Click #analyzeBtn"
+    },
+    {
+      "type": "chime",
+      "t": 90.71,
+      "desc": "S2 Restored Chime"
+    },
+    {
+      "type": "shutter",
+      "t": 118.51,
+      "desc": "S3 Briefing Shutter"
+    },
+    {
+      "type": "click",
+      "t": 139.44,
+      "desc": "Click #analyzeBtn"
+    },
+    {
+      "type": "alert",
+      "t": 141.94,
+      "desc": "S3 Result Ding"
+    },
+    {
+      "type": "shutter",
+      "t": 162.49,
+      "desc": "S4 Briefing Shutter"
+    },
+    {
+      "type": "click",
+      "t": 186.4,
+      "desc": "Click [data-lang-btn=\"en\"]"
+    },
+    {
+      "type": "click",
+      "t": 204.05,
+      "desc": "Click [data-lang-btn=\"ja\"]"
+    }
+  ]
+}

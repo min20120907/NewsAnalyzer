@@ -37,17 +37,24 @@ def inject_animation_layer(page):
     page.add_script_tag(content=js_content)
 
 
-def run_scenario(page, scenario, speed=1.0, is_simulation=False, index=1, total=1):
+def run_scenario(page, scenario, speed=1.0, is_simulation=False, index=1, total=1, t0=None, timestamps=None, sfx_events=None):
     title = scenario.get("title", "")
     desc = scenario.get("description", "")
     print(f"\n▶ 正在播放情境 {index}/{total}: {title} ({scenario['id']})")
 
+    def now():
+        return round(time.time() - t0, 2) if t0 is not None else 0.0
+
     # 1. 過場動畫與前期提要 (Cinematic Briefing)
     page.evaluate(f"window.CinemaOverlay.speed = {speed};")
     page.evaluate(f"window.CinemaOverlay.shutterTransition();")
+    if sfx_events is not None:
+        sfx_events.append({"type": "shutter", "t": now(), "desc": f"S{index} Briefing Shutter"})
     page.wait_for_timeout(int(400 / speed))
     points = scenario.get("briefing_points", [])
-    briefing_duration = 3800
+    briefing_duration = scenario.get("briefing_duration", 6500)
+    if timestamps is not None:
+        timestamps[f"s{index}_01_intro"] = now()
     page.evaluate(f"window.CinemaOverlay.showBriefing({json.dumps('SCENARIO ' + str(index) + ' / ' + str(total))}, {json.dumps(title)}, {json.dumps(desc)}, {json.dumps(points)}, {briefing_duration});")
     page.wait_for_timeout(int((briefing_duration + 500) / speed))
 
@@ -92,6 +99,8 @@ def run_scenario(page, scenario, speed=1.0, is_simulation=False, index=1, total=
             page.wait_for_timeout(int(delay / speed))
 
         elif action == "click":
+            if sfx_events is not None:
+                sfx_events.append({"type": "click", "t": now(), "desc": f"Click {target}"})
             # 同步視覺滑鼠點擊與 Playwright 真實點擊
             page.evaluate(f"window.CinemaOverlay.click({json.dumps(target)});")
             page.wait_for_timeout(int(200 / speed))
@@ -105,6 +114,8 @@ def run_scenario(page, scenario, speed=1.0, is_simulation=False, index=1, total=
 
         elif action == "type":
             val = step.get("value", "")
+            if timestamps is not None and f"s{index}_02_input" not in timestamps:
+                timestamps[f"s{index}_02_input"] = now()
             page.evaluate(f"window.CinemaOverlay.moveTo({json.dumps(target)});")
             page.evaluate(f"window.CinemaOverlay.showSpotlight({json.dumps(target)});")
             char_delay = step.get("char_delay", 25)
@@ -114,6 +125,11 @@ def run_scenario(page, scenario, speed=1.0, is_simulation=False, index=1, total=
             page.wait_for_timeout(int((total_type_time + 400) / speed))
 
         elif action == "scroll_to":
+            if timestamps is not None:
+                if target == "#dimensions" and f"s{index}_scroll_dimensions" not in timestamps:
+                    timestamps[f"s{index}_scroll_dimensions"] = now()
+                elif target == "#scorePipeline" and f"s{index}_06_pipeline" not in timestamps:
+                    timestamps[f"s{index}_06_pipeline"] = now()
             page.evaluate(f"window.CinemaOverlay.hideSpotlight();")
             page.evaluate(f"document.querySelector({json.dumps(target)})?.scrollIntoView({{behavior:'smooth', block:'center'}});")
             page.wait_for_timeout(int(600 / speed))
@@ -124,8 +140,30 @@ def run_scenario(page, scenario, speed=1.0, is_simulation=False, index=1, total=
             timeout = step.get("timeout", 20000)
             page.locator(target).first.wait_for(state="visible", timeout=timeout)
             page.wait_for_timeout(int(800 / speed))
+            if target == "#resultCard.show":
+                if timestamps is not None and f"s{index}_03_result" not in timestamps:
+                    timestamps[f"s{index}_03_result"] = now()
+                if sfx_events is not None:
+                    sfx_type = "alert" if index == 3 else "ding"
+                    sfx_events.append({"type": sfx_type, "t": now(), "desc": f"S{index} Result Ding"})
+            elif target == "#restoredTitle":
+                if timestamps is not None and f"s{index}_02_card" not in timestamps:
+                    timestamps[f"s{index}_02_card"] = now()
+                if sfx_events is not None:
+                    sfx_events.append({"type": "chime", "t": now(), "desc": f"S{index} Restored Chime"})
 
         elif action == "explainer":
+            if timestamps is not None:
+                if index == 1 and "D1" in step.get("html", "") and f"s{index}_04_d1_d2" not in timestamps:
+                    timestamps[f"s{index}_04_d1_d2"] = now()
+                elif index == 1 and "D2" in step.get("html", "") and f"s{index}_05_d3_d4" not in timestamps:
+                    timestamps[f"s{index}_05_d3_d4"] = now()
+                elif index == 2 and "D3" in step.get("html", "") and f"s{index}_03_d3_d2" not in timestamps:
+                    timestamps[f"s{index}_03_d3_d2"] = now()
+                elif index == 3 and "D4" in step.get("html", "") and f"s{index}_03_d4" not in timestamps:
+                    timestamps[f"s{index}_03_d4"] = now()
+                elif index == 4 and f"s{index}_03_matrix" not in timestamps:
+                    timestamps[f"s{index}_03_matrix"] = now()
             # 顯示結果區塊解析器 (Explainer Annotation)
             explainer_html = step.get("html", "")
             explainer_delay = step.get("delay", 4000)
@@ -185,6 +223,7 @@ def main():
     parser.add_argument("--scenarios-file", default=None, help="指定自訂情境 JSON 檔案路徑")
     parser.add_argument("--speed", type=float, default=1.0, help="播放速度倍率 (預設: 1.0)")
     parser.add_argument("--output", default="newsanalyzer_demo.mp4", help="錄影模式輸出之 MP4 檔名")
+    parser.add_argument("--timestamps-out", default=None, help="輸出精確步驟時間戳記 JSON 檔案路徑")
     parser.add_argument("--url", default="http://127.0.0.1:5000", help="NewsAnalyzer 伺服器網址")
     args = parser.parse_args()
 
@@ -223,6 +262,12 @@ def main():
         print(f"🌐 連線目標網站: {target_url}")
         page.goto(target_url, wait_until="networkidle")
 
+        # 預先設置初始語系，防止瀏覽器預設語言在片頭閃爍
+        if scenarios:
+            init_lang = scenarios[0].get("initial", {}).get("lang") or scenarios[0].get("lang")
+            if init_lang:
+                page.evaluate(f"if (typeof setLanguage === 'function') setLanguage('{init_lang}');")
+
         # 注入動畫層
         inject_animation_layer(page)
 
@@ -230,14 +275,22 @@ def main():
 
         # 依序執行所選情境 (加入總數計算)
         total_scenarios = len(scenarios)
+        timestamps = {}
+        sfx_events = []
+        t0 = time.time()
         for idx, s in enumerate(scenarios, 1):
-            run_scenario(page, s, speed=args.speed, is_simulation=is_sim, index=idx, total=total_scenarios)
+            run_scenario(page, s, speed=args.speed, is_simulation=is_sim, index=idx, total=total_scenarios, t0=t0, timestamps=timestamps, sfx_events=sfx_events)
             page.wait_for_timeout(1000)
 
         # 取得錄影檔路徑
         video = page.video
         context.close()
         browser.close()
+
+        if args.timestamps_out:
+            out_ts = Path(args.timestamps_out).resolve()
+            out_ts.write_text(json.dumps({"timestamps": timestamps, "sfx": sfx_events}, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(f"⏱️ 精確步驟時間戳記已寫入：{out_ts}")
 
         if args.mode == "record" and video:
             recorded_path = video.path()
