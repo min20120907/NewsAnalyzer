@@ -817,6 +817,48 @@ _DEEP_PROMPT_TMPL = """你是一個證據接地的事實查核評分員。你只
 網路搜尋結果摘要：
 {web_summary}"""
 
+_DEEP_PROMPT_TMPL_JA = """あなたは証拠に基づくファクトチェック判定員です。提供された材料のみを用いて判断し、推測による事実補完は厳禁です。
+
+単一のJSONオブジェクトのみを出力してください。{lang_instruction}
+{{"claim":"主張の要約(30字以内)","neutral_title":"客観的な事実タイトル(25字以内、釣り・煽りを排除)","evidence_state":"full_body_evidence | search_hit_body_missing | no_evidence | unrelated_evidence","evidence_used":["引用元名"],"key_points":["2点の重要ポイント(各30字以内、根拠を明記)"],"viewpoints":"客観的事実または賛否両論(60字以内)","credibility_score":0から100の整数,"analysis":"結論(80字以内、情報源・事実・理由を明記)","abstain":trueまたはfalse,"title_bait":trueまたはfalse,"title_bait_reason":"釣りタイトルの理由(title_baitがtrueの場合必須)"}}
+
+【ルール】
+1. 本日の日付：{today}。
+2. 証拠状態 (evidence_state)：
+   - full_body_evidence: ファクトチェック原文が読み込まれ、本件主張と同一の事件・対象・時期である。
+   - search_hit_body_missing: 検索やファクトチェックは関連しそうだが、本文が未読み込み。
+   - no_evidence: ファクトチェック情報なし。
+   - unrelated_evidence: ヒットした情報が本件とは無関係。
+3. 判定とスコア：
+   - full_body_evidence 以外：abstain=true。本文から客観的に 45〜65 で自己採点。
+   - full_body_evidence：abstain=false。明確に事実 85〜95、概ね事実 70〜84、一部不実 40〜69、明確に不実 10〜35。
+4. タイトル検証 (title_bait)：釣り・誇大表現がある場合 true とし理由を記載。
+
+ニュースタイトル：{title}
+ニュース本文：
+{body}
+
+ファクトチェック結果：
+{fc_block}
+
+ウェブ検索結果：
+{web_summary}"""
+
+_DEEP_PROMPT_TMPL_EN = """You are an evidence-grounded fact-checking verifier. You must ONLY evaluate based on the provided materials below without hallucinating facts.
+
+Output a single JSON object only. {lang_instruction}
+{{"claim":"Concise claim (under 20 words)","neutral_title":"Objective neutral title","evidence_state":"full_body_evidence | search_hit_body_missing | no_evidence | unrelated_evidence","evidence_used":["Source name"],"key_points":["2 key points (under 25 words each)"],"viewpoints":"Objective facts or opposing perspectives","credibility_score":0 to 100 integer,"analysis":"Conclusion (under 50 words citing source and reason)","abstain":true or false,"title_bait":true or false,"title_bait_reason":""}}
+
+News Title: {title}
+News Body:
+{body}
+
+Fact-Check Results:
+{fc_block}
+
+Web Search Results:
+{web_summary}"""
+
 
 def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
                               content: str = "", facts: "Optional[list]" = None,
@@ -871,17 +913,23 @@ def _deep_analyze_build_prompt(title: str, web_results: list, sources: list,
         body = body[:1000] + "…"
     from datetime import date as _date
     if lang == "ja":
-        lang_ins = "すべてのフィールドを必ず自然な日本語で記述し、簡潔に出力してください："
+        tmpl = _DEEP_PROMPT_TMPL_JA
+        lang_ins = "すべてのフィールドを必ず自然な日本語で記述し、簡潔に出力してください（中国語・英語の混入は厳禁）："
+        default_title = "（タイトルなし）"
     elif lang == "en":
-        lang_ins = "Write all text field values in fluent English concisely:"
+        tmpl = _DEEP_PROMPT_TMPL_EN
+        lang_ins = "Write all text field values strictly in fluent English concisely (do NOT output Chinese):"
+        default_title = "(No title)"
     else:
+        tmpl = _DEEP_PROMPT_TMPL
         lang_ins = "所有文字一律使用繁體中文，精簡扼要："
-    return _DEEP_PROMPT_TMPL.format(title=title or "（無標題）",
-                                    body=body,
-                                    web_summary=web_summary,
-                                    fc_block=fc_summary,
-                                    today=_date.today().isoformat(),
-                                    lang_instruction=lang_ins)
+        default_title = "（無標題）"
+    return tmpl.format(title=title or default_title,
+                       body=body,
+                       web_summary=web_summary,
+                       fc_block=fc_summary,
+                       today=_date.today().isoformat(),
+                       lang_instruction=lang_ins)
 
 
 # 傳言／匿名轉傳的確定性訊號。這類文本「本身」就是未經證實的內容，
